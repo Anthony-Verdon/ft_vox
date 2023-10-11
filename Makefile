@@ -1,4 +1,5 @@
-SRCS := srcs/main.cpp
+SRCS := srcs/main.cpp \
+		srcs/App.cpp
 
 OBJS := $(SRCS:.cpp=.o)
 
