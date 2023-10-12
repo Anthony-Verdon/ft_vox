@@ -1,0 +1,16 @@
+version: "3.7"
+  
+services:
+  ft_vox:
+    image: ft_vox
+    container_name: ft_vox
+    build:
+      dockerfile: ./Dockerfile 
+    volumes:
+      - ./program:/ft_vox
+    restart: always
+    networks:
+      - ft_vox
+
+networks:
+  ft_vox:

@@ -1,44 +1,24 @@
-SRCS := srcs/main.cpp \
-		srcs/App.cpp
+all: exec
 
-OBJS := $(SRCS:.cpp=.o)
+exec: start
+	docker exec -it ft_vox sh
 
-NAME := ft_vox
+start:
+	docker compose up --build -d
 
-COMPILER := c++
+down:
+	docker compose down
 
-RM		:= rm -f
+re: fclean start
 
-CFLAGS 	:= -Wall -Werror -Wextra -g
+logs:
+	docker compose logs -f
 
-ifdef DEBUG
-	CFLAGS += -D DEBUG
-endif
+clean: down
+	docker system prune -f --volumes
 
-LIBRARIES := -Lincludes/glfw/build/src -lglfw -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+fclean: down
+	docker system prune -af
+	docker system prune -af --volumes
 
-.cpp.o:
-			${COMPILER} ${CFLAGS} -c $< -o ${<:.cpp=.o}
-
-all: 		${NAME}
-
-${NAME}:	${OBJS}
-			${COMPILER} ${OBJS} -o ${NAME} ${LIBRARIES}
-
-debug:		
-			make DEBUG=1
-
-re_debug:		
-			make re DEBUG=1
-
-clean:
-			${RM} ${OBJS}
-
-fclean: 	clean
-			${RM} ${NAME}
-
-re:
-			make fclean
-			make
-
-.PHONY: 	all clean fclean re debug
+.PHONY: all start stop re logs clean fclean
