@@ -12,14 +12,15 @@
 #define WINDOW_HEIGHT 600
 
 const std::vector<const char *>  validationLayers = {
-    "VK_LAYER_KRONOS_validation"
+    "VK_LAYER_KHRONOS_validation"
 };
 
 #ifdef DEBUG
-    const bool enableValidationLayers = true;
+    constexpr const bool enableValidationLayers = true;
 #else
-    const bool enableValidationLayers = false;
+    constexpr const bool enableValidationLayers = false;
 #endif
+
 class App
 {
     private:

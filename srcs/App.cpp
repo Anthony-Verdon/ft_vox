@@ -34,18 +34,27 @@ void App::run()
 
 void App::initWindow()
 {
-    glfwInit();
+    if (glfwInit() == GLFW_FALSE)
+    {
+        const char* description;
+        glfwGetError(&description);
+        std::cout << description << std::endl;
+        throw std::runtime_error("glfw init failed");
+    }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "ft_vox", nullptr, nullptr);
+    if (!window)
+        throw std::runtime_error("create window failed");
 }
 
 void App::createInstance()
 {
-    if (enableValidationLayers && !checkValidationLayerSupport())
-        throw std::runtime_error("validation layer requested but not available");
+    if constexpr(enableValidationLayers)
+        if (!checkValidationLayerSupport())
+            throw std::runtime_error("validation layer requested but not available");
 
     VkApplicationInfo appInfo;
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -69,7 +78,7 @@ void App::createInstance()
     if (enableValidationLayers)
     {
         createInfo.enabledLayerCount = validationLayers.size();
-        createInfo.ppEnabledExtensionNames = validationLayers.data();
+        createInfo.ppEnabledLayerNames = validationLayers.data();
     }
     else
         createInfo.enabledLayerCount = 0;
@@ -97,7 +106,10 @@ bool App::checkValidationLayerSupport()
             }
         }
         if (!layerFound)
+        {
+            std::cout << layerName << std::endl;
             return (false);
+        }
     }
 
     return (true);
