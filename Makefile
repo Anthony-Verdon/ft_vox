@@ -1,5 +1,9 @@
 SRCS := srcs/main.cpp \
-		srcs/App.cpp
+		srcs/App.cpp \
+		srcs/classes/VkInstance/VkInstanceWrapper.cpp \
+		srcs/classes/VkDebugMessenger/VkDebugMessengerWrapper.cpp \
+		srcs/classes/VkPhysicalDevice/VkPhysicalDeviceWrapper.cpp \
+		srcs/classes/VkLogicalDevice/VkLogicalDeviceWrapper.cpp
 
 OBJS := $(SRCS:.cpp=.o)
 

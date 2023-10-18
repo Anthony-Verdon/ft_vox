@@ -9,6 +9,12 @@
 #include <cstring>
 #include <map>
 #include <optional>
+#include <memory>
+
+#include "classes/VkInstance/VkInstanceWrapper.hpp"
+#include "classes/VkDebugMessenger/VkDebugMessengerWrapper.hpp"
+#include "classes/VkPhysicalDevice/VkPhysicalDeviceWrapper.hpp"
+#include "classes/VkLogicalDevice/VkLogicalDeviceWrapper.hpp"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -28,24 +34,16 @@ class App
     private:
         void initWindow();
         void listVulkanExtension();
-        bool checkValidationLayerSupport();
-        void createInstance();
-        VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-        void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-        void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-        void setupDebugMessenger();
-        void pickPhysicalDevice();
-        int rateDeviceSuitability(VkPhysicalDevice device);
-        void createLogicalDevice();
         void initVulkan();
         void mainLoop();
         void cleanup();
 
         GLFWwindow *window;
-        VkInstance instance;
-        VkDebugUtilsMessengerEXT debugMessenger;
-        VkPhysicalDevice physicalDevice;
-        VkDevice logicalDevice;
+
+        std::unique_ptr<VkInstanceWrapper> instance;
+        std::unique_ptr<VkDebugMessengerWrapper> debugMessenger;
+        std::unique_ptr<VkPhysicalDeviceWrapper> physicalDevice;
+        std::unique_ptr<VkLogicalDeviceWrapper> logicalDevice;
         VkQueue graphicsQueue;
 
     public:
