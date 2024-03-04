@@ -1,5 +1,7 @@
-SRCS := $(wildcard srcs/*.cpp)
-SRCS += libs/glad/src/glad.cpp
+SRCS := srcs/main.cpp \
+		libs/glad/src/glad.cpp \
+		srcs/classes/Shader/Shader.cpp \
+		srcs/classes/Utils/Utils.cpp \
 
 OBJS := $(SRCS:.cpp=.o)
 
