@@ -1,9 +1,9 @@
 #include "../libs/glad/include/glad/glad.h"
+#include "../libs/glm/glm/glm.hpp"
 #include <GLFW/glfw3.h>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
-
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
 
@@ -59,12 +59,10 @@ int main()
         while (!glfwWindowShouldClose(window))
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
                 glfwSetWindowShouldClose(window, true);
             glBindVertexArray(VAO);
             glDrawElements(GL_TRIANGLES, 2 * 3, GL_UNSIGNED_INT, 0);
-
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
