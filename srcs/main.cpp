@@ -1,6 +1,8 @@
 #include "../libs/glad/include/glad/glad.h"
 #include "../libs/glm/glm/glm.hpp"
 #include "../libs/glm/glm/gtc/matrix_transform.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "../libs/stb_image/stb_image.h"
 #include "classes/Shader/Shader.hpp"
 #include <GLFW/glfw3.h>
 #include <cstdlib>
@@ -75,20 +77,40 @@ int main()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
         float vertices[] = {
-            0.0, 0.0, 0.0, //
-            1.0, 0.0, 0.0, //
-            0.0, 1.0, 0.0, //
-            1.0, 1.0, 0.0, //
+            -0.5, -0.5, 0, 0, 0, //
+            0.5,  -0.5, 0, 1, 0, //
+            -0.5, 0.5,  0, 0, 1, //
+            0.5,  0.5,  0, 1, 1  //
         };
+
         unsigned int faces[] = {
             0, 1, 2, //
-            0, 1, 3  //
+            1, 2, 3  //
         };
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * 4, &vertices[0], GL_STATIC_DRAW);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        stbi_set_flip_vertically_on_load(true);
+        int width, height, nrChannels;
+        unsigned char *data = stbi_load("assets/grass.jpg", &width, &height, &nrChannels, 0);
+        unsigned int texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, &data[0]);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 5 * 4, &vertices[0], GL_STATIC_DRAW);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 2 * 3, &faces[0], GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)0);
         glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
         t_camera camera;
         glfwSetWindowUserPointer(window, &camera);
         glfwSetCursorPosCallback(window, mouse_callback);
@@ -118,11 +140,15 @@ int main()
             glm::mat4 projection =
                 glm::perspective(glm::radians(80.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
             shader.setMat4("projection", projection);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture);
             glBindVertexArray(VAO);
             glDrawElements(GL_TRIANGLES, 2 * 3, GL_UNSIGNED_INT, 0);
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
+        stbi_image_free(data);
         return (EXIT_SUCCESS);
     }
     catch (const std::exception &exception)

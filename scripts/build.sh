@@ -26,3 +26,8 @@ cd ../..
 wget https://github.com/g-truc/glm/releases/download/0.9.8.5/glm-0.9.8.5.zip
 unzip -n glm-0.9.8.5.zip
 rm glm-0.9.8.5.zip
+
+mkdir stb_image
+cd stb_image
+wget https://github.com/nothings/stb/raw/master/stb_image.h
+cd ..
