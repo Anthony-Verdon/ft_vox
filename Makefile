@@ -2,6 +2,10 @@ SRCS := srcs/main.cpp \
 		libs/glad/src/glad.cpp \
 		srcs/classes/Shader/Shader.cpp \
 		srcs/classes/Utils/Utils.cpp \
+		srcs/classes/Camera/Camera.cpp \
+		srcs/classes/Texture/Texture.cpp \
+		srcs/classes/Time/Time.cpp \
+		srcs/classes/WindowManager/WindowManager.cpp \
 
 OBJS := $(SRCS:.cpp=.o)
 
