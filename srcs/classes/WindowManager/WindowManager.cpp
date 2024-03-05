@@ -1,6 +1,7 @@
 #include "WindowManager.hpp"
 #include "../../../libs/glm/glm/gtc/matrix_transform.hpp"
-#include "../Block/Block.hpp"
+#include "../BlockData/BlockData.hpp"
+#include "../Chunk/Chunk.hpp"
 #include "../Shader/Shader.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
@@ -55,7 +56,17 @@ void WindowManager::updateLoop()
     for (int i = 1; i < 5; i++)
         texturePattern[i] = {0, 1}; // side
     texturePattern[5] = {1, 1};     // bottom
-    Block block(0, 0, 0, texturePattern);
+
+    Chunk chunk;
+    for (int x = 0; x < 10; x++)
+    {
+        for (int z = 0; z < 10; z++)
+        {
+            BlockData block(x, 0, z, texturePattern);
+            chunk.addBlock(block);
+        }
+    }
+    chunk.loadChunk();
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
 
@@ -82,8 +93,8 @@ void WindowManager::updateLoop()
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
-        glBindVertexArray(block.getVAO());
-        glDrawElements(GL_TRIANGLES, 6 * 2 * 3, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(chunk.getVAO());
+        glDrawElements(GL_TRIANGLES, chunk.getBlocks().size() * 6 * 2 * 3, GL_UNSIGNED_INT, 0);
 
         Time::updateTime();
         glfwSwapBuffers(window);
