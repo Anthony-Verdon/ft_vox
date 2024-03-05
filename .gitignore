@@ -1,3 +1,4 @@
 ft_vox
 libs
 *.o
+.vscode

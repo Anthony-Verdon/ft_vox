@@ -1,9 +1,11 @@
 #include "WindowManager.hpp"
 #include "../../../libs/glm/glm/gtc/matrix_transform.hpp"
+#include "../Block/Block.hpp"
 #include "../Shader/Shader.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
 #include <GLFW/glfw3.h>
+#include <array>
 #include <stdexcept>
 
 #define WINDOW_WIDTH 720
@@ -47,80 +49,13 @@ void WindowManager::start()
 
 void WindowManager::updateLoop()
 {
-    unsigned int VAO, VBO, EBO;
-
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-    float vertices[] = {
-        // top
-        0.0, 1.0, 0.0, 0.0, 0.0, //
-        1.0, 1.0, 0.0, 0.5, 0.0, //
-        0.0, 1.0, 1.0, 0.0, 0.5, //
-        1.0, 1.0, 1.0, 0.5, 0.5, //
-
-        // sides
-        0.0, 0.0, 0.0, 0.0, 0.5, //
-        1.0, 0.0, 0.0, 0.5, 0.5, //
-        0.0, 1.0, 0.0, 0.0, 1.0, //
-        1.0, 1.0, 0.0, 0.5, 1.0, //
-
-        0.0, 0.0, 0.0, 0.0, 0.5, //
-        0.0, 1.0, 0.0, 0.0, 1.0, //
-        0.0, 0.0, 1.0, 0.5, 0.5, //
-        0.0, 1.0, 1.0, 0.5, 1.0, //
-
-        0.0, 0.0, 1.0, 0.0, 0.5, //
-        1.0, 0.0, 1.0, 0.5, 0.5, //
-        0.0, 1.0, 1.0, 0.0, 1.0, //
-        1.0, 1.0, 1.0, 0.5, 1.0, //
-
-        1.0, 0.0, 0.0, 0.0, 0.5, //
-        1.0, 1.0, 0.0, 0.0, 1.0, //
-        1.0, 0.0, 1.0, 0.5, 0.5, //
-        1.0, 1.0, 1.0, 0.5, 1.0, //
-
-        // bot
-        0.0, 0.0, 0.0, 0.5, 0.5, //
-        1.0, 0.0, 0.0, 1.0, 0.5, //
-        0.0, 0.0, 1.0, 0.5, 1.0, //
-        1.0, 0.0, 1.0, 1.0, 1.0, //
-
-    };
-
-    unsigned int faces[] = {
-        0,  1,  2, //
-        1,  2,  3, //
-
-        4,  5,  6, //
-        5,  6,  7, //
-
-        8,  9,  10, //
-        9,  10, 11, //
-
-        12, 13, 14, //
-        13, 14, 15, //
-
-        16, 17, 18, //
-        17, 18, 19, //
-
-        20, 21, 22, //
-        21, 22, 23  //
-    };
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(faces), &faces[0], GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
+    std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
+    // coords are made with the tileset inversed because of stb lib
+    texturePattern[0] = {0, 0}; // top
+    for (int i = 1; i < 5; i++)
+        texturePattern[i] = {0, 1}; // side
+    texturePattern[5] = {1, 1};     // bottom
+    Block block(0, 0, 0, texturePattern);
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
 
@@ -130,6 +65,8 @@ void WindowManager::updateLoop()
 
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
+        if (isKeyPressed(GLFW_KEY_F1))
+            updateWireframeMode();
         int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);
         int rightAxis = isKeyPressed(GLFW_KEY_D) - isKeyPressed(GLFW_KEY_A);
         int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
@@ -145,8 +82,8 @@ void WindowManager::updateLoop()
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, sizeof(faces) / sizeof(unsigned int) * 3, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(block.getVAO());
+        glDrawElements(GL_TRIANGLES, 6 * 2 * 3, GL_UNSIGNED_INT, 0);
 
         Time::updateTime();
         glfwSwapBuffers(window);
@@ -157,6 +94,27 @@ void WindowManager::updateLoop()
 bool WindowManager::isKeyPressed(int key)
 {
     return (glfwGetKey(window, key) == GLFW_PRESS);
+}
+
+void WindowManager::updateWireframeMode()
+{
+    static bool wireFrameMode = false;
+    static bool keyEnable = true;
+
+    if (isKeyPressed(GLFW_KEY_F1))
+    {
+        if (keyEnable == true)
+        {
+            wireFrameMode = !wireFrameMode;
+            if (wireFrameMode)
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            else
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+        keyEnable = false;
+    }
+    else
+        keyEnable = true;
 }
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos)

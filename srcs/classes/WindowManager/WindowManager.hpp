@@ -13,6 +13,7 @@ class WindowManager
     void start();
     void updateLoop();
     bool isKeyPressed(int key);
+    void updateWireframeMode();
 
   public:
     WindowManager();

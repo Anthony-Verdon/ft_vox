@@ -6,6 +6,7 @@ SRCS := srcs/main.cpp \
 		srcs/classes/Texture/Texture.cpp \
 		srcs/classes/Time/Time.cpp \
 		srcs/classes/WindowManager/WindowManager.cpp \
+		srcs/classes/Block/Block.cpp \
 
 OBJS := $(SRCS:.cpp=.o)
 
