@@ -1,7 +1,6 @@
 #include "WindowManager.hpp"
 #include "../../../libs/glm/glm/gtc/matrix_transform.hpp"
-#include "../BlockData/BlockData.hpp"
-#include "../Chunk/Chunk.hpp"
+#include "../ChunkClasses/ChunkMesh/ChunkMesh.hpp"
 #include "../Shader/Shader.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
@@ -51,33 +50,36 @@ void WindowManager::start()
 void WindowManager::updateLoop()
 {
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
-    // coords are made with the tileset inversed because of stb lib
+    // bottom left is 0/. and top right is 1/1
     texturePattern[0] = {0, 0}; // top
     for (int i = 1; i < 5; i++)
         texturePattern[i] = {0, 1}; // side
     texturePattern[5] = {1, 1};     // bottom
 
-    Chunk chunk;
-    for (int x = 0; x < 10; x++)
+    ChunkData chunkData;
+
+    for (int x = 0; x < 2; x++)
     {
-        for (int z = 0; z < 10; z++)
+        for (int y = 0; y < 2; y++)
         {
-            BlockData block(x, 0, z, texturePattern);
-            chunk.addBlock(block);
+            for (int z = 0; z < 2; z++)
+            {
+                BlockData block(x, y, z, texturePattern);
+                chunkData.addBlock(block);
+            }
         }
     }
-    chunk.loadChunk();
+    ChunkMesh chunkMesh(chunkData);
+    chunkMesh.initMesh();
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
-
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
-        if (isKeyPressed(GLFW_KEY_F1))
-            updateWireframeMode();
+        updateWireframeMode();
         int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);
         int rightAxis = isKeyPressed(GLFW_KEY_D) - isKeyPressed(GLFW_KEY_A);
         int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
@@ -93,9 +95,8 @@ void WindowManager::updateLoop()
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
-        glBindVertexArray(chunk.getVAO());
-        glDrawElements(GL_TRIANGLES, chunk.getBlocks().size() * 6 * 2 * 3, GL_UNSIGNED_INT, 0);
-
+        glBindVertexArray(chunkMesh.getVAO());
+        glDrawElements(GL_TRIANGLES, chunkMesh.getFaces().size() * 3, GL_UNSIGNED_INT, 0);
         Time::updateTime();
         glfwSwapBuffers(window);
         glfwPollEvents();

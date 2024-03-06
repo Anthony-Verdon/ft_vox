@@ -6,8 +6,10 @@ SRCS := srcs/main.cpp \
 		srcs/classes/Texture/Texture.cpp \
 		srcs/classes/Time/Time.cpp \
 		srcs/classes/WindowManager/WindowManager.cpp \
-		srcs/classes/BlockData/BlockData.cpp \
-		srcs/classes/Chunk/Chunk.cpp \
+		srcs/classes/BlockClasses/BlockData/BlockData.cpp \
+		srcs/classes/BlockClasses/BlockMesh/BlockMesh.cpp \
+		srcs/classes/ChunkClasses/ChunkData/ChunkData.cpp \
+		srcs/classes/ChunkClasses/ChunkMesh/ChunkMesh.cpp \
 
 OBJS := $(SRCS:.cpp=.o)
 
