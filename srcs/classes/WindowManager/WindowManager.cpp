@@ -57,12 +57,14 @@ void WindowManager::updateLoop()
     texturePattern[5] = {1, 1};     // bottom
 
     ChunkData chunkData;
+    constexpr int origin = 0;
+    constexpr int chunkSize = origin + 2;
 
-    for (int x = 0; x < 2; x++)
+    for (int x = origin; x < chunkSize; x++)
     {
-        for (int y = 0; y < 2; y++)
+        for (int y = origin; y < chunkSize; y++)
         {
-            for (int z = 0; z < 2; z++)
+            for (int z = origin; z < chunkSize; z++)
             {
                 BlockData block(x, y, z, texturePattern);
                 chunkData.addBlock(block);

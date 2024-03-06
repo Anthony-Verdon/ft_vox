@@ -1,18 +1,14 @@
 #pragma once
 
 #include "../BlockData/BlockData.hpp"
-
-#define NB_VERTICES 24
-#define NB_FACES 6
+#include <cstddef>
+#include <vector>
 
 class BlockMesh : public BlockData
 {
   private:
-    float vertices[NB_VERTICES * 5];
-    unsigned int faces[NB_FACES * 2 * 3];
-
-    static float initCoords[NB_VERTICES * 5];
-    static unsigned int initFaces[NB_FACES * 2 * 3];
+    std::vector<float> vertices;
+    std::vector<unsigned int> faces;
 
   public:
     BlockMesh() = delete;
@@ -22,6 +18,11 @@ class BlockMesh : public BlockData
     ~BlockMesh();
 
     void initMesh();
+    unsigned int combineVertices(unsigned int vertexIndex, unsigned int textureVertexIndex, int side);
+    int vertexIndexInMesh(const std::vector<float> &vertex);
+
+    size_t nbVertices() const;
+    size_t nbFaces() const;
     float getVertex(unsigned int index) const;
     unsigned int getFace(unsigned int index) const;
 };

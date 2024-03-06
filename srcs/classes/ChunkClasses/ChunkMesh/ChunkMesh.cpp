@@ -1,6 +1,7 @@
 #include "ChunkMesh.hpp"
 #include "../../../../libs/glad/include/glad/glad.h"
 #include "../../BlockClasses/BlockMesh/BlockMesh.hpp"
+#include <algorithm>
 ChunkMesh::ChunkMesh(const ChunkData &data) : ChunkData(data)
 {
     glGenVertexArrays(1, &VAO);
@@ -48,6 +49,7 @@ ChunkMesh::~ChunkMesh()
     }
 }
 
+#include <iostream>
 void ChunkMesh::initMesh()
 {
     glBindVertexArray(VAO);
@@ -55,8 +57,9 @@ void ChunkMesh::initMesh()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
     convertBlocks();
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size() * 5, vertices.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces.size() * 3, faces.data(), GL_STATIC_DRAW);
+    eraseSimilarFaces();
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces.size(), faces.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)0);
     glEnableVertexAttribArray(0);
@@ -68,25 +71,74 @@ void ChunkMesh::initMesh()
 
 void ChunkMesh::convertBlocks()
 {
-    int nbBlock = 0;
-    for (int x = 0; x < CHUNK_LENGTH; x++)
+    for (int b = 0; b < CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH; b++)
     {
-        for (int y = 0; y < CHUNK_HEIGHT; y++)
+        std::optional<BlockData> blockData = blocks[b];
+        if (!blockData.has_value())
+            continue;
+        BlockMesh blockMesh(blockData.value());
+        for (size_t i = 0; i < blockMesh.nbFaces() / 3; i++)
         {
-            for (int z = 0; z < CHUNK_LENGTH; z++)
+            for (int k = 0; k < 3; k++)
             {
-                std::optional<BlockData> blockData = blocks[x * CHUNK_LENGTH + y * CHUNK_HEIGHT + z];
-                if (!blockData.has_value())
-                    continue;
-                BlockMesh blockMesh(blockData.value());
-                for (size_t i = 0; i < NB_VERTICES * 5; i++)
-                    vertices.push_back(blockMesh.getVertex(i));
-                for (int i = 0; i < NB_FACES * 2 * 3; i++)
-                    faces.push_back(nbBlock * 24 + blockMesh.getFace(i));
-                nbBlock++;
+                std::vector<float> vertex(5);
+                for (unsigned int j = 0; j < 5; j++)
+                    vertex[j] = blockMesh.getVertex(blockMesh.getFace(i * 3 + k) * 5 + j);
+                int vertexIndex = vertexIndexInMesh(vertex);
+                if (vertexIndex == -1)
+                {
+                    for (unsigned int j = 0; j < 5; j++)
+                        vertices.push_back(vertex[j]);
+                    faces.push_back((vertices.size() / 5 - 1));
+                }
+                else
+                    faces.push_back((vertexIndex / 5));
             }
         }
     }
+}
+
+int ChunkMesh::vertexIndexInMesh(const std::vector<float> &vertex)
+{
+    auto it = vertices.begin();
+    while (it != vertices.end())
+    {
+        it = std::search(it, vertices.end(), vertex.begin(), vertex.end());
+        if (it != vertices.end())
+        {
+            unsigned int distance = std::distance(vertices.begin(), it++);
+            if (distance % 5 == 0)
+                return (distance);
+        }
+    }
+    return -1;
+}
+
+void ChunkMesh::eraseSimilarFaces()
+{
+    std::vector<unsigned int> indexToDelete;
+    for (size_t i = 0; i < faces.size(); i += 3)
+    {
+        std::vector<unsigned int> faceSearched(3);
+        for (int j = 0; j < 3; j++)
+            faceSearched[j] = faces[i + j];
+
+        auto it = faces.begin();
+        std::vector<unsigned int> indexFound;
+
+        while ((it = std::search(it, faces.end(), faceSearched.begin(), faceSearched.end())) != faces.end())
+            indexFound.push_back(std::distance(faces.begin(), it++));
+        if (indexFound.size() <= 1)
+            continue;
+        for (size_t j = 0; j < indexFound.size(); j++)
+        {
+            if (std::find(indexToDelete.begin(), indexToDelete.end(), indexFound[j]) == indexToDelete.end())
+                indexToDelete.push_back(indexFound[j]);
+        }
+    }
+    std::sort(indexToDelete.begin(), indexToDelete.end());
+    for (size_t j = 0; j < indexToDelete.size(); j++)
+        faces.erase(faces.begin() + indexToDelete[j] - j * 3, faces.begin() + indexToDelete[j] - j * 3 + 3);
 }
 
 unsigned int ChunkMesh::getVAO() const

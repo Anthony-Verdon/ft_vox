@@ -1,62 +1,48 @@
-#include "BlockMesh.hpp"
 
-#define TILESET_WIDTH 2
-#define TILESET_HEIGHT 2
+#include "BlockMesh.hpp"
+#include <algorithm>
+
+constexpr int TILESET_WIDTH = 2;
+constexpr int TILESET_HEIGHT = 2;
 
 // possibility to reduce size of initCoords
-float BlockMesh::initCoords[NB_VERTICES * 5] = {
-    // top
-    0.0, 1.0, 0.0, 0.0, 0.0, //
-    1.0, 1.0, 0.0, 0.5, 0.0, //
-    0.0, 1.0, 1.0, 0.0, 0.5, //
-    1.0, 1.0, 1.0, 0.5, 0.5, //
-
-    // sides
-    0.0, 0.0, 0.0, 0.0, 0.0, //
-    1.0, 0.0, 0.0, 0.5, 0.0, //
-    0.0, 1.0, 0.0, 0.0, 0.5, //
-    1.0, 1.0, 0.0, 0.5, 0.5, //
-
-    0.0, 0.0, 0.0, 0.0, 0.0, //
-    0.0, 1.0, 0.0, 0.0, 0.5, //
-    0.0, 0.0, 1.0, 0.5, 0.0, //
-    0.0, 1.0, 1.0, 0.5, 0.5, //
-
-    0.0, 0.0, 1.0, 0.0, 0.0, //
-    1.0, 0.0, 1.0, 0.5, 0.0, //
-    0.0, 1.0, 1.0, 0.0, 0.5, //
-    1.0, 1.0, 1.0, 0.5, 0.5, //
-
-    1.0, 0.0, 0.0, 0.0, 0.0, //
-    1.0, 1.0, 0.0, 0.0, 0.5, //
-    1.0, 0.0, 1.0, 0.5, 0.0, //
-    1.0, 1.0, 1.0, 0.5, 0.5, //
-
-    // bot
-    0.0, 0.0, 0.0, 0.0, 0.0, //
-    1.0, 0.0, 0.0, 0.5, 0.0, //
-    0.0, 0.0, 1.0, 0.0, 0.5, //
-    1.0, 0.0, 1.0, 0.5, 0.5, //
+constexpr float initCoords[8 * 3] = {
+    0, 0, 0, //
+    1, 0, 0, //
+    0, 0, 1, //
+    1, 0, 1, //
+    0, 1, 0, //
+    1, 1, 0, //
+    0, 1, 1, //
+    1, 1, 1, //
 };
 
-unsigned int BlockMesh::initFaces[12 * 3] = {
-    0,  1,  2, //
-    1,  2,  3, //
+constexpr float initTexturesCoords[4 * 2] = {
+    0.0 / TILESET_WIDTH, 0.0 / TILESET_HEIGHT, //
+    1.0 / TILESET_WIDTH, 0.0 / TILESET_HEIGHT, //
+    0.0 / TILESET_WIDTH, 1.0 / TILESET_HEIGHT, //
+    1.0 / TILESET_WIDTH, 1.0 / TILESET_HEIGHT, //
+};
 
-    4,  5,  6, //
-    5,  6,  7, //
-
-    8,  9,  10, //
-    9,  10, 11, //
-
-    12, 13, 14, //
-    13, 14, 15, //
-
-    16, 17, 18, //
-    17, 18, 19, //
-
-    20, 21, 22, //
-    21, 22, 23  //
+constexpr unsigned int initFaces[12 * 6] = {
+    // y = 1 | 4, 5, 6, 7,
+    4, 5, 6, /**/ 0, 1, 2, //
+    5, 6, 7, /**/ 1, 2, 3, // top
+    // x = 0 | 0, 2, 4, 6,
+    0, 2, 4, /**/ 0, 1, 2, //
+    2, 4, 6, /**/ 1, 2, 3, // left
+    // x = 1 | 1, 3, 5, 7,
+    1, 3, 5, /**/ 0, 1, 2, //
+    3, 5, 7, /**/ 1, 2, 3, // right
+    // z = 0 | 0, 1, 4, 5,
+    0, 1, 4, /**/ 0, 1, 2, //
+    1, 4, 5, /**/ 1, 2, 3, // back
+    // z = 1 | 2, 3, 6, 7,
+    2, 3, 6, /**/ 0, 1, 2, //
+    3, 6, 7, /**/ 1, 2, 3, // front
+    // y = 0 | 0, 1, 2, 3,
+    0, 1, 2, /**/ 0, 1, 2, //
+    1, 2, 3, /**/ 1, 2, 3, // bottom
 };
 
 BlockMesh::BlockMesh(const BlockData &data) : BlockData(data)
@@ -89,17 +75,61 @@ BlockMesh &BlockMesh::operator=(const BlockMesh &instance)
 
 void BlockMesh::initMesh()
 {
-    for (int i = 0; i < NB_VERTICES * 5; i += 5)
+    for (unsigned int i = 0; i < 12 * 6; i += 6)
     {
-        vertices[i + 0] = initCoords[i + 0] + x;
-        vertices[i + 1] = initCoords[i + 1] + y;
-        vertices[i + 2] = initCoords[i + 2] + z;
-        std::pair<unsigned int, unsigned int> texture = textureCoords[i / (4 * 5)];
-        vertices[i + 3] = initCoords[i + 3] + static_cast<float>(texture.first) / TILESET_WIDTH;
-        vertices[i + 4] = initCoords[i + 4] + static_cast<float>(texture.second) / TILESET_HEIGHT;
+        for (unsigned int j = 0; j < 3; j++)
+            faces.push_back(combineVertices(initFaces[i + j], initFaces[i + j + 3], i / 12));
     }
-    for (int i = 0; i < NB_FACES * 2 * 3; i++)
-        faces[i] = initFaces[i];
+}
+
+unsigned int BlockMesh::combineVertices(unsigned int vertexIndex, unsigned int textureVertexIndex, int side)
+{
+    std::vector<float> vertexCombined(5);
+    vertexCombined[0] = initCoords[vertexIndex * 3 + 0] + x;
+    vertexCombined[1] = initCoords[vertexIndex * 3 + 1] + y;
+    vertexCombined[2] = initCoords[vertexIndex * 3 + 2] + z;
+
+    std::pair<unsigned int, unsigned int> texture = textureCoords[side];
+    vertexCombined[3] =
+        initTexturesCoords[textureVertexIndex * 2 + 0] + static_cast<float>(texture.first) / TILESET_WIDTH;
+    vertexCombined[4] =
+        initTexturesCoords[textureVertexIndex * 2 + 1] + static_cast<float>(texture.second) / TILESET_HEIGHT;
+
+    int vertexCombinedIndex = vertexIndexInMesh(vertexCombined);
+    if (vertexCombinedIndex == -1)
+    {
+        for (unsigned int i = 0; i < 5; i++)
+            vertices.push_back(vertexCombined[i]);
+        return (vertices.size() / 5 - 1);
+    }
+    else
+        return (vertexCombinedIndex / 5);
+}
+
+int BlockMesh::vertexIndexInMesh(const std::vector<float> &vertex)
+{
+    auto it = vertices.begin();
+    while (it != vertices.end())
+    {
+        it = std::search(it, vertices.end(), vertex.begin(), vertex.end());
+        if (it != vertices.end())
+        {
+            unsigned int distance = std::distance(vertices.begin(), it++);
+            if (distance % 5 == 0)
+                return (distance);
+        }
+    }
+    return -1;
+}
+
+size_t BlockMesh::nbVertices() const
+{
+    return (vertices.size());
+}
+
+size_t BlockMesh::nbFaces() const
+{
+    return (faces.size());
 }
 
 float BlockMesh::getVertex(unsigned int index) const

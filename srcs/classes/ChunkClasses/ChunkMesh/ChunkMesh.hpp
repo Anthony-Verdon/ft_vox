@@ -23,6 +23,8 @@ class ChunkMesh : public ChunkData
 
     void initMesh();
     void convertBlocks();
+    int vertexIndexInMesh(const std::vector<float> &vertex);
+    void eraseSimilarFaces();
 
     unsigned int getVAO() const;
     std::vector<float> getVertices() const;

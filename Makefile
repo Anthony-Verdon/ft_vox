@@ -32,7 +32,7 @@ all: 		${NAME}
 ${NAME}:	${OBJS}
 			${COMPILER} ${OBJS} -o ${NAME} ${LIBRARIES}
 
-include $(DEPENDS)
+-include $(DEPENDS)
 
 clean:
 			${RM} ${OBJS} ${DEPENDS}
