@@ -116,29 +116,34 @@ int ChunkMesh::vertexIndexInMesh(const std::vector<float> &vertex)
 
 void ChunkMesh::eraseSimilarFaces()
 {
-    std::vector<unsigned int> indexToDelete;
     for (size_t i = 0; i < faces.size(); i += 3)
     {
-        std::vector<unsigned int> faceSearched(3);
-        for (int j = 0; j < 3; j++)
-            faceSearched[j] = faces[i + j];
-
-        auto it = faces.begin();
+        std::vector<float> coordsSearched = faceCoords(i);
         std::vector<unsigned int> indexFound;
-
-        while ((it = std::search(it, faces.end(), faceSearched.begin(), faceSearched.end())) != faces.end())
-            indexFound.push_back(std::distance(faces.begin(), it++));
+        for (size_t j = 0; j < faces.size(); j += 3)
+        {
+            std::vector<float> coordsHere = faceCoords(j);
+            if (coordsSearched == coordsHere)
+                indexFound.push_back(j);
+        }
         if (indexFound.size() <= 1)
             continue;
-        for (size_t j = 0; j < indexFound.size(); j++)
-        {
-            if (std::find(indexToDelete.begin(), indexToDelete.end(), indexFound[j]) == indexToDelete.end())
-                indexToDelete.push_back(indexFound[j]);
-        }
+        std::sort(indexFound.begin(), indexFound.end());
+        for (int j = indexFound.size() - 1; j >= 0; j--)
+            faces.erase(faces.begin() + indexFound[j], faces.begin() + indexFound[j] + 3);
     }
-    std::sort(indexToDelete.begin(), indexToDelete.end());
-    for (size_t j = 0; j < indexToDelete.size(); j++)
-        faces.erase(faces.begin() + indexToDelete[j] - j * 3, faces.begin() + indexToDelete[j] - j * 3 + 3);
+}
+
+std::vector<float> ChunkMesh::faceCoords(unsigned int faceStartIndex) const
+{
+    std::vector<float> coords(9);
+    for (int j = 0; j < 3; j++)
+    {
+        int vertexIndex = faces[faceStartIndex + j];
+        for (int k = 0; k < 3; k++)
+            coords[j * 3 + k] = vertices[vertexIndex * 5 + k];
+    }
+    return (coords);
 }
 
 unsigned int ChunkMesh::getVAO() const

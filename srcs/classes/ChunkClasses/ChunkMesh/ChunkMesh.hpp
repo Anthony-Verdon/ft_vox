@@ -14,6 +14,12 @@ class ChunkMesh : public ChunkData
     unsigned int VBO;
     unsigned int EBO;
 
+    void convertBlocks();
+    int vertexIndexInMesh(const std::vector<float> &vertex);
+
+    void eraseSimilarFaces();
+    std::vector<float> faceCoords(unsigned int faceStartIndex) const;
+
   public:
     ChunkMesh() = delete;
     ChunkMesh(const ChunkData &data);
@@ -22,9 +28,6 @@ class ChunkMesh : public ChunkData
     ~ChunkMesh();
 
     void initMesh();
-    void convertBlocks();
-    int vertexIndexInMesh(const std::vector<float> &vertex);
-    void eraseSimilarFaces();
 
     unsigned int getVAO() const;
     std::vector<float> getVertices() const;
