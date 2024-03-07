@@ -9,7 +9,7 @@ Camera::Camera()
     rightDirection = glm::normalize(glm::cross(frontDirection, upDirection));
     yaw = -90.0f;
     pitch = 0.0f;
-    speed = 2.00;
+    speed = 10.00;
     fov = 80.0f;
 }
 

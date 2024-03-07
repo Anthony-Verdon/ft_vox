@@ -3,6 +3,7 @@
 #include "../../BlockClasses/BlockData/BlockData.hpp"
 #include <memory>
 #include <optional>
+
 #define CHUNK_LENGTH 16
 #define CHUNK_HEIGHT 256
 

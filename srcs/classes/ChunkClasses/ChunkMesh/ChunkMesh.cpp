@@ -1,7 +1,8 @@
 #include "ChunkMesh.hpp"
 #include "../../../../libs/glad/include/glad/glad.h"
 #include "../../BlockClasses/BlockMesh/BlockMesh.hpp"
-#include <algorithm>
+#include <cstdlib>
+
 ChunkMesh::ChunkMesh(const ChunkData &data) : ChunkData(data)
 {
     glGenVertexArrays(1, &VAO);
@@ -30,7 +31,8 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
             {
                 for (int z = 0; z < CHUNK_LENGTH; z++)
                 {
-                    this->blocks[x * CHUNK_LENGTH + y * CHUNK_HEIGHT + z] = instance.getBlock(x, y, z);
+                    this->blocks[std::abs(x) % CHUNK_LENGTH * CHUNK_LENGTH + std::abs(y) % CHUNK_HEIGHT * CHUNK_HEIGHT +
+                                 std::abs(z) % CHUNK_LENGTH] = instance.getBlock(x, y, z);
                 }
             }
         }
@@ -78,9 +80,9 @@ void ChunkMesh::convertChunkDataIntoMesh()
         std::array<bool, 6> neighborsExist = {false}; // left, right, bottom, top, back, front
         for (int j = 0; j < 2; j++)
         {
-            const int x = blocks[i]->getX();
-            const int y = blocks[i]->getY();
-            const int z = blocks[i]->getZ();
+            const int x = std::abs(blocks[i]->getX()) % 16;
+            const int y = std::abs(blocks[i]->getY()) % 16;
+            const int z = std::abs(blocks[i]->getZ()) % 16;
             if (x + modifiers[j] >= 0 && x + modifiers[j] < 16)
                 neighborsExist[j + 0] = getBlock(x + modifiers[j], y, z).has_value();
             if (y + modifiers[j] >= 0 && y + modifiers[j] < 16)

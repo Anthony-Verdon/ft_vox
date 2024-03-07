@@ -14,6 +14,7 @@ class WindowManager
     void updateLoop();
     bool isKeyPressed(int key);
     void updateWireframeMode();
+    void updateSpeed();
 
   public:
     WindowManager();

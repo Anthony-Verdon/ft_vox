@@ -47,11 +47,10 @@ void WindowManager::start()
     glEnable(GL_DEPTH_TEST);
 }
 
-#include <iostream>
 void WindowManager::updateLoop()
 {
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
-    // bottom left is 0/. and top right is 1/1
+    // bottom left is 0/0 and top right is 1/1
     for (int i = 0; i < 6; i++)
         texturePattern[i] = {0, 1}; // side
     texturePattern[2] = {1, 1};     // top
@@ -74,6 +73,22 @@ void WindowManager::updateLoop()
     }
     ChunkMesh chunkMesh(chunkData);
     chunkMesh.initMesh();
+
+    ChunkData chunkData2;
+    for (int x = origin - 16; x < chunkSize - 16; x++)
+    {
+        for (int y = origin; y < chunkSize; y++)
+        {
+            for (int z = origin; z < chunkSize; z++)
+            {
+                BlockData block(x, y, z, texturePattern);
+                chunkData2.addBlock(block);
+            }
+        }
+    }
+    ChunkMesh chunkMesh2(chunkData2);
+    chunkMesh2.initMesh();
+
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
     while (!glfwWindowShouldClose(window))
@@ -86,6 +101,7 @@ void WindowManager::updateLoop()
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
         updateWireframeMode();
+        updateSpeed();
         int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);
         int rightAxis = isKeyPressed(GLFW_KEY_D) - isKeyPressed(GLFW_KEY_A);
         int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
@@ -103,6 +119,8 @@ void WindowManager::updateLoop()
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
         glBindVertexArray(chunkMesh.getVAO());
         glDrawElements(GL_TRIANGLES, chunkMesh.getFaces().size(), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(chunkMesh2.getVAO());
+        glDrawElements(GL_TRIANGLES, chunkMesh2.getFaces().size(), GL_UNSIGNED_INT, 0);
         Time::updateTime();
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -133,6 +151,15 @@ void WindowManager::updateWireframeMode()
     }
     else
         keyEnable = true;
+}
+
+void WindowManager::updateSpeed()
+{
+
+    if (isKeyPressed(GLFW_KEY_LEFT_CONTROL))
+        camera.setSpeed(20);
+    else
+        camera.setSpeed(10);
 }
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos)
