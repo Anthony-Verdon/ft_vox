@@ -58,7 +58,7 @@ BlockMesh::~BlockMesh()
 BlockMesh::BlockMesh(const BlockMesh &instance)
     : BlockData(instance.getX(), instance.getY(), instance.getZ(), instance.getTextureCoords())
 {
-    // initMesh(const std::array<bool, 6> neighborsExist);
+    *this = instance;
 }
 
 BlockMesh &BlockMesh::operator=(const BlockMesh &instance)
@@ -69,19 +69,18 @@ BlockMesh &BlockMesh::operator=(const BlockMesh &instance)
         y = instance.getY();
         z = instance.getZ();
         textureCoords = instance.getTextureCoords();
-        // initMesh();
+        vertices = instance.getVertices();
+        faces = instance.getFaces();
     }
     return (*this);
 }
 
-#include <iostream>
 void BlockMesh::initMesh(const std::array<bool, 6> neighborsExist)
 {
     for (unsigned int i = 0; i < 6; i++)
     {
         if (neighborsExist[i])
             continue;
-        // std::cout << "add side " << i << std::endl;
         for (unsigned int j = 0; j < 2; j++)
         {
             for (unsigned int k = 0; k < 3; k++)
@@ -151,4 +150,14 @@ float BlockMesh::getVertex(unsigned int index) const
 unsigned int BlockMesh::getFace(unsigned int index) const
 {
     return (faces[index]);
+}
+
+std::vector<float> BlockMesh::getVertices() const
+{
+    return (vertices);
+}
+
+std::vector<unsigned int> BlockMesh::getFaces() const
+{
+    return (faces);
 }

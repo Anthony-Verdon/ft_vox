@@ -25,4 +25,6 @@ class BlockMesh : public BlockData
     size_t nbFaces() const;
     float getVertex(unsigned int index) const;
     unsigned int getFace(unsigned int index) const;
+    std::vector<float> getVertices() const;
+    std::vector<unsigned int> getFaces() const;
 };
