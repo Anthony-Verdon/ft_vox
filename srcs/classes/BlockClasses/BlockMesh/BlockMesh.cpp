@@ -25,29 +25,30 @@ constexpr float initTexturesCoords[4 * 2] = {
 };
 
 constexpr unsigned int initFaces[12 * 6] = {
-    // y = 1 | 4, 5, 6, 7,
-    4, 5, 6, /**/ 0, 1, 2, //
-    5, 6, 7, /**/ 1, 2, 3, // top
+
     // x = 0 | 0, 2, 4, 6,
-    0, 2, 4, /**/ 0, 1, 2, //
-    2, 4, 6, /**/ 1, 2, 3, // left
+    0, 2, 4, /**/ 0, 1, 2, // left
+    2, 4, 6, /**/ 1, 2, 3, //
     // x = 1 | 1, 3, 5, 7,
-    1, 3, 5, /**/ 0, 1, 2, //
-    3, 5, 7, /**/ 1, 2, 3, // right
-    // z = 0 | 0, 1, 4, 5,
-    0, 1, 4, /**/ 0, 1, 2, //
-    1, 4, 5, /**/ 1, 2, 3, // back
-    // z = 1 | 2, 3, 6, 7,
-    2, 3, 6, /**/ 0, 1, 2, //
-    3, 6, 7, /**/ 1, 2, 3, // front
+    1, 3, 5, /**/ 0, 1, 2, // right
+    3, 5, 7, /**/ 1, 2, 3, //
     // y = 0 | 0, 1, 2, 3,
-    0, 1, 2, /**/ 0, 1, 2, //
-    1, 2, 3, /**/ 1, 2, 3, // bottom
+    0, 1, 2, /**/ 0, 1, 2, // bottom
+    1, 2, 3, /**/ 1, 2, 3, //
+    // y = 1 | 4, 5, 6, 7,
+    4, 5, 6, /**/ 0, 1, 2, // top
+    5, 6, 7, /**/ 1, 2, 3, //
+    // z = 0 | 0, 1, 4, 5,
+    0, 1, 4, /**/ 0, 1, 2, // back
+    1, 4, 5, /**/ 1, 2, 3, //
+    // z = 1 | 2, 3, 6, 7,
+    2, 3, 6, /**/ 0, 1, 2, // front
+    3, 6, 7, /**/ 1, 2, 3, //
 };
 
-BlockMesh::BlockMesh(const BlockData &data) : BlockData(data)
+BlockMesh::BlockMesh(const BlockData &data, const std::array<bool, 6> neighborsExist) : BlockData(data)
 {
-    initMesh();
+    initMesh(neighborsExist);
 }
 
 BlockMesh::~BlockMesh()
@@ -57,7 +58,7 @@ BlockMesh::~BlockMesh()
 BlockMesh::BlockMesh(const BlockMesh &instance)
     : BlockData(instance.getX(), instance.getY(), instance.getZ(), instance.getTextureCoords())
 {
-    initMesh();
+    // initMesh(const std::array<bool, 6> neighborsExist);
 }
 
 BlockMesh &BlockMesh::operator=(const BlockMesh &instance)
@@ -68,17 +69,27 @@ BlockMesh &BlockMesh::operator=(const BlockMesh &instance)
         y = instance.getY();
         z = instance.getZ();
         textureCoords = instance.getTextureCoords();
-        initMesh();
+        // initMesh();
     }
     return (*this);
 }
 
-void BlockMesh::initMesh()
+#include <iostream>
+void BlockMesh::initMesh(const std::array<bool, 6> neighborsExist)
 {
-    for (unsigned int i = 0; i < 12 * 6; i += 6)
+    for (unsigned int i = 0; i < 6; i++)
     {
-        for (unsigned int j = 0; j < 3; j++)
-            faces.push_back(combineVertices(initFaces[i + j], initFaces[i + j + 3], i / 12));
+        if (neighborsExist[i])
+            continue;
+        // std::cout << "add side " << i << std::endl;
+        for (unsigned int j = 0; j < 2; j++)
+        {
+            for (unsigned int k = 0; k < 3; k++)
+            {
+                int vertexIndex = i * 12 + j * 6 + k;
+                faces.push_back(combineVertices(initFaces[vertexIndex], initFaces[vertexIndex + 3], i));
+            }
+        }
     }
 }
 

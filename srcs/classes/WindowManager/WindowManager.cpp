@@ -52,10 +52,10 @@ void WindowManager::updateLoop()
 {
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
     // bottom left is 0/. and top right is 1/1
-    texturePattern[0] = {0, 0}; // top
-    for (int i = 1; i < 5; i++)
+    for (int i = 0; i < 6; i++)
         texturePattern[i] = {0, 1}; // side
-    texturePattern[5] = {1, 1};     // bottom
+    texturePattern[2] = {1, 1};     // top
+    texturePattern[3] = {0, 0};     // bottom
 
     constexpr int size = 16;
     ChunkData chunkData;
