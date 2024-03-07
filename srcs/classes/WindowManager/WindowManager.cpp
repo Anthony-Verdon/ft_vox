@@ -47,6 +47,7 @@ void WindowManager::start()
     glEnable(GL_DEPTH_TEST);
 }
 
+#include <iostream>
 void WindowManager::updateLoop()
 {
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
@@ -56,10 +57,10 @@ void WindowManager::updateLoop()
         texturePattern[i] = {0, 1}; // side
     texturePattern[5] = {1, 1};     // bottom
 
+    constexpr int size = 10;
     ChunkData chunkData;
     constexpr int origin = 0;
-    constexpr int chunkSize = origin + 2;
-
+    constexpr int chunkSize = origin + size;
     for (int x = origin; x < chunkSize; x++)
     {
         for (int y = origin; y < chunkSize; y++)
@@ -71,6 +72,7 @@ void WindowManager::updateLoop()
             }
         }
     }
+    std::cout << size * size * 6 << std::endl;
     ChunkMesh chunkMesh(chunkData);
     chunkMesh.initMesh();
     Texture grassTexture("assets/tileset.jpg");
@@ -78,7 +80,10 @@ void WindowManager::updateLoop()
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        // std::cout << "x:" << camera.getPosition()[0] << std::endl
+        //           << "y:" << camera.getPosition()[1] << std::endl
+        //           << "z:" << camera.getPosition()[2] << std::endl
+        //           << std::endl;
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
         updateWireframeMode();
@@ -98,7 +103,7 @@ void WindowManager::updateLoop()
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
         glBindVertexArray(chunkMesh.getVAO());
-        glDrawElements(GL_TRIANGLES, chunkMesh.getFaces().size() * 3, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, chunkMesh.getFaces().size(), GL_UNSIGNED_INT, 0);
         Time::updateTime();
         glfwSwapBuffers(window);
         glfwPollEvents();

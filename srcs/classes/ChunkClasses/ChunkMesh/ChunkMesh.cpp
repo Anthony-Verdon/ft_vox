@@ -58,6 +58,7 @@ void ChunkMesh::initMesh()
 
     convertBlocks();
     eraseSimilarFaces();
+    std::cout << faces.size() / 3 / 2 << std::endl;
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces.size(), faces.data(), GL_STATIC_DRAW);
 
@@ -116,10 +117,12 @@ int ChunkMesh::vertexIndexInMesh(const std::vector<float> &vertex)
 
 void ChunkMesh::eraseSimilarFaces()
 {
+    std::vector<unsigned int> indexToDelete;
     for (size_t i = 0; i < faces.size(); i += 3)
     {
-        std::vector<float> coordsSearched = faceCoords(i);
         std::vector<unsigned int> indexFound;
+
+        std::vector<float> coordsSearched = faceCoords(i);
         for (size_t j = 0; j < faces.size(); j += 3)
         {
             std::vector<float> coordsHere = faceCoords(j);
@@ -128,10 +131,15 @@ void ChunkMesh::eraseSimilarFaces()
         }
         if (indexFound.size() <= 1)
             continue;
-        std::sort(indexFound.begin(), indexFound.end());
-        for (int j = indexFound.size() - 1; j >= 0; j--)
-            faces.erase(faces.begin() + indexFound[j], faces.begin() + indexFound[j] + 3);
+        for (size_t j = 0; j < indexFound.size(); j++)
+        {
+            if (std::find(indexToDelete.begin(), indexToDelete.end(), indexFound[j]) == indexToDelete.end())
+                indexToDelete.push_back(indexFound[j]);
+        }
     }
+    std::sort(indexToDelete.begin(), indexToDelete.end());
+    for (int i = indexToDelete.size() - 1; i >= 0; i--)
+        faces.erase(faces.begin() + indexToDelete[i], faces.begin() + indexToDelete[i] + 3);
 }
 
 std::vector<float> ChunkMesh::faceCoords(unsigned int faceStartIndex) const
