@@ -49,7 +49,6 @@ ChunkMesh::~ChunkMesh()
     }
 }
 
-#include <iostream>
 void ChunkMesh::initMesh()
 {
     glBindVertexArray(VAO);
@@ -57,8 +56,6 @@ void ChunkMesh::initMesh()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
     convertBlocks();
-    eraseSimilarFaces();
-    std::cout << faces.size() / 3 / 2 << std::endl;
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces.size(), faces.data(), GL_STATIC_DRAW);
 
@@ -78,33 +75,74 @@ void ChunkMesh::convertBlocks()
         if (!blockData.has_value())
             continue;
         BlockMesh blockMesh(blockData.value());
-        for (size_t i = 0; i < blockMesh.nbFaces() / 3; i++)
+        for (size_t i = 0; i < blockMesh.nbFaces(); i += 3)
         {
-            for (int k = 0; k < 3; k++)
+            std::vector<float> newFaceCoords(15);
+            for (int j = 0; j < 3; j++)
             {
-                std::vector<float> vertex(5);
-                for (unsigned int j = 0; j < 5; j++)
-                    vertex[j] = blockMesh.getVertex(blockMesh.getFace(i * 3 + k) * 5 + j);
-                int vertexIndex = vertexIndexInMesh(vertex);
-                if (vertexIndex == -1)
-                {
-                    for (unsigned int j = 0; j < 5; j++)
-                        vertices.push_back(vertex[j]);
-                    faces.push_back((vertices.size() / 5 - 1));
-                }
-                else
-                    faces.push_back((vertexIndex / 5));
+                for (unsigned int k = 0; k < 5; k++)
+                    newFaceCoords[j * 5 + k] = blockMesh.getVertex(blockMesh.getFace(i + j) * 5 + k);
             }
+
+            int faceIndex = faceIndexInMesh(newFaceCoords);
+            if (faceIndex != -1)
+                faces.erase(faces.begin() + faceIndex, faces.begin() + faceIndex + 3);
+            else
+                addFaceToMesh(newFaceCoords);
         }
     }
 }
 
-int ChunkMesh::vertexIndexInMesh(const std::vector<float> &vertex)
+int ChunkMesh::faceIndexInMesh(const std::vector<float> &newFaceCoords)
+{
+    // newFaceCoords has a size of 15,
+    // so this part (k / 3 * 2) is to always check the coord xyz and not compare to uv
+    bool alreadyExist = false;
+    size_t j;
+    for (j = 0; j < faces.size(); j += 3)
+    {
+        std::vector<float> faceCoords = findFaceCoords(j);
+        alreadyExist = true;
+        for (int k = 0; k < 9; k++)
+        {
+            if (faceCoords[k] != newFaceCoords[k / 3 * 2 + k])
+            {
+                alreadyExist = false;
+                break;
+            }
+        }
+        if (alreadyExist)
+            break;
+    }
+    if (alreadyExist)
+        return (j);
+    else
+        return (-1);
+}
+
+void ChunkMesh::addFaceToMesh(const std::vector<float> &newFaceCoords)
+{
+    for (int k = 0; k < 3; k++)
+    {
+        int vertexIndex = vertexIndexInMesh(newFaceCoords.begin() + k * 5, newFaceCoords.begin() + (k + 1) * 5);
+        if (vertexIndex == -1)
+        {
+            for (unsigned int j = 0; j < 5; j++)
+                vertices.push_back(newFaceCoords[k * 5 + j]);
+            faces.push_back((vertices.size() / 5 - 1));
+        }
+        else
+            faces.push_back((vertexIndex / 5));
+    }
+}
+
+int ChunkMesh::vertexIndexInMesh(const std::vector<float>::const_iterator &start,
+                                 const std::vector<float>::const_iterator &end)
 {
     auto it = vertices.begin();
     while (it != vertices.end())
     {
-        it = std::search(it, vertices.end(), vertex.begin(), vertex.end());
+        it = std::search(it, vertices.end(), start, end);
         if (it != vertices.end())
         {
             unsigned int distance = std::distance(vertices.begin(), it++);
@@ -115,34 +153,7 @@ int ChunkMesh::vertexIndexInMesh(const std::vector<float> &vertex)
     return -1;
 }
 
-void ChunkMesh::eraseSimilarFaces()
-{
-    std::vector<unsigned int> indexToDelete;
-    for (size_t i = 0; i < faces.size(); i += 3)
-    {
-        std::vector<unsigned int> indexFound;
-
-        std::vector<float> coordsSearched = faceCoords(i);
-        for (size_t j = 0; j < faces.size(); j += 3)
-        {
-            std::vector<float> coordsHere = faceCoords(j);
-            if (coordsSearched == coordsHere)
-                indexFound.push_back(j);
-        }
-        if (indexFound.size() <= 1)
-            continue;
-        for (size_t j = 0; j < indexFound.size(); j++)
-        {
-            if (std::find(indexToDelete.begin(), indexToDelete.end(), indexFound[j]) == indexToDelete.end())
-                indexToDelete.push_back(indexFound[j]);
-        }
-    }
-    std::sort(indexToDelete.begin(), indexToDelete.end());
-    for (int i = indexToDelete.size() - 1; i >= 0; i--)
-        faces.erase(faces.begin() + indexToDelete[i], faces.begin() + indexToDelete[i] + 3);
-}
-
-std::vector<float> ChunkMesh::faceCoords(unsigned int faceStartIndex) const
+std::vector<float> ChunkMesh::findFaceCoords(unsigned int faceStartIndex) const
 {
     std::vector<float> coords(9);
     for (int j = 0; j < 3; j++)

@@ -57,7 +57,7 @@ void WindowManager::updateLoop()
         texturePattern[i] = {0, 1}; // side
     texturePattern[5] = {1, 1};     // bottom
 
-    constexpr int size = 10;
+    constexpr int size = 16;
     ChunkData chunkData;
     constexpr int origin = 0;
     constexpr int chunkSize = origin + size;
@@ -72,7 +72,6 @@ void WindowManager::updateLoop()
             }
         }
     }
-    std::cout << size * size * 6 << std::endl;
     ChunkMesh chunkMesh(chunkData);
     chunkMesh.initMesh();
     Texture grassTexture("assets/tileset.jpg");

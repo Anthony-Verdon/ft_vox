@@ -15,10 +15,11 @@ class ChunkMesh : public ChunkData
     unsigned int EBO;
 
     void convertBlocks();
-    int vertexIndexInMesh(const std::vector<float> &vertex);
-
-    void eraseSimilarFaces();
-    std::vector<float> faceCoords(unsigned int faceStartIndex) const;
+    int faceIndexInMesh(const std::vector<float> &newFaceCoords);
+    void addFaceToMesh(const std::vector<float> &newFaceCoords);
+    int vertexIndexInMesh(const std::vector<float>::const_iterator &start,
+                          const std::vector<float>::const_iterator &end);
+    std::vector<float> findFaceCoords(unsigned int faceStartIndex) const;
 
   public:
     ChunkMesh() = delete;
