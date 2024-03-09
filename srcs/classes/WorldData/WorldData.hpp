@@ -15,6 +15,7 @@ class WorldData
     WorldData &operator=(const WorldData &instance);
     ~WorldData();
 
+    void updateChunksLoad(int x, int y);
     const std::unique_ptr<ChunkMesh> &getChunk(int x, int y) const;
     size_t getNbChunks() const;
 };

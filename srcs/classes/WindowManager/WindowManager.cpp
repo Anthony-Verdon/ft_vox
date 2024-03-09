@@ -5,6 +5,7 @@
 #include "../Time/Time.hpp"
 #include "../WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
+#include <iostream>
 #include <stdexcept>
 
 #define WINDOW_WIDTH 720
@@ -49,6 +50,10 @@ void WindowManager::start()
 void WindowManager::updateLoop()
 {
     WorldData world;
+    int playerChunkPosX = static_cast<int>(camera.getPosition().x) / 16;
+    int playerChunkPosZ = static_cast<int>(camera.getPosition().z) / 16;
+    world.updateChunksLoad(playerChunkPosX, playerChunkPosZ);
+
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
     while (!glfwWindowShouldClose(window))
@@ -75,6 +80,13 @@ void WindowManager::updateLoop()
             glm::perspective(glm::radians(camera.getFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
         shader.setMat4("projection", projection);
 
+        if (static_cast<int>(camera.getPosition().x) / 16 != playerChunkPosX ||
+            static_cast<int>(camera.getPosition().z) / 16 != playerChunkPosZ)
+        {
+            playerChunkPosX = static_cast<int>(camera.getPosition().x) / 16;
+            playerChunkPosZ = static_cast<int>(camera.getPosition().z) / 16;
+            world.updateChunksLoad(playerChunkPosX, playerChunkPosZ);
+        }
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
         for (size_t x = 0; x < RENDER_DISTANCE; x++)

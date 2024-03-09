@@ -1,36 +1,10 @@
 #include "WorldData.hpp"
+#include <iostream>
 #include <memory>
 
 WorldData::WorldData()
 {
-    std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
-    // bottom left is 0/0 and top right is 1/1
-    for (int i = 0; i < 6; i++)
-        texturePattern[i] = {0, 1}; // side
-    texturePattern[2] = {1, 1};     // top
-    texturePattern[3] = {0, 0};     // bottom
-
-    for (int i = 0; i < RENDER_DISTANCE; i++)
-    {
-        for (int j = 0; j < RENDER_DISTANCE; j++)
-        {
-            ChunkData chunkData;
-            for (int x = i * CHUNK_LENGTH; x < (i + 1) * CHUNK_LENGTH; x++)
-            {
-                for (int y = 0; y < 1; y++)
-                {
-                    for (int z = j * CHUNK_LENGTH; z < (j + 1) * CHUNK_LENGTH; z++)
-                    {
-                        BlockData block(x, y, z, texturePattern);
-                        chunkData.addBlock(block);
-                    }
-                }
-            }
-            ChunkMesh chunkMesh(chunkData);
-            chunkMesh.initMesh();
-            chunks.push_back(std::make_unique<ChunkMesh>(chunkMesh));
-        }
-    }
+    updateChunksLoad(0, 0);
 }
 
 WorldData::WorldData(const WorldData &instance)
@@ -55,6 +29,41 @@ WorldData &WorldData::operator=(const WorldData &instance)
 
 WorldData::~WorldData()
 {
+}
+
+void WorldData::updateChunksLoad(int xOrigin, int zOrigin)
+{
+    chunks.clear();
+    std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
+    // bottom left is 0/0 and top right is 1/1
+    for (int i = 0; i < 6; i++)
+        texturePattern[i] = {0, 1}; // side
+    texturePattern[2] = {1, 1};     // top
+    texturePattern[3] = {0, 0};     // bottom
+
+    for (int i = -RENDER_DISTANCE / 2; i < RENDER_DISTANCE / 2; i++)
+    {
+        for (int j = -RENDER_DISTANCE / 2; j < RENDER_DISTANCE / 2; j++)
+        {
+            ChunkData chunkData;
+            for (int x = 0; x < CHUNK_LENGTH; x++)
+            {
+                for (int y = 0; y < 1; y++)
+                {
+                    for (int z = 0; z < CHUNK_LENGTH; z++)
+                    {
+                        int posX = xOrigin * CHUNK_LENGTH + x + i * CHUNK_LENGTH;
+                        int posZ = zOrigin * CHUNK_LENGTH + z + j * CHUNK_LENGTH;
+                        BlockData block(posX, y, posZ, texturePattern);
+                        chunkData.addBlock(block);
+                    }
+                }
+            }
+            ChunkMesh chunkMesh(chunkData);
+            chunkMesh.initMesh();
+            chunks.push_back(std::make_unique<ChunkMesh>(chunkMesh));
+        }
+    }
 }
 
 const std::unique_ptr<ChunkMesh> &WorldData::getChunk(int x, int y) const
