@@ -10,7 +10,7 @@ class ChunkMesh : public ChunkData
     std::vector<float> vertices;
     std::vector<unsigned int> faces;
 
-    bool isInit;
+    bool init;
     unsigned int VAO;
     unsigned int VBO;
     unsigned int EBO;
@@ -30,4 +30,5 @@ class ChunkMesh : public ChunkData
     unsigned int getVAO() const;
     std::vector<float> getVertices() const;
     std::vector<unsigned int> getFaces() const;
+    bool isInit() const;
 };

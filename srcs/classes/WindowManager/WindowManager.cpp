@@ -1,11 +1,10 @@
 #include "WindowManager.hpp"
 #include "../../../libs/glm/glm/gtc/matrix_transform.hpp"
-#include "../ChunkClasses/ChunkMesh/ChunkMesh.hpp"
 #include "../Shader/Shader.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
+#include "../WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
-#include <array>
 #include <stdexcept>
 
 #define WINDOW_WIDTH 720
@@ -49,46 +48,7 @@ void WindowManager::start()
 
 void WindowManager::updateLoop()
 {
-    std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
-    // bottom left is 0/0 and top right is 1/1
-    for (int i = 0; i < 6; i++)
-        texturePattern[i] = {0, 1}; // side
-    texturePattern[2] = {1, 1};     // top
-    texturePattern[3] = {0, 0};     // bottom
-
-    constexpr int size = 16;
-    ChunkData chunkData;
-    constexpr int origin = 0;
-    constexpr int chunkSize = origin + size;
-    for (int x = origin; x < chunkSize; x++)
-    {
-        for (int y = origin; y < chunkSize; y++)
-        {
-            for (int z = origin; z < chunkSize; z++)
-            {
-                BlockData block(x, y, z, texturePattern);
-                chunkData.addBlock(block);
-            }
-        }
-    }
-    ChunkMesh chunkMesh(chunkData);
-    chunkMesh.initMesh();
-
-    ChunkData chunkData2;
-    for (int x = origin - 16; x < chunkSize - 16; x++)
-    {
-        for (int y = origin; y < chunkSize; y++)
-        {
-            for (int z = origin; z < chunkSize; z++)
-            {
-                BlockData block(x, y, z, texturePattern);
-                chunkData2.addBlock(block);
-            }
-        }
-    }
-    ChunkMesh chunkMesh2(chunkData2);
-    chunkMesh2.initMesh();
-
+    WorldData world;
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
     while (!glfwWindowShouldClose(window))
@@ -117,10 +77,14 @@ void WindowManager::updateLoop()
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
-        glBindVertexArray(chunkMesh.getVAO());
-        glDrawElements(GL_TRIANGLES, chunkMesh.getFaces().size(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(chunkMesh2.getVAO());
-        glDrawElements(GL_TRIANGLES, chunkMesh2.getFaces().size(), GL_UNSIGNED_INT, 0);
+        for (size_t x = 0; x < RENDER_DISTANCE; x++)
+        {
+            for (size_t y = 0; y < RENDER_DISTANCE; y++)
+            {
+                glBindVertexArray(world.getChunk(x, y)->getVAO());
+                glDrawElements(GL_TRIANGLES, world.getChunk(x, y)->getFaces().size(), GL_UNSIGNED_INT, 0);
+            }
+        }
         Time::updateTime();
         glfwSwapBuffers(window);
         glfwPollEvents();

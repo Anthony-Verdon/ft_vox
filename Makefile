@@ -5,6 +5,7 @@ SRCS := srcs/main.cpp \
 		srcs/classes/Camera/Camera.cpp \
 		srcs/classes/Texture/Texture.cpp \
 		srcs/classes/Time/Time.cpp \
+		srcs/classes/WorldData/WorldData.cpp \
 		srcs/classes/WindowManager/WindowManager.cpp \
 		srcs/classes/BlockClasses/BlockData/BlockData.cpp \
 		srcs/classes/BlockClasses/BlockMesh/BlockMesh.cpp \

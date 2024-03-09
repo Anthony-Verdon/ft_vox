@@ -8,7 +8,7 @@ ChunkMesh::ChunkMesh(const ChunkData &data) : ChunkData(data)
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
-    isInit = false;
+    init = false;
 }
 
 ChunkMesh::ChunkMesh(const ChunkMesh &instance)
@@ -25,6 +25,7 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
         glGenBuffers(1, &EBO);
         vertices = instance.getVertices();
         faces = instance.getFaces();
+        init = instance.isInit();
         for (int x = 0; x < CHUNK_LENGTH; x++)
         {
             for (int y = 0; y < CHUNK_HEIGHT; y++)
@@ -36,14 +37,15 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
                 }
             }
         }
+        if (init)
+            initMesh();
     }
-    isInit = false;
     return (*this);
 }
 
 ChunkMesh::~ChunkMesh()
 {
-    if (isInit)
+    if (init)
     {
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
@@ -66,7 +68,7 @@ void ChunkMesh::initMesh()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    isInit = true;
+    init = true;
 }
 
 void ChunkMesh::convertChunkDataIntoMesh()
@@ -117,4 +119,9 @@ std::vector<float> ChunkMesh::getVertices() const
 std::vector<unsigned int> ChunkMesh::getFaces() const
 {
     return faces;
+}
+
+bool ChunkMesh::isInit() const
+{
+    return (init);
 }
