@@ -84,9 +84,9 @@ void WindowManager::updateLoop()
         world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
-        for (size_t x = 0; x < RENDER_DISTANCE; x++)
+        for (size_t x = 0; x < RENDER_DISTANCE * 2; x++)
         {
-            for (size_t y = 0; y < RENDER_DISTANCE; y++)
+            for (size_t y = 0; y < RENDER_DISTANCE * 2; y++)
             {
                 glBindVertexArray(world.getChunk(x, y)->getVAO());
                 glDrawElements(GL_TRIANGLES, world.getChunk(x, y)->getFaces().size(), GL_UNSIGNED_INT, 0);
