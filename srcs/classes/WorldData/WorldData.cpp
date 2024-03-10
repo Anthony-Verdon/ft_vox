@@ -53,7 +53,7 @@ void WorldData::updateChunksLoad(float x, float z)
     if (playerChunkX == updatedPlayerChunkX && playerChunkZ == updatedPlayerChunkZ)
         return;
 
-    std::cout << "player chunk: " << updatedPlayerChunkX << " " << updatedPlayerChunkZ << std::endl;
+    std::cout << "update" << std::endl;
     if (playerChunkX != updatedPlayerChunkX)
         updateChunkAxisX(playerChunkX, updatedPlayerChunkX, updatedPlayerChunkZ);
 
@@ -71,7 +71,6 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
 
     if (playerChunkX < updatedPlayerChunkX)
     {
-        std::cout << "player moved to the right" << std::endl;
         for (int i = 0; i < RENDER_DISTANCE_2X - 1; i++)
         {
             for (int j = 0; j < RENDER_DISTANCE_2X; j++)
@@ -82,13 +81,12 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
     }
     else if (playerChunkX > updatedPlayerChunkX)
     {
-        std::cout << "player moved to the left" << std::endl;
         for (int i = RENDER_DISTANCE_2X - 1; i >= 1; i--)
         {
             for (int j = 0; j < RENDER_DISTANCE_2X; j++)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i - 1) * RENDER_DISTANCE_2X + j]);
         }
-        startX = (updatedPlayerChunkX - 1) * CHUNK_LENGTH;
+        startX = (updatedPlayerChunkX - 2) * CHUNK_LENGTH;
         chunkIndex = 0;
     }
 
@@ -121,7 +119,7 @@ void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int 
             for (int j = RENDER_DISTANCE_2X - 1; j >= 1; j--)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j - 1]);
         }
-        startZ = (updatedPlayerChunkZ - 1) * CHUNK_LENGTH;
+        startZ = (updatedPlayerChunkZ - 2) * CHUNK_LENGTH;
         chunkIndex = 0;
     }
 
