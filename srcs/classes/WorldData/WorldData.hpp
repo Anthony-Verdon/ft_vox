@@ -8,7 +8,6 @@ class WorldData
 {
   private:
     std::unique_ptr<std::unique_ptr<ChunkMesh>[]> chunks;
-    std::unique_ptr<ChunkData[]> chunksData;
 
   public:
     WorldData();
@@ -17,5 +16,8 @@ class WorldData
     ~WorldData();
 
     void updateChunksLoad(float x, float y);
+    void updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ);
+    void updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ);
+    ChunkData initChunkData(int modifierX, int modifierZ);
     const std::unique_ptr<ChunkMesh> &getChunk(int x, int y) const;
 };

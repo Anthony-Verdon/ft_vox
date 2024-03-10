@@ -5,7 +5,6 @@
 WorldData::WorldData()
 {
     chunks = std::make_unique<std::unique_ptr<ChunkMesh>[]>(RENDER_DISTANCE * RENDER_DISTANCE);
-    chunksData = std::make_unique<ChunkData[]>(RENDER_DISTANCE * RENDER_DISTANCE);
 
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
     // bottom left is 0/0 and top right is 1/1
@@ -32,7 +31,6 @@ WorldData::WorldData()
                     }
                 }
             }
-            chunksData[i * RENDER_DISTANCE + j] = chunkData;
             ChunkMesh chunkMesh(chunkData);
             chunkMesh.initMesh();
             chunks[i * RENDER_DISTANCE + j] = std::make_unique<ChunkMesh>(chunkMesh);
@@ -75,12 +73,20 @@ void WorldData::updateChunksLoad(float x, float z)
     if (playerChunkX == updatedPlayerChunkX && playerChunkZ == updatedPlayerChunkZ)
         return;
 
-    std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
-    // bottom left is 0/0 and top right is 1/1
-    for (int i = 0; i < 6; i++)
-        texturePattern[i] = {0, 1}; // side
-    texturePattern[2] = {1, 1};     // top
-    texturePattern[3] = {0, 0};     // bottom
+    if (playerChunkX != updatedPlayerChunkX)
+        updateChunkAxisX(playerChunkX, updatedPlayerChunkX, updatedPlayerChunkZ);
+
+    if (playerChunkZ != updatedPlayerChunkZ)
+        updateChunkAxisZ(updatedPlayerChunkX, playerChunkZ, updatedPlayerChunkZ);
+
+    playerChunkX = updatedPlayerChunkX;
+    playerChunkZ = updatedPlayerChunkZ;
+}
+
+void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ)
+{
+    int chunkIndex;
+    int startX;
 
     if (playerChunkX < updatedPlayerChunkX)
     {
@@ -89,24 +95,8 @@ void WorldData::updateChunksLoad(float x, float z)
             for (int j = 0; j < RENDER_DISTANCE; j++)
                 chunks[i * RENDER_DISTANCE + j] = std::move(chunks[(i + 1) * RENDER_DISTANCE + j]);
         }
-        for (int j = 0; j < RENDER_DISTANCE; j++)
-        {
-            ChunkData chunkData;
-            for (int posX = 0; posX < CHUNK_LENGTH; posX++)
-            {
-                for (int posY = 0; posY < 1; posY++)
-                {
-                    for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
-                    {
-                        BlockData block((updatedPlayerChunkX + RENDER_DISTANCE - 1) * CHUNK_LENGTH + posX, posY,
-                                        (updatedPlayerChunkZ + j) * CHUNK_LENGTH + posZ, texturePattern);
-                        chunkData.addBlock(block);
-                    }
-                }
-            }
-            chunks[(RENDER_DISTANCE - 1) * RENDER_DISTANCE + j] = std::make_unique<ChunkMesh>(chunkData);
-            chunks[(RENDER_DISTANCE - 1) * RENDER_DISTANCE + j]->initMesh();
-        }
+        startX = (updatedPlayerChunkX + RENDER_DISTANCE - 1) * CHUNK_LENGTH;
+        chunkIndex = (RENDER_DISTANCE - 1) * RENDER_DISTANCE;
     }
     else if (playerChunkX > updatedPlayerChunkX)
     {
@@ -115,25 +105,21 @@ void WorldData::updateChunksLoad(float x, float z)
             for (int j = 0; j < RENDER_DISTANCE; j++)
                 chunks[i * RENDER_DISTANCE + j] = std::move(chunks[(i - 1) * RENDER_DISTANCE + j]);
         }
-        for (int j = 0; j < RENDER_DISTANCE; j++)
-        {
-            ChunkData chunkData;
-            for (int posX = 0; posX < CHUNK_LENGTH; posX++)
-            {
-                for (int posY = 0; posY < 1; posY++)
-                {
-                    for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
-                    {
-                        BlockData block((updatedPlayerChunkX - 1) * CHUNK_LENGTH + posX, posY,
-                                        (updatedPlayerChunkZ + j) * CHUNK_LENGTH + posZ, texturePattern);
-                        chunkData.addBlock(block);
-                    }
-                }
-            }
-            chunks[j] = std::make_unique<ChunkMesh>(chunkData);
-            chunks[j]->initMesh();
-        }
+        startX = (updatedPlayerChunkX - 1) * CHUNK_LENGTH;
+        chunkIndex = 0;
     }
+
+    for (int j = 0; j < RENDER_DISTANCE; j++)
+    {
+        ChunkData chunkData = initChunkData(startX, (updatedPlayerChunkZ + j) * CHUNK_LENGTH);
+        chunks[chunkIndex + j] = std::make_unique<ChunkMesh>(chunkData);
+        chunks[chunkIndex + j]->initMesh();
+    }
+}
+void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ)
+{
+    int chunkIndex;
+    int startZ;
 
     if (playerChunkZ < updatedPlayerChunkZ)
     {
@@ -142,25 +128,8 @@ void WorldData::updateChunksLoad(float x, float z)
             for (int j = 0; j < RENDER_DISTANCE - 1; j++)
                 chunks[i * RENDER_DISTANCE + j] = std::move(chunks[i * RENDER_DISTANCE + j + 1]);
         }
-        for (int i = 0; i < RENDER_DISTANCE; i++)
-        {
-            ChunkData chunkData;
-            for (int posX = 0; posX < CHUNK_LENGTH; posX++)
-            {
-                for (int posY = 0; posY < 1; posY++)
-                {
-                    for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
-                    {
-                        BlockData block((updatedPlayerChunkX + i) * CHUNK_LENGTH + posX, posY,
-                                        (updatedPlayerChunkZ + RENDER_DISTANCE - 1) * CHUNK_LENGTH + posZ,
-                                        texturePattern);
-                        chunkData.addBlock(block);
-                    }
-                }
-            }
-            chunks[i * RENDER_DISTANCE + RENDER_DISTANCE - 1] = std::make_unique<ChunkMesh>(chunkData);
-            chunks[i * RENDER_DISTANCE + RENDER_DISTANCE - 1]->initMesh();
-        }
+        startZ = (updatedPlayerChunkZ + RENDER_DISTANCE - 1) * CHUNK_LENGTH;
+        chunkIndex = RENDER_DISTANCE - 1;
     }
     else if (playerChunkZ > updatedPlayerChunkZ)
     {
@@ -169,27 +138,40 @@ void WorldData::updateChunksLoad(float x, float z)
             for (int j = RENDER_DISTANCE - 1; j >= 1; j--)
                 chunks[i * RENDER_DISTANCE + j] = std::move(chunks[i * RENDER_DISTANCE + j - 1]);
         }
-        for (int i = 0; i < RENDER_DISTANCE; i++)
+        startZ = (updatedPlayerChunkZ - 1) * CHUNK_LENGTH;
+        chunkIndex = 0;
+    }
+
+    for (int i = 0; i < RENDER_DISTANCE; i++)
+    {
+        ChunkData chunkData = initChunkData((updatedPlayerChunkX + i) * CHUNK_LENGTH, startZ);
+        chunks[i * RENDER_DISTANCE + chunkIndex] = std::make_unique<ChunkMesh>(chunkData);
+        chunks[i * RENDER_DISTANCE + chunkIndex]->initMesh();
+    }
+}
+
+ChunkData WorldData::initChunkData(int modifierX, int modifierZ)
+{
+    std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
+    // bottom left is 0/0 and top right is 1/1
+    for (int i = 0; i < 6; i++)
+        texturePattern[i] = {0, 1}; // side
+    texturePattern[2] = {1, 1};     // top
+    texturePattern[3] = {0, 0};     // bottom
+
+    ChunkData chunkData;
+    for (int posX = 0; posX < CHUNK_LENGTH; posX++)
+    {
+        for (int posY = 0; posY < 1; posY++)
         {
-            ChunkData chunkData;
-            for (int posX = 0; posX < CHUNK_LENGTH; posX++)
+            for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
             {
-                for (int posY = 0; posY < 1; posY++)
-                {
-                    for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
-                    {
-                        BlockData block((updatedPlayerChunkX + i) * CHUNK_LENGTH + posX, posY,
-                                        (updatedPlayerChunkZ - 1) * CHUNK_LENGTH + posZ, texturePattern);
-                        chunkData.addBlock(block);
-                    }
-                }
+                BlockData block(modifierX + posX, posY, modifierZ + posZ, texturePattern);
+                chunkData.addBlock(block);
             }
-            chunks[i * RENDER_DISTANCE] = std::make_unique<ChunkMesh>(chunkData);
-            chunks[i * RENDER_DISTANCE]->initMesh();
         }
     }
-    playerChunkX = updatedPlayerChunkX;
-    playerChunkZ = updatedPlayerChunkZ;
+    return (chunkData);
 }
 
 const std::unique_ptr<ChunkMesh> &WorldData::getChunk(int x, int y) const
