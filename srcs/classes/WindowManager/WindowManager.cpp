@@ -50,19 +50,18 @@ void WindowManager::start()
 void WindowManager::updateLoop()
 {
     WorldData world;
-    int playerChunkPosX = static_cast<int>(camera.getPosition().x) / 16;
-    int playerChunkPosZ = static_cast<int>(camera.getPosition().z) / 16;
-    world.updateChunksLoad(playerChunkPosX, playerChunkPosZ);
 
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
     while (!glfwWindowShouldClose(window))
     {
+        Time::updateTime();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // std::cout << "x:" << camera.getPosition()[0] << std::endl
-        //           << "y:" << camera.getPosition()[1] << std::endl
-        //           << "z:" << camera.getPosition()[2] << std::endl
-        //           << std::endl;
+        // std::cout << "x: " << camera.getPosition()[0] << " "
+        //           << "y: " << camera.getPosition()[1] << " "
+        //           << "z: " << camera.getPosition()[2] << " " << std::endl;
+
+        /* input processing */
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
         updateWireframeMode();
@@ -72,6 +71,7 @@ void WindowManager::updateLoop()
         int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
         camera.updatePosition(frontAxis, rightAxis, upAxis);
 
+        /* shader update */
         shader.use();
         glm::mat4 view = glm::lookAt(camera.getPosition(), camera.getPosition() + camera.getFrontDirection(),
                                      camera.getUpDirection());
@@ -80,13 +80,8 @@ void WindowManager::updateLoop()
             glm::perspective(glm::radians(camera.getFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
         shader.setMat4("projection", projection);
 
-        if (static_cast<int>(camera.getPosition().x) / 16 != playerChunkPosX ||
-            static_cast<int>(camera.getPosition().z) / 16 != playerChunkPosZ)
-        {
-            playerChunkPosX = static_cast<int>(camera.getPosition().x) / 16;
-            playerChunkPosZ = static_cast<int>(camera.getPosition().z) / 16;
-            world.updateChunksLoad(playerChunkPosX, playerChunkPosZ);
-        }
+        /* rendering */
+        world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
         for (size_t x = 0; x < RENDER_DISTANCE; x++)
@@ -97,7 +92,6 @@ void WindowManager::updateLoop()
                 glDrawElements(GL_TRIANGLES, world.getChunk(x, y)->getFaces().size(), GL_UNSIGNED_INT, 0);
             }
         }
-        Time::updateTime();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

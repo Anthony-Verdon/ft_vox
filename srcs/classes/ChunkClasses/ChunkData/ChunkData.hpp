@@ -4,12 +4,14 @@
 #include <memory>
 #include <optional>
 
-#define CHUNK_LENGTH 16
-#define CHUNK_HEIGHT 256
+constexpr int CHUNK_LENGTH = 16;
+constexpr int CHUNK_HEIGHT = 256;
 
 class ChunkData
 {
   protected:
+    int x;
+    int z;
     std::unique_ptr<std::optional<BlockData>[]> blocks;
 
   public:
@@ -20,4 +22,6 @@ class ChunkData
 
     std::optional<BlockData> getBlock(int x, int y, int z) const;
     void addBlock(const BlockData &block);
+    int getX() const;
+    int getZ() const;
 };

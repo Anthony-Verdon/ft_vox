@@ -16,6 +16,8 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
 {
     if (this != &instance)
     {
+        x = instance.getX();
+        z = instance.getZ();
         blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
         for (int x = 0; x < CHUNK_LENGTH; x++)
         {
@@ -43,6 +45,18 @@ std::optional<BlockData> ChunkData::getBlock(int x, int y, int z) const
 
 void ChunkData::addBlock(const BlockData &block)
 {
+    x = block.getX() / CHUNK_LENGTH;
+    z = block.getZ() / CHUNK_LENGTH;
     blocks[std::abs(block.getX()) % CHUNK_LENGTH * CHUNK_LENGTH + std::abs(block.getY()) % CHUNK_HEIGHT * CHUNK_HEIGHT +
            std::abs(block.getZ()) % CHUNK_LENGTH] = block;
 }
+
+int ChunkData::getX() const
+{
+    return x;
+};
+
+int ChunkData::getZ() const
+{
+    return z;
+};

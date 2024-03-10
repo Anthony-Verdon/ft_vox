@@ -26,6 +26,8 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
         vertices = instance.getVertices();
         faces = instance.getFaces();
         init = instance.isInit();
+        x = instance.getX();
+        z = instance.getZ();
         for (int x = 0; x < CHUNK_LENGTH; x++)
         {
             for (int y = 0; y < CHUNK_HEIGHT; y++)

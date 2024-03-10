@@ -2,12 +2,13 @@
 
 #include "../ChunkClasses/ChunkMesh/ChunkMesh.hpp"
 
-constexpr int RENDER_DISTANCE = 2;
+constexpr int RENDER_DISTANCE = 5;
 
 class WorldData
 {
   private:
-    std::vector<std::unique_ptr<ChunkMesh>> chunks;
+    std::unique_ptr<std::unique_ptr<ChunkMesh>[]> chunks;
+    std::unique_ptr<ChunkData[]> chunksData;
 
   public:
     WorldData();
@@ -15,7 +16,6 @@ class WorldData
     WorldData &operator=(const WorldData &instance);
     ~WorldData();
 
-    void updateChunksLoad(int x, int y);
+    void updateChunksLoad(float x, float y);
     const std::unique_ptr<ChunkMesh> &getChunk(int x, int y) const;
-    size_t getNbChunks() const;
 };
