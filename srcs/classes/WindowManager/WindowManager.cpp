@@ -82,7 +82,7 @@ void WindowManager::updateLoop()
         shader.setMat4("projection", projection);
 
         /* rendering */
-        // world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
+        world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
