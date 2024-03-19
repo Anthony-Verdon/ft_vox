@@ -1,4 +1,5 @@
 #include "ChunkData.hpp"
+#include <iostream>
 #include <memory>
 
 ChunkData::ChunkData()

@@ -9,6 +9,7 @@ class WorldData
 {
   private:
     std::unique_ptr<std::unique_ptr<ChunkMesh>[]> chunks;
+    std::unique_ptr<float[]> perlinNoise;
 
   public:
     WorldData();

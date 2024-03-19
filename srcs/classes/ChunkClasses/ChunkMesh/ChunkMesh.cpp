@@ -85,15 +85,14 @@ void ChunkMesh::convertChunkDataIntoMesh()
         const int x = convertCoordIntoChunkCoords(blocks[i]->getX());
         const int y = blocks[i]->getY();
         const int z = convertCoordIntoChunkCoords(blocks[i]->getZ());
-        // std::cout << blocks[i]->getX() << " " << blocks[i]->getY() << " " << blocks[i]->getZ() << std::endl;
         std::array<bool, 6> neighborsExist = {false}; // left, right, bottom, top, back, front
         for (int j = 0; j < 2; j++)
         {
-            if (x + modifiers[j] >= 0 && x + modifiers[j] < 16)
+            if (x + modifiers[j] >= 0 && x + modifiers[j] < CHUNK_LENGTH)
                 neighborsExist[j + 0] = getBlock(x + modifiers[j], y, z).has_value();
-            if (y + modifiers[j] >= 0 && y + modifiers[j] < 16)
+            if (y + modifiers[j] >= 0 && y + modifiers[j] < CHUNK_HEIGHT)
                 neighborsExist[j + 2] = getBlock(x, y + modifiers[j], z).has_value();
-            if (z + modifiers[j] >= 0 && z + modifiers[j] < 16)
+            if (z + modifiers[j] >= 0 && z + modifiers[j] < CHUNK_LENGTH)
                 neighborsExist[j + 4] = getBlock(x, y, z + modifiers[j]).has_value();
         }
         BlockMesh blockMesh(blockData.value(), neighborsExist);

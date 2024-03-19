@@ -2,8 +2,56 @@
 #include <iostream>
 #include <memory>
 
+std::unique_ptr<float[]> generateNoise2D(int width, int height, const std::unique_ptr<float[]> &seedArray,
+                                         int nbOctaves, float bias)
+{
+    std::unique_ptr<float[]> noise = std::make_unique<float[]>(width * height);
+    for (int x = 0; x < width; x++)
+    {
+        for (int y = 0; y < height; y++)
+        {
+            float scale = 1;
+            float scaleSum = 0;
+            float pitch = 0;
+            for (int o = 0; o < nbOctaves; o++)
+            {
+                int octave = width >> o;
+                int sampleX1 = (x / octave) * octave;
+                int sampleY1 = (y / octave) * octave;
+
+                int sampleX2 = (sampleX1 + octave) % width;
+                int sampleY2 = (sampleY1 + octave) % height;
+
+                float blendX = (float)(x - sampleX1) / (float)octave;
+                float blendY = (float)(y - sampleY1) / (float)octave;
+
+                float sampleT = (1.0f - blendX) * seedArray[sampleY1 * width + sampleX1] +
+                                blendX * seedArray[sampleY1 * width + sampleX2];
+                float sampleB = (1.0f - blendX) * seedArray[sampleY2 * width + sampleX1] +
+                                blendX * seedArray[sampleY2 * width + sampleX2];
+
+                pitch += (blendY * (sampleB - sampleT) + sampleT) * scale;
+                scaleSum += scale;
+                scale = scale / bias;
+            }
+            noise[x * height + y] = pitch / scaleSum;
+        }
+    }
+    return (noise);
+}
+
 WorldData::WorldData()
 {
+    int seed = time(NULL);
+    std::cout << "seed: " << seed << std::endl;
+    srand(seed);
+    std::unique_ptr<float[]> seedArray = std::make_unique<float[]>(1024 * 1024);
+    for (int i = 0; i < 1024 * 1024; i++)
+        seedArray[i] = static_cast<float>(rand() % 100) / 100;
+    clock_t start = clock();
+    perlinNoise = generateNoise2D(1024, 1024, seedArray, 9, 1.4);
+    std::cout << "generation made in " << (clock() - start) / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
+
     chunks = std::make_unique<std::unique_ptr<ChunkMesh>[]>(RENDER_DISTANCE_2X * RENDER_DISTANCE_2X);
 
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
@@ -143,12 +191,16 @@ ChunkData WorldData::initChunkData(int modifierX, int modifierZ)
     ChunkData chunkData;
     for (int posX = 0; posX < CHUNK_LENGTH; posX++)
     {
-        for (int posY = 0; posY < 2; posY++)
         {
             for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
             {
-                BlockData block(modifierX + posX, posY, modifierZ + posZ, texturePattern);
-                chunkData.addBlock(block);
+                int height = perlinNoise[std::abs(modifierX + posX) * 1024 + std::abs(modifierZ + posZ)] * CHUNK_HEIGHT;
+                // int height = 64;
+                for (int posY = 0; posY < height; posY++)
+                {
+                    BlockData block(modifierX + posX, posY, modifierZ + posZ, texturePattern);
+                    chunkData.addBlock(block);
+                }
             }
         }
     }
