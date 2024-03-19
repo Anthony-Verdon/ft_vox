@@ -143,7 +143,7 @@ ChunkData WorldData::initChunkData(int modifierX, int modifierZ)
     ChunkData chunkData;
     for (int posX = 0; posX < CHUNK_LENGTH; posX++)
     {
-        for (int posY = 0; posY < 1; posY++)
+        for (int posY = 0; posY < 2; posY++)
         {
             for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
             {

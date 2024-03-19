@@ -6,6 +6,7 @@
 #include "../WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 
 #define WINDOW_WIDTH 720
@@ -81,15 +82,17 @@ void WindowManager::updateLoop()
         shader.setMat4("projection", projection);
 
         /* rendering */
-        world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
+        // world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
         for (size_t x = 0; x < RENDER_DISTANCE * 2; x++)
         {
             for (size_t y = 0; y < RENDER_DISTANCE * 2; y++)
             {
-                glBindVertexArray(world.getChunk(x, y)->getVAO());
-                glDrawElements(GL_TRIANGLES, world.getChunk(x, y)->getFaces().size(), GL_UNSIGNED_INT, 0);
+                const std::unique_ptr<ChunkMesh> &chunk = world.getChunk(x, y);
+                glBindVertexArray(chunk->getVAO());
+                glDrawElements(GL_TRIANGLES, chunk->getFaces().size(), GL_UNSIGNED_INT, 0);
             }
         }
         glfwSwapBuffers(window);

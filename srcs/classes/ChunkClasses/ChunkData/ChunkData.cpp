@@ -1,5 +1,4 @@
 #include "ChunkData.hpp"
-#include <cstdlib>
 #include <memory>
 
 ChunkData::ChunkData()
@@ -25,8 +24,8 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
             {
                 for (int z = 0; z < CHUNK_LENGTH; z++)
                 {
-                    this->blocks[std::abs(x) % CHUNK_LENGTH * CHUNK_LENGTH + std::abs(y) % CHUNK_HEIGHT * CHUNK_HEIGHT +
-                                 std::abs(z) % CHUNK_LENGTH] = instance.getBlock(x, y, z);
+                    this->blocks[convertCoordIntoChunkCoords(x) * CHUNK_LENGTH + y * CHUNK_HEIGHT +
+                                 convertCoordIntoChunkCoords(z)] = instance.getBlock(x, y, z);
                 }
             }
         }
@@ -40,17 +39,25 @@ ChunkData::~ChunkData()
 
 std::optional<BlockData> ChunkData::getBlock(int x, int y, int z) const
 {
-    return (blocks[x % CHUNK_LENGTH * CHUNK_LENGTH + y % CHUNK_HEIGHT * CHUNK_HEIGHT + z % CHUNK_LENGTH]);
+    x = convertCoordIntoChunkCoords(x);
+    z = convertCoordIntoChunkCoords(z);
+    return (blocks[x * CHUNK_LENGTH + y * CHUNK_HEIGHT + z]);
 }
 
 void ChunkData::addBlock(const BlockData &block)
 {
-    x = block.getX() / CHUNK_LENGTH;
-    z = block.getZ() / CHUNK_LENGTH;
-    blocks[std::abs(block.getX()) % CHUNK_LENGTH * CHUNK_LENGTH + std::abs(block.getY()) % CHUNK_HEIGHT * CHUNK_HEIGHT +
-           std::abs(block.getZ()) % CHUNK_LENGTH] = block;
+    int x = convertCoordIntoChunkCoords(block.getX());
+    int z = convertCoordIntoChunkCoords(block.getZ());
+    blocks[x * CHUNK_LENGTH + block.getY() * CHUNK_HEIGHT + z] = block;
 }
 
+int ChunkData::convertCoordIntoChunkCoords(int coord)
+{
+    coord = coord % CHUNK_LENGTH;
+    if (coord < 0)
+        coord += CHUNK_LENGTH;
+    return (coord);
+}
 int ChunkData::getX() const
 {
     return x;

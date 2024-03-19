@@ -24,4 +24,6 @@ class ChunkData
     void addBlock(const BlockData &block);
     int getX() const;
     int getZ() const;
+
+    static int convertCoordIntoChunkCoords(int coord);
 };
