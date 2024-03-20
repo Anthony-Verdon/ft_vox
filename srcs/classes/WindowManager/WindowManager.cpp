@@ -5,6 +5,7 @@
 #include "../Time/Time.hpp"
 #include "../WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
+#include <ctime>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -56,7 +57,7 @@ void WindowManager::start()
 void WindowManager::updateLoop()
 {
     WorldData world;
-
+    camera.setPosition({0, world.perlinNoise[0] * 256, 0});
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
     while (!glfwWindowShouldClose(window))

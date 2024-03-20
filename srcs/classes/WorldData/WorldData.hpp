@@ -9,7 +9,6 @@ class WorldData
 {
   private:
     std::unique_ptr<std::unique_ptr<ChunkMesh>[]> chunks;
-    std::unique_ptr<float[]> perlinNoise;
 
   public:
     WorldData();
@@ -22,4 +21,6 @@ class WorldData
     void updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ);
     ChunkData initChunkData(int modifierX, int modifierZ);
     const std::unique_ptr<ChunkMesh> &getChunk(int x, int y) const;
+
+    std::unique_ptr<float[]> perlinNoise;
 };
