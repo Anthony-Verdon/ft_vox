@@ -79,7 +79,7 @@ BlockMesh &BlockMesh::operator=(const BlockMesh &instance)
     return (*this);
 }
 
-void BlockMesh::initMesh(const std::array<bool, 6> neighborsExist)
+void BlockMesh::initMesh(const std::array<bool, 6> &neighborsExist)
 {
     for (unsigned int i = 0; i < 6; i++)
     {

@@ -15,7 +15,7 @@ class ChunkMesh : public ChunkData
     unsigned int VBO;
     unsigned int EBO;
 
-    void convertChunkDataIntoMesh();
+    void convertChunkDataIntoMesh(const std::array<std::optional<ChunkData>, 4> &neighborsChunks);
     void addBlockMesh(const BlockMesh &blockMesh);
 
   public:
@@ -25,7 +25,7 @@ class ChunkMesh : public ChunkData
     ChunkMesh &operator=(const ChunkMesh &instance);
     ~ChunkMesh();
 
-    void initMesh();
+    void initMesh(const std::array<std::optional<ChunkData>, 4> &neighborsChunks);
 
     unsigned int getVAO() const;
     std::vector<float> getVertices() const;

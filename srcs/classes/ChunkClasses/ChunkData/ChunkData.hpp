@@ -1,5 +1,7 @@
 #pragma once
 
+class ChunkMesh;
+
 #include "../../BlockClasses/BlockData/BlockData.hpp"
 #include <memory>
 #include <optional>
@@ -18,6 +20,7 @@ class ChunkData
     ChunkData();
     ChunkData(const ChunkData &instance);
     ChunkData &operator=(const ChunkData &instance);
+    ChunkData &operator=(const ChunkMesh &instance);
     ~ChunkData();
 
     std::optional<BlockData> getBlock(int x, int y, int z) const;

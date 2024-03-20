@@ -1,7 +1,7 @@
 #include "ChunkData.hpp"
+#include "../ChunkMesh/ChunkMesh.hpp"
 #include <iostream>
 #include <memory>
-
 ChunkData::ChunkData()
 {
     blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
@@ -28,6 +28,25 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
                     this->blocks[convertCoordIntoChunkCoords(x) * CHUNK_LENGTH + y * CHUNK_HEIGHT +
                                  convertCoordIntoChunkCoords(z)] = instance.getBlock(x, y, z);
                 }
+            }
+        }
+    }
+    return (*this);
+}
+
+ChunkData &ChunkData::operator=(const ChunkMesh &instance)
+{
+    x = instance.getX();
+    z = instance.getZ();
+    blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
+    for (int x = 0; x < CHUNK_LENGTH; x++)
+    {
+        for (int y = 0; y < CHUNK_HEIGHT; y++)
+        {
+            for (int z = 0; z < CHUNK_LENGTH; z++)
+            {
+                this->blocks[convertCoordIntoChunkCoords(x) * CHUNK_LENGTH + y * CHUNK_HEIGHT +
+                             convertCoordIntoChunkCoords(z)] = instance.getBlock(x, y, z);
             }
         }
     }

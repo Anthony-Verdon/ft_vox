@@ -17,7 +17,7 @@ class BlockMesh : public BlockData
     BlockMesh &operator=(const BlockMesh &instance);
     ~BlockMesh();
 
-    void initMesh(const std::array<bool, 6> neighborsExist);
+    void initMesh(const std::array<bool, 6> &neighborsExist);
     unsigned int combineVertices(unsigned int vertexIndex, unsigned int textureVertexIndex, int side);
     int vertexIndexInMesh(const std::vector<float> &vertex);
 
