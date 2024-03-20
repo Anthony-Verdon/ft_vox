@@ -1,4 +1,5 @@
 #include "WorldData.hpp"
+#include <climits>
 #include <iostream>
 #include <memory>
 
@@ -42,16 +43,18 @@ std::unique_ptr<float[]> generateNoise2D(int width, int height, const std::uniqu
 
 WorldData::WorldData()
 {
+    const int perlinSize = 1024;
+    const int nbOctaves = 9;
+    const float bias = 1.6;
     int seed = time(NULL);
     std::cout << "seed: " << seed << std::endl;
     srand(seed);
-    std::unique_ptr<float[]> seedArray = std::make_unique<float[]>(1024 * 1024);
-    for (int i = 0; i < 1024 * 1024; i++)
+    std::unique_ptr<float[]> seedArray = std::make_unique<float[]>(perlinSize * perlinSize);
+    for (int i = 0; i < perlinSize * perlinSize; i++)
         seedArray[i] = static_cast<float>(rand() % 100) / 100;
     clock_t start = clock();
-    perlinNoise = generateNoise2D(1024, 1024, seedArray, 9, 2);
+    perlinNoise = generateNoise2D(perlinSize, perlinSize, seedArray, nbOctaves, bias);
     std::cout << "generation made in " << (clock() - start) / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
-
     chunks = std::make_unique<std::unique_ptr<ChunkMesh>[]>(RENDER_DISTANCE_2X * RENDER_DISTANCE_2X);
 
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
