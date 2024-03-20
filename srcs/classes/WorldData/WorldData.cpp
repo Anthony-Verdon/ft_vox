@@ -1,5 +1,4 @@
 #include "WorldData.hpp"
-#include <climits>
 #include <iostream>
 #include <memory>
 
@@ -126,7 +125,7 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
             for (int j = 0; j < RENDER_DISTANCE_2X; j++)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i + 1) * RENDER_DISTANCE_2X + j]);
         }
-        startX = (updatedPlayerChunkX + 1) * CHUNK_LENGTH;
+        startX = (updatedPlayerChunkX + RENDER_DISTANCE - 1) * CHUNK_LENGTH;
         chunkIndex = (RENDER_DISTANCE_2X - 1) * RENDER_DISTANCE_2X;
     }
     else if (playerChunkX > updatedPlayerChunkX)
@@ -136,7 +135,7 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
             for (int j = 0; j < RENDER_DISTANCE_2X; j++)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i - 1) * RENDER_DISTANCE_2X + j]);
         }
-        startX = (updatedPlayerChunkX - 1) * CHUNK_LENGTH;
+        startX = (updatedPlayerChunkX - RENDER_DISTANCE + 1) * CHUNK_LENGTH;
         chunkIndex = 0;
     }
 
@@ -159,7 +158,7 @@ void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int 
             for (int j = 0; j < RENDER_DISTANCE_2X - 1; j++)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j + 1]);
         }
-        startZ = (updatedPlayerChunkZ + 1) * CHUNK_LENGTH;
+        startZ = (updatedPlayerChunkZ + RENDER_DISTANCE - 1) * CHUNK_LENGTH;
         chunkIndex = RENDER_DISTANCE_2X - 1;
     }
     else if (playerChunkZ > updatedPlayerChunkZ)
@@ -169,7 +168,7 @@ void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int 
             for (int j = RENDER_DISTANCE_2X - 1; j >= 1; j--)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j - 1]);
         }
-        startZ = (updatedPlayerChunkZ - 1) * CHUNK_LENGTH;
+        startZ = (updatedPlayerChunkZ - RENDER_DISTANCE + 1) * CHUNK_LENGTH;
         chunkIndex = 0;
     }
 
@@ -197,7 +196,7 @@ ChunkData WorldData::initChunkData(int modifierX, int modifierZ)
             for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
             {
                 int height = perlinNoise[std::abs(modifierX + posX) * 1024 + std::abs(modifierZ + posZ)] * CHUNK_HEIGHT;
-                // int height = 64;
+                // int height = 1;
                 for (int posY = 0; posY < height; posY++)
                 {
                     BlockData block(modifierX + posX, posY, modifierZ + posZ, texturePattern);

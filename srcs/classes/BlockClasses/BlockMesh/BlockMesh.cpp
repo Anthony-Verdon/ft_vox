@@ -26,24 +26,28 @@ constexpr float initTexturesCoords[4 * 2] = {
 
 constexpr unsigned int initFaces[12 * 6] = {
 
+    /*
+    if {x,y,z} is 0, first triangle is clock-wise, second triangle is counter clock-wise
+    if it's 1, first triangle is counter clock-wise, second triangle is clock-wise
+    */
     // x = 0 | 0, 2, 4, 6,
     0, 2, 4, /**/ 0, 1, 2, // left
-    2, 4, 6, /**/ 1, 2, 3, //
+    6, 4, 2, /**/ 3, 2, 1, //
     // x = 1 | 1, 3, 5, 7,
-    1, 3, 5, /**/ 0, 1, 2, // right
+    5, 3, 1, /**/ 2, 1, 0, // right
     3, 5, 7, /**/ 1, 2, 3, //
     // y = 0 | 0, 1, 2, 3,
     0, 1, 2, /**/ 0, 1, 2, // bottom
-    1, 2, 3, /**/ 1, 2, 3, //
+    3, 2, 1, /**/ 3, 2, 1, //
     // y = 1 | 4, 5, 6, 7,
-    4, 5, 6, /**/ 0, 1, 2, // top
+    6, 5, 4, /**/ 2, 1, 0, // top
     5, 6, 7, /**/ 1, 2, 3, //
     // z = 0 | 0, 1, 4, 5,
-    0, 1, 4, /**/ 0, 1, 2, // back
+    4, 1, 0, /**/ 2, 1, 0, // back
     1, 4, 5, /**/ 1, 2, 3, //
     // z = 1 | 2, 3, 6, 7,
     2, 3, 6, /**/ 0, 1, 2, // front
-    3, 6, 7, /**/ 1, 2, 3, //
+    7, 6, 3, /**/ 3, 2, 1, //
 };
 
 BlockMesh::BlockMesh(const BlockData &data, const std::array<bool, 6> neighborsExist) : BlockData(data)

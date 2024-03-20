@@ -2,7 +2,7 @@
 
 #include "../ChunkClasses/ChunkMesh/ChunkMesh.hpp"
 
-constexpr int RENDER_DISTANCE = 2;
+constexpr int RENDER_DISTANCE = 4;
 constexpr int RENDER_DISTANCE_2X = 2 * RENDER_DISTANCE;
 
 class WorldData
