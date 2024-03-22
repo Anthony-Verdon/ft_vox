@@ -2,6 +2,7 @@
 #include "../../../../libs/glad/include/glad/glad.h"
 #include "../../BlockClasses/BlockMesh/BlockMesh.hpp"
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
 
 ChunkMesh::ChunkMesh(const ChunkData &data) : ChunkData(data)

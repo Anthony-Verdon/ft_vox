@@ -57,7 +57,8 @@ void WindowManager::start()
 void WindowManager::updateLoop()
 {
     WorldData world;
-    camera.setPosition({0, world.perlinNoise[0] * 256, 0});
+    // camera.setPosition({0, world.perlinNoise[0] * 256, 0});
+    camera.setPosition({0, 64, 0});
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
     while (!glfwWindowShouldClose(window))
@@ -89,7 +90,6 @@ void WindowManager::updateLoop()
 
         /* rendering */
         world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
-
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
         for (size_t x = 0; x < RENDER_DISTANCE * 2; x++)

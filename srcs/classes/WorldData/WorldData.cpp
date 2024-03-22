@@ -1,4 +1,5 @@
 #include "WorldData.hpp"
+#include <ctime>
 #include <iostream>
 #include <memory>
 
@@ -51,9 +52,7 @@ WorldData::WorldData()
     std::unique_ptr<float[]> seedArray = std::make_unique<float[]>(perlinSize * perlinSize);
     for (int i = 0; i < perlinSize * perlinSize; i++)
         seedArray[i] = static_cast<float>(rand() % 100) / 100;
-    clock_t start = clock();
     perlinNoise = generateNoise2D(perlinSize, perlinSize, seedArray, nbOctaves, bias);
-    std::cout << "generation made in " << (clock() - start) / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
     chunks = std::make_unique<std::unique_ptr<ChunkMesh>[]>(RENDER_DISTANCE_2X * RENDER_DISTANCE_2X);
 
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
@@ -153,30 +152,16 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
         startX = (updatedPlayerChunkX - RENDER_DISTANCE + 1) * CHUNK_LENGTH;
         chunkIndex = 0;
     }
-
+    // still draw new chunks without checking neighbors
     for (int j = 0; j < RENDER_DISTANCE_2X; j++)
     {
         ChunkData chunkData = initChunkData(startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH);
         chunks[chunkIndex + j] = std::make_unique<ChunkMesh>(chunkData);
-    }
-    // prob can opti that
-    const std::array<int, 2> modifiers = {-1, 1};
-    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
-    {
-        for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-        {
-            std::array<std::optional<ChunkData>, 4> neighborsChunks;
-            for (int k = 0; k < 2; k++)
-            {
-                if (i + modifiers[k] >= 0 && i + modifiers[k] < RENDER_DISTANCE_2X)
-                    neighborsChunks[k + 0] = *(chunks[(i + modifiers[k]) * RENDER_DISTANCE_2X + j]);
-                if (j + modifiers[k] >= 0 && j + modifiers[k] < RENDER_DISTANCE_2X)
-                    neighborsChunks[k + 2] = *(chunks[i * RENDER_DISTANCE_2X + j + modifiers[k]]);
-            }
-            chunks[i * RENDER_DISTANCE_2X + j]->initMesh(neighborsChunks);
-        }
+        std::array<std::optional<ChunkData>, 4> neighbors;
+        chunks[chunkIndex + j]->initMesh(neighbors);
     }
 }
+
 void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ)
 {
     int chunkIndex;
@@ -203,27 +188,13 @@ void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int 
         chunkIndex = 0;
     }
 
+    // still draw new chunks without checking neighbors
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
     {
         ChunkData chunkData = initChunkData((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ);
         chunks[i * RENDER_DISTANCE_2X + chunkIndex] = std::make_unique<ChunkMesh>(chunkData);
-    }
-    // prob can opti that
-    const std::array<int, 2> modifiers = {-1, 1};
-    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
-    {
-        for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-        {
-            std::array<std::optional<ChunkData>, 4> neighborsChunks;
-            for (int k = 0; k < 2; k++)
-            {
-                if (i + modifiers[k] >= 0 && i + modifiers[k] < RENDER_DISTANCE_2X)
-                    neighborsChunks[k + 0] = *(chunks[(i + modifiers[k]) * RENDER_DISTANCE_2X + j]);
-                if (j + modifiers[k] >= 0 && j + modifiers[k] < RENDER_DISTANCE_2X)
-                    neighborsChunks[k + 2] = *(chunks[i * RENDER_DISTANCE_2X + j + modifiers[k]]);
-            }
-            chunks[i * RENDER_DISTANCE_2X + j]->initMesh(neighborsChunks);
-        }
+        std::array<std::optional<ChunkData>, 4> neighborsChunks;
+        chunks[i * RENDER_DISTANCE_2X + chunkIndex]->initMesh(neighborsChunks);
     }
 }
 
@@ -242,8 +213,9 @@ ChunkData WorldData::initChunkData(int modifierX, int modifierZ)
         {
             for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
             {
-                int height = perlinNoise[std::abs(modifierX + posX) * 1024 + std::abs(modifierZ + posZ)] * CHUNK_HEIGHT;
-                // int height = 1;
+                // int height = perlinNoise[std::abs(modifierX + posX) * 1024 + std::abs(modifierZ + posZ)] *
+                // CHUNK_HEIGHT;
+                int height = 64;
                 for (int posY = 0; posY < height; posY++)
                 {
                     BlockData block(modifierX + posX, posY, modifierZ + posZ, texturePattern);
