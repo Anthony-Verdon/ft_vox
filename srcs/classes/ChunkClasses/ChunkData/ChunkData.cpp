@@ -69,6 +69,12 @@ void ChunkData::addBlock(const BlockData &block)
     int x = convertCoordIntoChunkCoords(block.getX());
     int z = convertCoordIntoChunkCoords(block.getZ());
     blocks[x * CHUNK_LENGTH + block.getY() * CHUNK_HEIGHT + z] = block;
+    this->x = block.getX() / 16;
+    if (block.getX() < 0)
+        this->x = this->x - 1;
+    this->z = block.getZ() / 16;
+    if (block.getZ() < 0)
+        this->z = this->z - 1;
 }
 
 int ChunkData::convertCoordIntoChunkCoords(int coord)

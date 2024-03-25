@@ -58,7 +58,7 @@ void WindowManager::updateLoop()
 {
     WorldData world;
     // camera.setPosition({0, world.perlinNoise[0] * 256, 0});
-    camera.setPosition({0, 64, 0});
+    camera.setPosition({8, 64, 8});
     Texture grassTexture("assets/tileset.jpg");
     Shader shader("srcs/shaders/shader.vs", "srcs/shaders/shader.fs");
     while (!glfwWindowShouldClose(window))
@@ -92,9 +92,9 @@ void WindowManager::updateLoop()
         world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
-        for (size_t x = 0; x < RENDER_DISTANCE * 2; x++)
+        for (size_t x = 0; x < RENDER_DISTANCE_2X; x++)
         {
-            for (size_t y = 0; y < RENDER_DISTANCE * 2; y++)
+            for (size_t y = 0; y < RENDER_DISTANCE_2X; y++)
             {
                 const std::unique_ptr<ChunkMesh> &chunk = world.getChunk(x, y);
                 glBindVertexArray(chunk->getVAO());
