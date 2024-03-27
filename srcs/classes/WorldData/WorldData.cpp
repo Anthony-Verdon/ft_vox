@@ -3,6 +3,7 @@
 #include <ctime>
 #include <iostream>
 #include <memory>
+#include <utility>
 
 std::unique_ptr<float[]> generateNoise2D(int width, int height, const std::unique_ptr<float[]> &seedArray,
                                          int nbOctaves, float bias)
@@ -134,62 +135,122 @@ void WorldData::updateChunksLoad(float x, float z)
 
 void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ)
 {
-    int rowToDelete;
-    int rowToLoad;
+    int chunkIndex;
+    int chunkIndexNeighbor;
+    int startX;
     if (playerChunkX < updatedPlayerChunkX)
     {
-        rowToDelete = updatedPlayerChunkX - RENDER_DISTANCE - 1;
-        rowToLoad = (updatedPlayerChunkX + RENDER_DISTANCE) * CHUNK_LENGTH;
+        for (int i = 0; i < RENDER_DISTANCE_2X - 1; i++)
+        {
+            for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i + 1) * RENDER_DISTANCE_2X + j]);
+        }
+        startX = (updatedPlayerChunkX + RENDER_DISTANCE) * CHUNK_LENGTH;
+        chunkIndex = (RENDER_DISTANCE_2X - 1);
+        chunkIndexNeighbor = chunkIndex - 1;
     }
     else if (playerChunkX > updatedPlayerChunkX)
     {
-        rowToDelete = updatedPlayerChunkX + RENDER_DISTANCE + 1;
-        rowToLoad = (updatedPlayerChunkX - RENDER_DISTANCE) * CHUNK_LENGTH;
+        for (int i = RENDER_DISTANCE_2X - 1; i >= 1; i--)
+        {
+            for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i - 1) * RENDER_DISTANCE_2X + j]);
+        }
+        startX = (updatedPlayerChunkX - RENDER_DISTANCE) * CHUNK_LENGTH;
+        chunkIndex = 0;
+        chunkIndexNeighbor = chunkIndex + 1;
     }
 
+    // still draw new chunks without checking neighbors
+    for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+    {
+        ChunkData chunkData = initChunkData(startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH);
+        chunks[chunkIndex * RENDER_DISTANCE_2X + j] = std::make_unique<ChunkMesh>(chunkData);
+    }
+
+    // // need to also update the one on the other extremitie
+    // const std::array<int, 2> modifiers = {-1, 1};
+    // for (int i = 0; i < 2; i++)
+    // {
+    //     if (i == 1)
+    //         chunkIndex = chunkIndexNeighbor;
+    //     for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+    //     {
+    //         std::array<std::optional<ChunkData>, 4> neighborsChunks;
+    //         for (int k = 0; k < 2; k++)
+    //         {
+    //             if (chunkIndex + modifiers[k] >= 0 && chunkIndex + modifiers[k] < RENDER_DISTANCE_2X)
+    //                 neighborsChunks[k + 0] = *(chunks[(chunkIndex + modifiers[k]) * RENDER_DISTANCE_2X + j]);
+    //             if (j + modifiers[k] >= 0 && j + modifiers[k] < RENDER_DISTANCE_2X)
+    //                 neighborsChunks[k + 2] = *(chunks[chunkIndex * RENDER_DISTANCE_2X + j + modifiers[k]]);
+    //         }
+    //         chunks[chunkIndex * RENDER_DISTANCE_2X + j]->initMesh(neighborsChunks);
+    //     }
+    // }
+    const std::array<int, 2> modifiers = {-1, 1};
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
     {
         for (int j = 0; j < RENDER_DISTANCE_2X; j++)
         {
-            if (rowToDelete == chunks[i * RENDER_DISTANCE_2X + j]->getX())
+            std::array<std::optional<ChunkData>, 4> neighborsChunks;
+            for (int k = 0; k < 2; k++)
             {
-                ChunkData chunkData =
-                    initChunkData(rowToLoad, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH);
-                chunks[i * RENDER_DISTANCE_2X + j] = std::make_unique<ChunkMesh>(chunkData);
-                std::array<std::optional<ChunkData>, 4> neighbors;
-                chunks[i * RENDER_DISTANCE_2X + j]->initMesh(neighbors);
+                if (i + modifiers[k] >= 0 && i + modifiers[k] < RENDER_DISTANCE_2X)
+                    neighborsChunks[k + 0] = *(chunks[(i + modifiers[k]) * RENDER_DISTANCE_2X + j]);
+                if (j + modifiers[k] >= 0 && j + modifiers[k] < RENDER_DISTANCE_2X)
+                    neighborsChunks[k + 2] = *(chunks[i * RENDER_DISTANCE_2X + j + modifiers[k]]);
             }
+            chunks[i * RENDER_DISTANCE_2X + j]->initMesh(neighborsChunks);
         }
     }
 }
 
 void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ)
 {
-    int rowToDelete;
-    int rowToLoad;
+    int chunkIndex;
+    int startZ;
     if (playerChunkZ < updatedPlayerChunkZ)
     {
-        rowToDelete = updatedPlayerChunkZ - RENDER_DISTANCE - 1;
-        rowToLoad = (updatedPlayerChunkZ + RENDER_DISTANCE) * CHUNK_LENGTH;
+        for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+        {
+            for (int j = 0; j < RENDER_DISTANCE_2X - 1; j++)
+                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j + 1]);
+        }
+        startZ = (updatedPlayerChunkZ + RENDER_DISTANCE) * CHUNK_LENGTH;
+        chunkIndex = RENDER_DISTANCE_2X - 1;
     }
     else if (playerChunkZ > updatedPlayerChunkZ)
     {
-        rowToDelete = updatedPlayerChunkZ + RENDER_DISTANCE + 1;
-        rowToLoad = (updatedPlayerChunkZ - RENDER_DISTANCE) * CHUNK_LENGTH;
+        for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+        {
+            for (int j = RENDER_DISTANCE_2X - 1; j >= 1; j--)
+                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j - 1]);
+        }
+        startZ = (updatedPlayerChunkZ - RENDER_DISTANCE) * CHUNK_LENGTH;
+        chunkIndex = 0;
     }
 
+    // still draw new chunks without checking neighbors
+    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+    {
+        ChunkData chunkData = initChunkData((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ);
+        chunks[i * RENDER_DISTANCE_2X + chunkIndex] = std::make_unique<ChunkMesh>(chunkData);
+    }
+
+    const std::array<int, 2> modifiers = {-1, 1};
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
     {
         for (int j = 0; j < RENDER_DISTANCE_2X; j++)
         {
-            if (rowToDelete == chunks[i * RENDER_DISTANCE_2X + j]->getZ())
+            std::array<std::optional<ChunkData>, 4> neighborsChunks;
+            for (int k = 0; k < 2; k++)
             {
-                ChunkData chunkData =
-                    initChunkData((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, rowToLoad);
-                chunks[i * RENDER_DISTANCE_2X + j] = std::make_unique<ChunkMesh>(chunkData);
-                std::array<std::optional<ChunkData>, 4> neighbors;
-                chunks[i * RENDER_DISTANCE_2X + j]->initMesh(neighbors);
+                if (i + modifiers[k] >= 0 && i + modifiers[k] < RENDER_DISTANCE_2X)
+                    neighborsChunks[k + 0] = *(chunks[(i + modifiers[k]) * RENDER_DISTANCE_2X + j]);
+                if (j + modifiers[k] >= 0 && j + modifiers[k] < RENDER_DISTANCE_2X)
+                    neighborsChunks[k + 2] = *(chunks[i * RENDER_DISTANCE_2X + j + modifiers[k]]);
             }
+            chunks[i * RENDER_DISTANCE_2X + j]->initMesh(neighborsChunks);
         }
     }
 }

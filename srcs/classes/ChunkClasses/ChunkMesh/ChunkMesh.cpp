@@ -98,9 +98,9 @@ void ChunkMesh::convertChunkDataIntoMesh(const std::array<std::optional<ChunkDat
                 else
                     neighborsExist[j + 0] = neighborsChunks[j + 0]->getBlock(0, y, z).has_value();
             }
-
             if (y + modifiers[j] >= 0 && y + modifiers[j] < CHUNK_HEIGHT)
                 neighborsExist[j + 2] = getBlock(x, y + modifiers[j], z).has_value();
+
             if (z + modifiers[j] >= 0 && z + modifiers[j] < CHUNK_LENGTH)
                 neighborsExist[j + 4] = getBlock(x, y, z + modifiers[j]).has_value();
             else if (neighborsChunks[j + 2].has_value())
