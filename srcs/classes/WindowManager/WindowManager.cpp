@@ -56,7 +56,6 @@ void WindowManager::start()
 
 void WindowManager::updateLoop()
 {
-    bool update = true;
     WorldData world;
     // camera.setPosition({0, world.perlinNoise[0] * 256, 0});
     camera.setPosition({8, 64, 8});
@@ -90,13 +89,7 @@ void WindowManager::updateLoop()
         shader.setMat4("projection", projection);
 
         /* rendering */
-        if (isKeyPressed(GLFW_KEY_F2))
-        {
-            update = !update;
-            std::cout << update << std::endl;
-        }
-        if (update)
-            world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
+        world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
         for (size_t x = 0; x < RENDER_DISTANCE_2X; x++)

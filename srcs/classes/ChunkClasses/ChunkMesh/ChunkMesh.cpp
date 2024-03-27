@@ -77,6 +77,8 @@ void ChunkMesh::initMesh(const std::array<std::optional<ChunkData>, 4> &neighbor
 
 void ChunkMesh::convertChunkDataIntoMesh(const std::array<std::optional<ChunkData>, 4> &neighborsChunks)
 {
+    faces.clear();
+    vertices.clear();
     const std::array<int, 2> modifiers = {-1, 1};
     for (int i = 0; i < CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH; i++)
     {
