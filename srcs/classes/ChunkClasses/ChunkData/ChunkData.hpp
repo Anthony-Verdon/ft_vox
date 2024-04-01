@@ -29,4 +29,7 @@ class ChunkData
     int getZ() const;
 
     static int convertCoordIntoChunkCoords(int coord);
+
+    int arrayX;
+    int arrayZ;
 };

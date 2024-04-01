@@ -15,7 +15,7 @@ WorldData::WorldData()
         for (int j = 0; j < RENDER_DISTANCE_2X; j++)
         {
             chunks[i * RENDER_DISTANCE_2X + j] = NULL;
-            worldUpdater.addChunkToLoad(i, j);
+            worldUpdater.addChunkToLoad((i - RENDER_DISTANCE) * CHUNK_LENGTH, (j - RENDER_DISTANCE) * CHUNK_LENGTH, i, j);
         }
 }
 
@@ -54,12 +54,8 @@ void WorldData::updateChunksLoad(float x, float z)
         std::unique_ptr<ChunkMesh> chunkMesh = std::make_unique<ChunkMesh>(chunkData.value());
         std::array<std::optional<ChunkData>, 4> neighborsChunks;
         chunkMesh->initMesh(neighborsChunks);
-        int x = chunkMesh->getX() + RENDER_DISTANCE;
-        int z = chunkMesh->getZ() + RENDER_DISTANCE;
-        chunks[x * RENDER_DISTANCE_2X + z] = std::move(chunkMesh);
+        chunks[chunkMesh->arrayX  * RENDER_DISTANCE_2X + chunkMesh->arrayZ] = std::move(chunkMesh);
     }
-    return;
-
     if (x < 0)
         x = x - 16;
     if (z < 0)
@@ -84,10 +80,6 @@ void WorldData::updateChunksLoad(float x, float z)
 
 void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ)
 {
-    (void)updatedPlayerChunkX;
-    (void)playerChunkX;
-    (void)updatedPlayerChunkZ;
-    /*
     std::array<int, 3> chunkToUpdate;
     int startX;
     if (playerChunkX < updatedPlayerChunkX)
@@ -115,36 +107,17 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
         chunkToUpdate[2] = RENDER_DISTANCE_2X - 1;
     }
 
+    (void)startX;
+    (void)updatedPlayerChunkZ;
     for (int j = 0; j < RENDER_DISTANCE_2X; j++)
     {
-        ChunkData chunkData = initChunkData(startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH);
-        chunks[chunkToUpdate[0] * RENDER_DISTANCE_2X + j] = std::make_unique<ChunkMesh>(chunkData);
-    }
-    const std::array<int, 2> modifiers = {-1, 1};
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-        {
-            std::array<std::optional<ChunkData>, 4> neighborsChunks;
-            for (int k = 0; k < 2; k++)
-            {
-                if (chunkToUpdate[i] + modifiers[k] >= 0 && chunkToUpdate[i] + modifiers[k] < RENDER_DISTANCE_2X)
-                    neighborsChunks[k + 0] = *(chunks[(chunkToUpdate[i] + modifiers[k]) * RENDER_DISTANCE_2X + j]);
-                if (j + modifiers[k] >= 0 && j + modifiers[k] < RENDER_DISTANCE_2X)
-                    neighborsChunks[k + 2] = *(chunks[chunkToUpdate[i] * RENDER_DISTANCE_2X + j + modifiers[k]]);
-            }
-            chunks[chunkToUpdate[i] * RENDER_DISTANCE_2X + j]->initMesh(neighborsChunks);
-        }
-    }
-    */
+        chunks[chunkToUpdate[0] * RENDER_DISTANCE_2X + j] = NULL;
+        worldUpdater.addChunkToLoad(startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH, chunkToUpdate[0] , j);
+    }    
 }
 
 void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ)
 {
-    (void)updatedPlayerChunkX;
-    (void)playerChunkZ;
-    (void)updatedPlayerChunkZ;
-    /*
     std::array<int, 3> chunkToUpdate;
     int startZ;
     if (playerChunkZ < updatedPlayerChunkZ)
@@ -171,30 +144,13 @@ void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int 
         chunkToUpdate[1] = 1;
         chunkToUpdate[2] = RENDER_DISTANCE_2X - 1;
     }
-
+    (void)startZ;
+    (void)updatedPlayerChunkX;
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
     {
-        ChunkData chunkData = initChunkData((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ);
-        chunks[i * RENDER_DISTANCE_2X + chunkToUpdate[0]] = std::make_unique<ChunkMesh>(chunkData);
+        chunks[i * RENDER_DISTANCE_2X + chunkToUpdate[0]] = NULL;
+        worldUpdater.addChunkToLoad((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ, i , chunkToUpdate[0]);
     }
-
-    const std::array<int, 2> modifiers = {-1, 1};
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-        {
-            std::array<std::optional<ChunkData>, 4> neighborsChunks;
-            for (int k = 0; k < 2; k++)
-            {
-                if (j + modifiers[k] >= 0 && j + modifiers[k] < RENDER_DISTANCE_2X)
-                    neighborsChunks[k + 0] = *(chunks[(j + modifiers[k]) * RENDER_DISTANCE_2X + chunkToUpdate[i]]);
-                if (chunkToUpdate[i] + modifiers[k] >= 0 && chunkToUpdate[i] + modifiers[k] < RENDER_DISTANCE_2X)
-                    neighborsChunks[k + 2] = *(chunks[j * RENDER_DISTANCE_2X + chunkToUpdate[i] + modifiers[k]]);
-            }
-            chunks[j * RENDER_DISTANCE_2X + chunkToUpdate[i]]->initMesh(neighborsChunks);
-        }
-    }
-    */
 }
 
 const std::unique_ptr<ChunkMesh> &WorldData::getChunk(int x, int y) const

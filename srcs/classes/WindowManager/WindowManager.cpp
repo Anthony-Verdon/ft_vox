@@ -23,7 +23,6 @@ WindowManager::~WindowManager()
 {
 }
 
-#include <thread>
 void WindowManager::start()
 {
     if (glfwInit() == GL_FALSE)
@@ -99,10 +98,7 @@ void WindowManager::updateLoop()
             {
                 const std::unique_ptr<ChunkMesh> &chunk = world.getChunk(x, y);
                 if (!chunk)
-                {
-                    std::cout << "not loaded for the moment" << std::endl;
                     continue;
-                }
                 glBindVertexArray(chunk->getVAO());
                 glDrawElements(GL_TRIANGLES, chunk->getFaces().size(), GL_UNSIGNED_INT, 0);
             }

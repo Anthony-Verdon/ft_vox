@@ -8,7 +8,7 @@ class WorldUpdater
 {
     private:
         std::mutex chunksToLoadMutex;
-        std::stack<std::pair<int, int>> chunksToLoad;
+        std::stack<std::array<int, 4>> chunksToLoad;
 
         std::mutex chunksLoadedMutex;
         std::stack<ChunkData> chunksLoaded;
@@ -22,6 +22,6 @@ class WorldUpdater
     public:
         WorldUpdater();
         ~WorldUpdater();
-        void addChunkToLoad(int x, int z);
+        void addChunkToLoad(int x, int z, int arrayX, int arrayZ);
         std::optional<ChunkData> getChunkLoaded();
 };

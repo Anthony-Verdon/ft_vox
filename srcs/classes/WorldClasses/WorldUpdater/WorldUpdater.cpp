@@ -25,7 +25,7 @@ void WorldUpdater::loadNewChunks()
                 break;
         }
         
-        std::stack<std::pair<int, int>> newChunksToLoad;
+        std::stack<std::array<int, 4>> newChunksToLoad;
         size_t nbChunks;
         {
             std::lock_guard<std::mutex> chunksToLoadGuard(chunksToLoadMutex);
@@ -36,14 +36,13 @@ void WorldUpdater::loadNewChunks()
                 chunksToLoad.pop();
             }
         }
-
         {
             std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
             for (size_t i = 0; i < nbChunks; i++)
             {
-                int x = newChunksToLoad.top().first;
-                int z = newChunksToLoad.top().second;
-                ChunkData chunkData = initChunkData((x - RENDER_DISTANCE) * CHUNK_LENGTH, (z - RENDER_DISTANCE) * CHUNK_LENGTH);
+                ChunkData chunkData = initChunkData(newChunksToLoad.top()[0], newChunksToLoad.top()[1]);
+                chunkData.arrayX = newChunksToLoad.top()[2];
+                chunkData.arrayZ = newChunksToLoad.top()[3];
                 chunksLoaded.push(chunkData);
                 newChunksToLoad.pop();
             }
@@ -81,16 +80,15 @@ ChunkData WorldUpdater::initChunkData(int modifierX, int modifierZ)
     return (chunkData);
 }
 
-void WorldUpdater::addChunkToLoad(int x, int z)
+void WorldUpdater::addChunkToLoad(int x, int z, int arrayX, int arrayZ)
 {
     std::lock_guard<std::mutex> chunksToLoadGuard(chunksToLoadMutex);
-    chunksToLoad.push({x, z});
+    chunksToLoad.push({x, z, arrayX, arrayZ});
 }
 
 std::optional<ChunkData> WorldUpdater::getChunkLoaded()
 {
     std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
-
     std::optional<ChunkData> chunk;
     if (chunksLoaded.size() != 0)
     {
