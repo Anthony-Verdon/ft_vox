@@ -13,7 +13,7 @@ ChunkMesh::ChunkMesh(const ChunkData &data) : ChunkData(data)
     init = false;
 }
 
-ChunkMesh::ChunkMesh(const ChunkMesh &instance)
+ChunkMesh::ChunkMesh(const ChunkMesh &instance): ChunkData(instance)
 {
     *this = instance;
 }

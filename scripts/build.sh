@@ -15,6 +15,7 @@ cd ../..
 
 mkdir glad
 cd glad
+pip install selenium
 wget `python ../../scripts/generateGladURL.py`
 unzip -n glad.zip
 rm glad.zip

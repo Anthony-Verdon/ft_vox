@@ -3,6 +3,7 @@
 #include "../../BlockClasses/BlockMesh/BlockMesh.hpp"
 #include "../ChunkData/ChunkData.hpp"
 #include <vector>
+#include <optional>
 
 class ChunkMesh : public ChunkData
 {
