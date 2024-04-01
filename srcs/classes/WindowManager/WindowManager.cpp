@@ -3,15 +3,13 @@
 #include "../Shader/Shader.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
-#include "../WorldData/WorldData.hpp"
+#include "../WorldClasses/WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
 #include <ctime>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-
-#define WINDOW_WIDTH 720
-#define WINDOW_HEIGHT 480
+#include "../../globals.hpp"
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
 
@@ -25,6 +23,7 @@ WindowManager::~WindowManager()
 {
 }
 
+#include <thread>
 void WindowManager::start()
 {
     if (glfwInit() == GL_FALSE)
@@ -65,10 +64,12 @@ void WindowManager::updateLoop()
     {
         Time::updateTime();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // std::cout << "x: " << camera.getPosition()[0] << " "
-        //           << "y: " << camera.getPosition()[1] << " "
-        //           << "z: " << camera.getPosition()[2] << " " << std::endl;
-
+        /*
+        std::cout << "x: " << camera.getPosition()[0] << " "
+                   << "y: " << camera.getPosition()[1] << " "
+                   << "z: " << camera.getPosition()[2] << " " << std::endl;
+        */
+        
         /* input processing */
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
@@ -97,6 +98,11 @@ void WindowManager::updateLoop()
             for (size_t y = 0; y < RENDER_DISTANCE_2X; y++)
             {
                 const std::unique_ptr<ChunkMesh> &chunk = world.getChunk(x, y);
+                if (!chunk)
+                {
+                    std::cout << "not loaded for the moment" << std::endl;
+                    continue;
+                }
                 glBindVertexArray(chunk->getVAO());
                 glDrawElements(GL_TRIANGLES, chunk->getFaces().size(), GL_UNSIGNED_INT, 0);
             }

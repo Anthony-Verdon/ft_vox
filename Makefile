@@ -5,12 +5,13 @@ SRCS := srcs/main.cpp \
 		srcs/classes/Camera/Camera.cpp \
 		srcs/classes/Texture/Texture.cpp \
 		srcs/classes/Time/Time.cpp \
-		srcs/classes/WorldData/WorldData.cpp \
 		srcs/classes/WindowManager/WindowManager.cpp \
 		srcs/classes/BlockClasses/BlockData/BlockData.cpp \
 		srcs/classes/BlockClasses/BlockMesh/BlockMesh.cpp \
 		srcs/classes/ChunkClasses/ChunkData/ChunkData.cpp \
 		srcs/classes/ChunkClasses/ChunkMesh/ChunkMesh.cpp \
+		srcs/classes/WorldClasses/WorldData/WorldData.cpp \
+		srcs/classes/WorldClasses/WorldUpdater/WorldUpdater.cpp \
 
 OBJS := $(SRCS:.cpp=.o)
 DEPENDS := $(SRCS:.cpp=.d)
