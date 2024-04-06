@@ -10,6 +10,7 @@ SRCS := srcs/main.cpp \
 		srcs/classes/BlockClasses/BlockMesh/BlockMesh.cpp \
 		srcs/classes/ChunkClasses/ChunkData/ChunkData.cpp \
 		srcs/classes/ChunkClasses/ChunkMesh/ChunkMesh.cpp \
+		srcs/classes/ChunkClasses/ChunkRenderer/ChunkRenderer.cpp \
 		srcs/classes/WorldClasses/WorldData/WorldData.cpp \
 		srcs/classes/WorldClasses/WorldUpdater/WorldUpdater.cpp \
 

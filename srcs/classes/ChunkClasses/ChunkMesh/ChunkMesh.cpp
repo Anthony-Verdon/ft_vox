@@ -1,5 +1,4 @@
 #include "ChunkMesh.hpp"
-#include "../../../../libs/glad/include/glad/glad.h"
 #include "../../BlockClasses/BlockMesh/BlockMesh.hpp"
 #include <cstdlib>
 #include <ctime>
@@ -7,13 +6,9 @@
 
 ChunkMesh::ChunkMesh(const ChunkData &data) : ChunkData(data)
 {
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-    init = false;
 }
 
-ChunkMesh::ChunkMesh(const ChunkMesh &instance): ChunkData(instance)
+ChunkMesh::ChunkMesh(const ChunkMesh &instance) : ChunkData(instance)
 {
     *this = instance;
 }
@@ -22,12 +17,8 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
 {
     if (this != &instance)
     {
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glGenBuffers(1, &EBO);
         vertices = instance.getVertices();
         faces = instance.getFaces();
-        init = instance.isInit();
         x = instance.getX();
         z = instance.getZ();
         for (int x = 0; x < CHUNK_LENGTH; x++)
@@ -41,41 +32,15 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
                 }
             }
         }
-        // if (init)
-        //     initMesh();
     }
     return (*this);
 }
 
 ChunkMesh::~ChunkMesh()
 {
-    if (init)
-    {
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
-        glDeleteBuffers(1, &EBO);
-    }
 }
 
 void ChunkMesh::initMesh(const std::array<std::optional<ChunkData>, 4> &neighborsChunks)
-{
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-    convertChunkDataIntoMesh(neighborsChunks);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces.size(), faces.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    init = true;
-}
-
-void ChunkMesh::convertChunkDataIntoMesh(const std::array<std::optional<ChunkData>, 4> &neighborsChunks)
 {
     faces.clear();
     vertices.clear();
@@ -128,10 +93,6 @@ void ChunkMesh::addBlockMesh(const BlockMesh &blockMesh)
         faces.push_back(nbVerticesInChunkMesh + blockMesh.getFace(i));
 }
 
-unsigned int ChunkMesh::getVAO() const
-{
-    return VAO;
-}
 std::vector<float> ChunkMesh::getVertices() const
 {
     return vertices;
@@ -139,9 +100,4 @@ std::vector<float> ChunkMesh::getVertices() const
 std::vector<unsigned int> ChunkMesh::getFaces() const
 {
     return faces;
-}
-
-bool ChunkMesh::isInit() const
-{
-    return (init);
 }

@@ -1,43 +1,23 @@
 #include "WorldData.hpp"
+#include "../../../globals.hpp"
 #include <array>
 #include <cstddef>
 #include <ctime>
 #include <iostream>
 #include <memory>
 #include <utility>
-#include "../../../globals.hpp"
 
 WorldData::WorldData()
 {
-    chunks = std::make_unique<std::unique_ptr<ChunkMesh>[]>(RENDER_DISTANCE_2X * RENDER_DISTANCE_2X);
+    chunks = std::make_unique<std::unique_ptr<ChunkRenderer>[]>(RENDER_DISTANCE_2X * RENDER_DISTANCE_2X);
 
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
         for (int j = 0; j < RENDER_DISTANCE_2X; j++)
         {
             chunks[i * RENDER_DISTANCE_2X + j] = NULL;
-            worldUpdater.addChunkToLoad((i - RENDER_DISTANCE) * CHUNK_LENGTH, (j - RENDER_DISTANCE) * CHUNK_LENGTH, i, j);
+            worldUpdater.addChunkToLoad((i - RENDER_DISTANCE) * CHUNK_LENGTH, (j - RENDER_DISTANCE) * CHUNK_LENGTH, i,
+                                        j);
         }
-}
-
-WorldData::WorldData(const WorldData &instance)
-{
-    *this = instance;
-}
-
-WorldData &WorldData::operator=(const WorldData &instance)
-{
-    if (this != &instance)
-    {
-        for (int x = 0; x < RENDER_DISTANCE_2X; x++)
-        {
-            for (int y = 0; y < RENDER_DISTANCE_2X; y++)
-            {
-                ChunkMesh chunkMesh(*(instance.getChunk(x, y).get()));
-                chunks[x * RENDER_DISTANCE_2X + y] = std::make_unique<ChunkMesh>(chunkMesh);
-            }
-        }
-    }
-    return (*this);
 }
 
 WorldData::~WorldData()
@@ -48,13 +28,11 @@ void WorldData::updateChunksLoad(float x, float z)
 {
     while (true)
     {
-        std::optional<ChunkData>  chunkData = worldUpdater.getChunkLoaded();
-        if (!chunkData.has_value())
+        std::optional<ChunkMesh> chunkMesh = worldUpdater.getChunkLoaded();
+        if (!chunkMesh.has_value())
             break;
-        std::unique_ptr<ChunkMesh> chunkMesh = std::make_unique<ChunkMesh>(chunkData.value());
-        std::array<std::optional<ChunkData>, 4> neighborsChunks;
-        chunkMesh->initMesh(neighborsChunks);
-        chunks[chunkMesh->arrayX  * RENDER_DISTANCE_2X + chunkMesh->arrayZ] = std::move(chunkMesh);
+        chunks[chunkMesh->arrayX * RENDER_DISTANCE_2X + chunkMesh->arrayZ] =
+            std::make_unique<ChunkRenderer>(chunkMesh.value());
     }
     if (x < 0)
         x = x - 16;
@@ -112,8 +90,9 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
     for (int j = 0; j < RENDER_DISTANCE_2X; j++)
     {
         chunks[chunkToUpdate[0] * RENDER_DISTANCE_2X + j] = NULL;
-        worldUpdater.addChunkToLoad(startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH, chunkToUpdate[0] , j);
-    }    
+        worldUpdater.addChunkToLoad(startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH,
+                                    chunkToUpdate[0], j);
+    }
 }
 
 void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ)
@@ -149,11 +128,12 @@ void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int 
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
     {
         chunks[i * RENDER_DISTANCE_2X + chunkToUpdate[0]] = NULL;
-        worldUpdater.addChunkToLoad((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ, i , chunkToUpdate[0]);
+        worldUpdater.addChunkToLoad((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ, i,
+                                    chunkToUpdate[0]);
     }
 }
 
-const std::unique_ptr<ChunkMesh> &WorldData::getChunk(int x, int y) const
+const std::unique_ptr<ChunkRenderer> &WorldData::getChunk(int x, int y) const
 {
     return (chunks[x * RENDER_DISTANCE_2X + y]);
 }

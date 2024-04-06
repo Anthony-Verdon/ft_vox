@@ -1,14 +1,14 @@
 #pragma once
 
-#include "../../ChunkClasses/ChunkMesh/ChunkMesh.hpp"
+#include "../../ChunkClasses/ChunkRenderer/ChunkRenderer.hpp"
 #include "../WorldUpdater/WorldUpdater.hpp"
 
 class WorldData
 {
   private:
-    std::unique_ptr<std::unique_ptr<ChunkMesh>[]> chunks;
+    std::unique_ptr<std::unique_ptr<ChunkRenderer>[]> chunks;
     WorldUpdater worldUpdater;
-    
+
   public:
     WorldData();
     WorldData(const WorldData &instance);
@@ -18,5 +18,5 @@ class WorldData
     void updateChunksLoad(float x, float y);
     void updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ);
     void updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ);
-    const std::unique_ptr<ChunkMesh> &getChunk(int x, int y) const;
+    const std::unique_ptr<ChunkRenderer> &getChunk(int x, int y) const;
 };

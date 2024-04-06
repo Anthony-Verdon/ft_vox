@@ -1,5 +1,6 @@
 #include "WindowManager.hpp"
 #include "../../../libs/glm/glm/gtc/matrix_transform.hpp"
+#include "../../globals.hpp"
 #include "../Shader/Shader.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
@@ -9,7 +10,6 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-#include "../../globals.hpp"
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
 
@@ -68,7 +68,7 @@ void WindowManager::updateLoop()
                    << "y: " << camera.getPosition()[1] << " "
                    << "z: " << camera.getPosition()[2] << " " << std::endl;
         */
-        
+
         /* input processing */
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
@@ -96,7 +96,7 @@ void WindowManager::updateLoop()
         {
             for (size_t y = 0; y < RENDER_DISTANCE_2X; y++)
             {
-                const std::unique_ptr<ChunkMesh> &chunk = world.getChunk(x, y);
+                const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(x, y);
                 if (!chunk)
                     continue;
                 glBindVertexArray(chunk->getVAO());

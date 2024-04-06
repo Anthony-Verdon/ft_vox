@@ -1,7 +1,7 @@
 #include "WorldUpdater.hpp"
-#include <thread>
 #include "../../../globals.hpp"
 #include <iostream>
+#include <thread>
 WorldUpdater::WorldUpdater()
 {
     stopThread = false;
@@ -24,7 +24,7 @@ void WorldUpdater::loadNewChunks()
             if (stopThread)
                 break;
         }
-        
+
         std::stack<std::array<int, 4>> newChunksToLoad;
         size_t nbChunks;
         {
@@ -36,14 +36,27 @@ void WorldUpdater::loadNewChunks()
                 chunksToLoad.pop();
             }
         }
+        for (size_t i = 0; i < nbChunks; i++)
         {
+            // time of sleep could be modified in the future
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
-            for (size_t i = 0; i < nbChunks; i++)
             {
                 ChunkData chunkData = initChunkData(newChunksToLoad.top()[0], newChunksToLoad.top()[1]);
                 chunkData.arrayX = newChunksToLoad.top()[2];
                 chunkData.arrayZ = newChunksToLoad.top()[3];
-                chunksLoaded.push(chunkData);
+                ChunkMesh chunkMesh(chunkData);
+
+                /*
+                todo: really init it
+                I think the best way is to have an array one RENDER_DISTANCE_2X size + 1 * 2
+                because another way would be to generate 4 chunks data next to chunk wanted,
+                but even if it's in a thread, (so it's not visible in game),
+                it would take more time to generate
+                */
+                std::array<std::optional<ChunkData>, 4> neighborsChunks;
+                chunkMesh.initMesh(neighborsChunks);
+                chunksLoaded.push(chunkMesh);
                 newChunksToLoad.pop();
             }
         }
@@ -86,11 +99,11 @@ void WorldUpdater::addChunkToLoad(int x, int z, int arrayX, int arrayZ)
     chunksToLoad.push({x, z, arrayX, arrayZ});
 }
 
-std::optional<ChunkData> WorldUpdater::getChunkLoaded()
+std::optional<ChunkMesh> WorldUpdater::getChunkLoaded()
 {
-    std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
-    std::optional<ChunkData> chunk;
-    if (chunksLoaded.size() != 0)
+    std::unique_lock<std::mutex> chunksLoadedGuard(chunksLoadedMutex, std::defer_lock);
+    std::optional<ChunkMesh> chunk;
+    if (chunksLoadedGuard.try_lock() && chunksLoaded.size() != 0)
     {
         chunk = chunksLoaded.top();
         chunksLoaded.pop();
