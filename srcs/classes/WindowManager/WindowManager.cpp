@@ -54,6 +54,7 @@ void WindowManager::start()
 
 void WindowManager::updateLoop()
 {
+    static bool isEnabled = true;
     WorldData world;
     // camera.setPosition({0, world.perlinNoise[0] * 256, 0});
     camera.setPosition({8, 64, 8});
@@ -72,6 +73,15 @@ void WindowManager::updateLoop()
         /* input processing */
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
+        if (isKeyPressed(GLFW_KEY_M))
+        {
+            if (isEnabled)
+                world.display();
+            isEnabled = false;
+        }
+        else
+            isEnabled = true;
+
         updateWireframeMode();
         updateSpeed();
         int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);

@@ -6,6 +6,9 @@
 
 int main()
 {
+#ifdef DEBUG_MODE
+    std::cout << "enter debug mode" << std::endl;
+#endif
     try
     {
         WindowManager windowManager;

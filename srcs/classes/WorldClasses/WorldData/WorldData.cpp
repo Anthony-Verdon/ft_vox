@@ -46,14 +46,33 @@ void WorldData::updateChunksLoad(float x, float z)
     if (playerChunkX == updatedPlayerChunkX && playerChunkZ == updatedPlayerChunkZ)
         return;
 
-    if (playerChunkX != updatedPlayerChunkX)
+    if (playerChunkX != updatedPlayerChunkX && playerChunkZ != updatedPlayerChunkZ)
+        ;
+    else if (playerChunkX != updatedPlayerChunkX)
         updateChunkAxisX(playerChunkX, updatedPlayerChunkX, updatedPlayerChunkZ);
-
-    if (playerChunkZ != updatedPlayerChunkZ)
+    else if (playerChunkZ != updatedPlayerChunkZ)
         updateChunkAxisZ(updatedPlayerChunkX, playerChunkZ, updatedPlayerChunkZ);
 
     playerChunkX = updatedPlayerChunkX;
     playerChunkZ = updatedPlayerChunkZ;
+}
+
+void WorldData::display()
+{
+    std::cout << std::endl;
+    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+    {
+        for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+        {
+            if (chunks[i * RENDER_DISTANCE_2X + j] != NULL)
+                std::cout << chunks[i * RENDER_DISTANCE_2X + j]->getX() << " "
+                          << chunks[i * RENDER_DISTANCE_2X + j]->getZ();
+            else
+                std::cout << "not load";
+            std::cout << " | ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ)
@@ -85,8 +104,6 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
         chunkToUpdate[2] = RENDER_DISTANCE_2X - 1;
     }
 
-    (void)startX;
-    (void)updatedPlayerChunkZ;
     for (int j = 0; j < RENDER_DISTANCE_2X; j++)
     {
         chunks[chunkToUpdate[0] * RENDER_DISTANCE_2X + j] = NULL;
@@ -123,8 +140,7 @@ void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int 
         chunkToUpdate[1] = 1;
         chunkToUpdate[2] = RENDER_DISTANCE_2X - 1;
     }
-    (void)startZ;
-    (void)updatedPlayerChunkX;
+
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
     {
         chunks[i * RENDER_DISTANCE_2X + chunkToUpdate[0]] = NULL;

@@ -25,6 +25,10 @@ RM		:= rm -f
 
 CFLAGS 	:= -Wall -Werror -Wextra -g -std=c++17 -MMD -MP
 
+ifdef DEBUG_MODE
+	CFLAGS += -DDEBUG_MODE=true
+endif
+
 LIBRARIES := -Llibs/glfw-3.4/build/src -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl
 
 .cpp.o:
@@ -39,6 +43,9 @@ ${NAME}:	${OBJS}
 
 clean:
 			${RM} ${OBJS} ${DEPENDS}
+
+debug:
+			make DEBUG_MODE=1
 
 fclean: 	clean
 			${RM} ${NAME}
