@@ -1,1 +1,3 @@
 - faire une struct dans WindowManager pour contenir des variables (au moins World) ?
+- check si on peut changer les paramètres du clavier pour GLFW
+- voir pour faire une enum debug dans les classes où c'est nécessaire

@@ -3,3 +3,4 @@ libs
 *.o
 *.d
 .vscode
+notes.txt
