@@ -42,8 +42,6 @@ void WorldUpdater::loadNewChunks()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
             ChunkData chunkData = initChunkData(newChunksToLoad.top()[0], newChunksToLoad.top()[1]);
-            chunkData.arrayX = newChunksToLoad.top()[2];
-            chunkData.arrayZ = newChunksToLoad.top()[3];
             ChunkMesh chunkMesh(chunkData);
 
             /*

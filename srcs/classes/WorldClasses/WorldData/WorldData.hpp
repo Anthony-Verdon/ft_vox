@@ -10,6 +10,9 @@ class WorldData
     std::unique_ptr<std::unique_ptr<ChunkRenderer>[]> chunks;
     WorldUpdater worldUpdater;
 
+    int playerChunkX;
+    int playerChunkZ;
+
   public:
     WorldData();
     WorldData(const WorldData &instance);

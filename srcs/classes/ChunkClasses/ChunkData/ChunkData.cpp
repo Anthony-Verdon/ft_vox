@@ -18,8 +18,6 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
     {
         x = instance.getX();
         z = instance.getZ();
-        arrayX = instance.arrayX;
-        arrayZ = instance.arrayZ;
         blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
         for (int x = 0; x < CHUNK_LENGTH; x++)
         {
@@ -41,8 +39,6 @@ ChunkData &ChunkData::operator=(const ChunkMesh &instance)
     x = instance.getX();
     z = instance.getZ();
 
-        arrayX = instance.arrayX;
-        arrayZ = instance.arrayZ;
     blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
     for (int x = 0; x < CHUNK_LENGTH; x++)
     {

@@ -18,6 +18,9 @@ WorldData::WorldData()
             worldUpdater.addChunkToLoad((i - RENDER_DISTANCE) * CHUNK_LENGTH, (j - RENDER_DISTANCE) * CHUNK_LENGTH, i,
                                         j);
         }
+
+    playerChunkX = 0;
+    playerChunkZ = 0;
 }
 
 WorldData::~WorldData()
@@ -31,26 +34,28 @@ void WorldData::updateChunksLoad(float x, float z)
         std::optional<ChunkMesh> chunkMesh = worldUpdater.getChunkLoaded();
         if (!chunkMesh.has_value())
             break;
-        chunks[chunkMesh->arrayX * RENDER_DISTANCE_2X + chunkMesh->arrayZ] =
+        int arrayX = chunkMesh->getX() - playerChunkX + RENDER_DISTANCE;
+        int arrayZ = chunkMesh->getZ() - playerChunkZ + RENDER_DISTANCE;
+
+        if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X)
+            continue;
+
+        chunks[arrayX * RENDER_DISTANCE_2X + arrayZ] =
             std::make_unique<ChunkRenderer>(chunkMesh.value());
     }
     if (x < 0)
         x = x - 16;
     if (z < 0)
         z = z - 16;
-    static int playerChunkX = static_cast<int>(x) / CHUNK_LENGTH;
-    static int playerChunkZ = static_cast<int>(z) / CHUNK_LENGTH;
 
     int updatedPlayerChunkX = static_cast<int>(x) / CHUNK_LENGTH;
     int updatedPlayerChunkZ = static_cast<int>(z) / CHUNK_LENGTH;
     if (playerChunkX == updatedPlayerChunkX && playerChunkZ == updatedPlayerChunkZ)
         return;
 
-    if (playerChunkX != updatedPlayerChunkX && playerChunkZ != updatedPlayerChunkZ)
-        ;
-    else if (playerChunkX != updatedPlayerChunkX)
+    if (playerChunkX != updatedPlayerChunkX)
         updateChunkAxisX(playerChunkX, updatedPlayerChunkX, updatedPlayerChunkZ);
-    else if (playerChunkZ != updatedPlayerChunkZ)
+    if (playerChunkZ != updatedPlayerChunkZ)
         updateChunkAxisZ(updatedPlayerChunkX, playerChunkZ, updatedPlayerChunkZ);
 
     playerChunkX = updatedPlayerChunkX;
