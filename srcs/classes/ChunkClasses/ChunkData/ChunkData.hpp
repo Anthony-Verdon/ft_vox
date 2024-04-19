@@ -12,8 +12,8 @@ constexpr int CHUNK_HEIGHT = 256;
 class ChunkData
 {
   protected:
-    int x;
-    int z;
+    int coordX;
+    int coordZ;
     std::unique_ptr<std::optional<BlockData>[]> blocks;
 
   public:
@@ -28,5 +28,5 @@ class ChunkData
     int getX() const;
     int getZ() const;
 
-    static int convertCoordIntoChunkCoords(int coord);
+     int convertCoordIntoChunkCoords(int coord) const;
 };

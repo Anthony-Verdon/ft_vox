@@ -16,8 +16,8 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
 {
     if (this != &instance)
     {
-        x = instance.getX();
-        z = instance.getZ();
+        coordX = instance.getX();
+        coordZ = instance.getZ();
         blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
         for (int x = 0; x < CHUNK_LENGTH; x++)
         {
@@ -36,8 +36,8 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
 
 ChunkData &ChunkData::operator=(const ChunkMesh &instance)
 {
-    x = instance.getX();
-    z = instance.getZ();
+    coordX = instance.getX();
+    coordZ = instance.getZ();
 
     blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
     for (int x = 0; x < CHUNK_LENGTH; x++)
@@ -70,15 +70,15 @@ void ChunkData::addBlock(const BlockData &block)
     int x = convertCoordIntoChunkCoords(block.getX());
     int z = convertCoordIntoChunkCoords(block.getZ());
     blocks[x * CHUNK_LENGTH + block.getY() * CHUNK_HEIGHT + z] = block;
-    this->x = block.getX() / 16;
+    coordX = block.getX() / 16;
     if (block.getX() < 0)
-        this->x = this->x - 1;
-    this->z = block.getZ() / 16;
+        coordX = coordX - 1;
+    coordZ = block.getZ() / 16;
     if (block.getZ() < 0)
-        this->z = this->z - 1;
+        coordZ = coordZ - 1;
 }
 
-int ChunkData::convertCoordIntoChunkCoords(int coord)
+int ChunkData::convertCoordIntoChunkCoords(int coord) const
 {
     coord = coord % CHUNK_LENGTH;
     if (coord < 0)
@@ -87,10 +87,10 @@ int ChunkData::convertCoordIntoChunkCoords(int coord)
 }
 int ChunkData::getX() const
 {
-    return x;
+    return coordX;
 };
 
 int ChunkData::getZ() const
 {
-    return z;
+    return coordZ;
 };
