@@ -2,6 +2,7 @@
 
 #include "../../ChunkClasses/ChunkRenderer/ChunkRenderer.hpp"
 #include "../WorldUpdater/WorldUpdater.hpp"
+#include "../../../globals.hpp"
 
 class WorldData
 {
@@ -20,5 +21,7 @@ class WorldData
     void updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ);
     const std::unique_ptr<ChunkRenderer> &getChunk(int x, int y) const;
 
-    void display();
+#ifdef DEBUG_MODE
+    void DebugWriteMap() const;
+#endif
 };

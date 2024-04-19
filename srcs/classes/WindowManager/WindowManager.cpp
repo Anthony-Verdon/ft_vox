@@ -54,7 +54,6 @@ void WindowManager::start()
 
 void WindowManager::updateLoop()
 {
-    static bool isEnabled = true;
     WorldData world;
     // camera.setPosition({0, world.perlinNoise[0] * 256, 0});
     camera.setPosition({8, 64, 8});
@@ -64,24 +63,14 @@ void WindowManager::updateLoop()
     {
         Time::updateTime();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        /*
-        std::cout << "x: " << camera.getPosition()[0] << " "
-                   << "y: " << camera.getPosition()[1] << " "
-                   << "z: " << camera.getPosition()[2] << " " << std::endl;
-        */
 
         /* input processing */
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
-        if (isKeyPressed(GLFW_KEY_M))
-        {
-            if (isEnabled)
-                world.display();
-            isEnabled = false;
-        }
-        else
-            isEnabled = true;
-
+        #ifdef DEBUG_MODE
+        DebugWriteMap(world);
+        DebugWritePlayerCoord();
+        #endif
         updateWireframeMode();
         updateSpeed();
         int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);
@@ -175,3 +164,35 @@ void mouse_callback(GLFWwindow *window, double xPos, double yPos)
         camera->setPitch(-89.0f);
     camera->updateDirection();
 }
+
+#ifdef DEBUG_MODE
+void WindowManager::DebugWriteMap(const WorldData &world)
+{
+    static bool keyEnable = true;
+    if (isKeyPressed(GLFW_KEY_1))
+    {
+        if (keyEnable)
+            world.DebugWriteMap();
+        keyEnable = false;
+    }
+    else
+        keyEnable = true;
+}
+
+void WindowManager::DebugWritePlayerCoord()
+{
+    static bool keyEnable = true;
+    if (isKeyPressed(GLFW_KEY_2))
+    {
+        if (keyEnable)
+            std::cout  << std::endl 
+                << "x: " << camera.getPosition()[0] << " "
+                << "y: " << camera.getPosition()[1] << " "
+                << "z: " << camera.getPosition()[2] << " " 
+                << std::endl << std::endl;
+        keyEnable = false;
+    }
+    else
+        keyEnable = true;
+}
+#endif

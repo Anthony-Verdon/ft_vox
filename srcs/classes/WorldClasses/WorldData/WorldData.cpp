@@ -57,24 +57,6 @@ void WorldData::updateChunksLoad(float x, float z)
     playerChunkZ = updatedPlayerChunkZ;
 }
 
-void WorldData::display()
-{
-    std::cout << std::endl;
-    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
-    {
-        for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-        {
-            if (chunks[i * RENDER_DISTANCE_2X + j] != NULL)
-                std::cout << chunks[i * RENDER_DISTANCE_2X + j]->getX() << " "
-                          << chunks[i * RENDER_DISTANCE_2X + j]->getZ();
-            else
-                std::cout << "not load";
-            std::cout << " | ";
-        }
-        std::cout << std::endl;
-    }
-}
-
 void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ)
 {
     std::array<int, 3> chunkToUpdate;
@@ -153,3 +135,25 @@ const std::unique_ptr<ChunkRenderer> &WorldData::getChunk(int x, int y) const
 {
     return (chunks[x * RENDER_DISTANCE_2X + y]);
 }
+
+#ifdef DEBUG_MODE
+
+void WorldData::DebugWriteMap() const
+{
+    std::cout << std::endl;
+    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+    {
+        for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+        {
+            if (chunks[i * RENDER_DISTANCE_2X + j] != NULL)
+                std::cout << chunks[i * RENDER_DISTANCE_2X + j]->getX() << " "
+                          << chunks[i * RENDER_DISTANCE_2X + j]->getZ();
+            else
+                std::cout << "not load";
+            std::cout << " | ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+#endif
