@@ -7,8 +7,14 @@
 class WorldUpdater
 {
   private:
+    std::unique_ptr<std::unique_ptr<ChunkData>[]> chunkLoadedData;
+
+    std::mutex playerChunkCoordMutex;
+    int playerChunkX;
+    int playerChunkZ;
+
     std::mutex chunksToLoadMutex;
-    std::stack<std::array<int, 4>> chunksToLoad;
+    std::stack<std::pair<int, int>> chunksToLoad;
 
     std::mutex chunksLoadedMutex;
     std::stack<ChunkMesh> chunksLoaded;
@@ -22,6 +28,7 @@ class WorldUpdater
   public:
     WorldUpdater();
     ~WorldUpdater();
-    void addChunkToLoad(int x, int z, int arrayX, int arrayZ);
+    void addChunkToLoad(int chunkX, int chunkZ);
     std::optional<ChunkMesh> getChunkLoaded();
+    void updatePlayerChunkCoord(int newPlayerChunkX, int newPlayerChunkZ);
 };

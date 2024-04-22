@@ -15,12 +15,12 @@ WorldData::WorldData()
         for (int j = 0; j < RENDER_DISTANCE_2X; j++)
         {
             chunks[i * RENDER_DISTANCE_2X + j] = NULL;
-            worldUpdater.addChunkToLoad((i - RENDER_DISTANCE) * CHUNK_LENGTH, (j - RENDER_DISTANCE) * CHUNK_LENGTH, i,
-                                        j);
+            worldUpdater.addChunkToLoad((i - RENDER_DISTANCE) * CHUNK_LENGTH, (j - RENDER_DISTANCE) * CHUNK_LENGTH);
         }
 
     playerChunkX = 0;
     playerChunkZ = 0;
+    worldUpdater.updatePlayerChunkCoord(playerChunkX, playerChunkZ);
 }
 
 WorldData::~WorldData()
@@ -60,6 +60,7 @@ void WorldData::updateChunksLoad(float x, float z)
 
     playerChunkX = updatedPlayerChunkX;
     playerChunkZ = updatedPlayerChunkZ;
+    worldUpdater.updatePlayerChunkCoord(playerChunkX, playerChunkZ);
 }
 
 void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ)
@@ -94,8 +95,7 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
     for (int j = 0; j < RENDER_DISTANCE_2X; j++)
     {
         chunks[chunkToUpdate[0] * RENDER_DISTANCE_2X + j] = NULL;
-        worldUpdater.addChunkToLoad(startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH,
-                                    chunkToUpdate[0], j);
+        worldUpdater.addChunkToLoad(startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH);
     }
 }
 
@@ -131,8 +131,7 @@ void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int 
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
     {
         chunks[i * RENDER_DISTANCE_2X + chunkToUpdate[0]] = NULL;
-        worldUpdater.addChunkToLoad((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ, i,
-                                    chunkToUpdate[0]);
+        worldUpdater.addChunkToLoad((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ);
     }
 }
 

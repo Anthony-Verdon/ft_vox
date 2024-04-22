@@ -44,9 +44,6 @@ ${NAME}:	${OBJS}
 clean:
 			${RM} ${OBJS} ${DEPENDS}
 
-debug:
-			make DEBUG_MODE=1
-
 fclean: 	clean
 			${RM} ${NAME}
 
@@ -54,4 +51,7 @@ re:
 			make fclean
 			make
 
-.PHONY: 	all clean fclean re
+debug:
+			make DEBUG_MODE=1
+
+.PHONY: 	all clean fclean re debug
