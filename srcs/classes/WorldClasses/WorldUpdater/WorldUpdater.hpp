@@ -3,6 +3,7 @@
 #include "../../ChunkClasses/ChunkMesh/ChunkMesh.hpp"
 #include <mutex>
 #include <stack>
+#include <thread>
 
 class WorldUpdater
 {
@@ -19,6 +20,7 @@ class WorldUpdater
     std::mutex chunksLoadedMutex;
     std::stack<ChunkMesh> chunksLoaded;
 
+    std::thread updaterThread;
     std::mutex stopThreadMutex;
     bool stopThread;
 

@@ -1,7 +1,7 @@
 #include "WorldUpdater.hpp"
 #include "../../../globals.hpp"
 #include <iostream>
-#include <thread>
+
 WorldUpdater::WorldUpdater()
 {
     chunkLoadedData = std::make_unique<std::unique_ptr<ChunkData>[]>(RENDER_DISTANCE_2X * RENDER_DISTANCE_2X);
@@ -13,14 +13,17 @@ WorldUpdater::WorldUpdater()
     stopThread = false;
     playerChunkX = 0;
     playerChunkZ = 0;
-    std::thread updaterThread(&WorldUpdater::loadNewChunks, this);
-    updaterThread.detach();
+    std::thread newUpdaterThread(&WorldUpdater::loadNewChunks, this);
+    updaterThread.swap(newUpdaterThread);
 }
 
 WorldUpdater::~WorldUpdater()
 {
-    std::lock_guard<std::mutex> stopThreadGuard(stopThreadMutex);
-    stopThread = true;
+    {
+        std::lock_guard<std::mutex> stopThreadGuard(stopThreadMutex);
+        stopThread = true;
+    }
+    updaterThread.join();
 }
 
 void WorldUpdater::loadNewChunks()
