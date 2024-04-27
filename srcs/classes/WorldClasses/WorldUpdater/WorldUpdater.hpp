@@ -8,6 +8,7 @@
 class WorldUpdater
 {
   private:
+    std::mutex chunksLoadedDataMutex;
     std::unique_ptr<std::unique_ptr<ChunkData>[]> chunkLoadedData;
 
     std::mutex playerChunkCoordMutex;

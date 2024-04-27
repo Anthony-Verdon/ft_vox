@@ -49,14 +49,18 @@ void WorldUpdater::loadNewChunks()
                 chunksToLoad.pop();
             }
         }
+        int actualPlayerChunkX;
+        int actualPlayerChunkZ;
+        {
+            std::lock_guard<std::mutex> playerChunkCoordGuard(playerChunkCoordMutex);
+            actualPlayerChunkX = playerChunkX;
+            actualPlayerChunkZ = playerChunkZ;
+        }
+        std::lock_guard<std::mutex> chunkLoadedDataGuard(chunksLoadedDataMutex);
         for (size_t i = 0; i < nbChunks; i++)
         {
-            int arrayX, arrayZ;
-            {
-            std::lock_guard<std::mutex> playerChunkCoordGuard(playerChunkCoordMutex);
-            arrayX = newChunksToLoad2.top().first / 16 - playerChunkX + RENDER_DISTANCE;;
-            arrayZ = newChunksToLoad2.top().second / 16 - playerChunkZ + RENDER_DISTANCE;;
-            }
+            int arrayX = newChunksToLoad2.top().first / 16 - actualPlayerChunkX + RENDER_DISTANCE;;
+            int arrayZ = newChunksToLoad2.top().second / 16 - actualPlayerChunkZ + RENDER_DISTANCE;;
             if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X)
             {
                 newChunksToLoad2.pop();
@@ -69,12 +73,8 @@ void WorldUpdater::loadNewChunks()
         {
             // time of sleep could be modified in the future
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            int arrayX, arrayZ;
-            {
-            std::lock_guard<std::mutex> playerChunkCoordGuard(playerChunkCoordMutex);
-            arrayX = newChunksToLoad.top().first / 16 - playerChunkX + RENDER_DISTANCE;;
-            arrayZ = newChunksToLoad.top().second / 16 - playerChunkZ + RENDER_DISTANCE;;
-            }
+            int arrayX = newChunksToLoad.top().first / 16 - actualPlayerChunkX + RENDER_DISTANCE;;
+            int arrayZ = newChunksToLoad.top().second / 16 - actualPlayerChunkZ + RENDER_DISTANCE;;
             if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X || chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ] == NULL)
             {
                 newChunksToLoad.pop();
@@ -83,7 +83,6 @@ void WorldUpdater::loadNewChunks()
             ChunkMesh chunkMesh(*(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ].get()));
 
             std::array<std::optional<ChunkData>, 4> neighborsChunks;
-            /*
             if (arrayX - 1 >= 0 && chunkLoadedData[(arrayX  - 1)* RENDER_DISTANCE_2X + arrayZ] != NULL)
                 neighborsChunks[0] = *(chunkLoadedData[(arrayX  - 1)* RENDER_DISTANCE_2X + arrayZ].get());
             if (arrayX + 1 < RENDER_DISTANCE_2X && chunkLoadedData[(arrayX  + 1)* RENDER_DISTANCE_2X + arrayZ] != NULL)
@@ -92,7 +91,6 @@ void WorldUpdater::loadNewChunks()
                 neighborsChunks[2] = *(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ - 1].get());
             if (arrayZ + 1  < RENDER_DISTANCE_2X && chunkLoadedData[arrayX* RENDER_DISTANCE_2X + arrayZ + 1] != NULL)
                 neighborsChunks[3] = *(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ + 1].get());
-            */
             chunkMesh.initMesh(neighborsChunks);
             std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
             chunksLoaded.push(chunkMesh);
@@ -154,57 +152,65 @@ std::optional<ChunkMesh> WorldUpdater::getChunkLoaded()
 
 void WorldUpdater::updatePlayerChunkCoord(int updatedPlayerChunkX, int updatedPlayerChunkZ)
 {
-    std::lock_guard<std::mutex> playerChunkCoordGuard(playerChunkCoordMutex);
-
-    int chunkToUpdateX;
-    int chunkToUpdateZ;
-    if (playerChunkX < updatedPlayerChunkX)
+    int oldPlayerChunkX;
+    int oldPlayerChunkZ;
     {
-        for (int i = 0; i < RENDER_DISTANCE_2X - 1; i++)
+        std::lock_guard<std::mutex> playerChunkCoordGuard(playerChunkCoordMutex);
+        oldPlayerChunkX = playerChunkX;
+        oldPlayerChunkZ = playerChunkZ;
+        playerChunkX = updatedPlayerChunkX;
+        playerChunkZ = updatedPlayerChunkZ;
+    }
+    {
+        std::lock_guard<std::mutex> chunkLoadedDataGuard(chunksLoadedDataMutex);
+        int chunkToUpdateX;
+        int chunkToUpdateZ;
+        if (oldPlayerChunkX < updatedPlayerChunkX)
+        {
+            for (int i = 0; i < RENDER_DISTANCE_2X - 1; i++)
+            {
+                for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+                    chunkLoadedData[i * RENDER_DISTANCE_2X + j] = std::move(chunkLoadedData[(i + 1) * RENDER_DISTANCE_2X + j]);
+            }
+            chunkToUpdateX = RENDER_DISTANCE_2X - 1;
+        }
+        else if (oldPlayerChunkX > updatedPlayerChunkX)
+        {
+            for (int i = RENDER_DISTANCE_2X - 1; i >= 1; i--)
+            {
+                for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+                    chunkLoadedData[i * RENDER_DISTANCE_2X + j] = std::move(chunkLoadedData[(i - 1) * RENDER_DISTANCE_2X + j]);
+            }
+            chunkToUpdateX = 0;
+        }
+        if (oldPlayerChunkX != updatedPlayerChunkX)
         {
             for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-                chunkLoadedData[i * RENDER_DISTANCE_2X + j] = std::move(chunkLoadedData[(i + 1) * RENDER_DISTANCE_2X + j]);
+                chunkLoadedData[chunkToUpdateX * RENDER_DISTANCE_2X + j] = NULL;
         }
-        chunkToUpdateX = RENDER_DISTANCE_2X - 1;
-    }
-    else if (playerChunkX > updatedPlayerChunkX)
-    {
-        for (int i = RENDER_DISTANCE_2X - 1; i >= 1; i--)
-        {
-            for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-                chunkLoadedData[i * RENDER_DISTANCE_2X + j] = std::move(chunkLoadedData[(i - 1) * RENDER_DISTANCE_2X + j]);
-        }
-        chunkToUpdateX = 0;
-    }
-    if (playerChunkX != updatedPlayerChunkX)
-    {
-        for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-            chunkLoadedData[chunkToUpdateX * RENDER_DISTANCE_2X + j] = NULL;
-    }
 
-    if (playerChunkZ < updatedPlayerChunkZ)
-    {
-        for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+        if (oldPlayerChunkZ < updatedPlayerChunkZ)
         {
-            for (int j = 0; j < RENDER_DISTANCE_2X - 1; j++)
-                chunkLoadedData[i * RENDER_DISTANCE_2X + j] = std::move(chunkLoadedData[i * RENDER_DISTANCE_2X + j + 1]);
+            for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+            {
+                for (int j = 0; j < RENDER_DISTANCE_2X - 1; j++)
+                    chunkLoadedData[i * RENDER_DISTANCE_2X + j] = std::move(chunkLoadedData[i * RENDER_DISTANCE_2X + j + 1]);
+            }
+            chunkToUpdateZ = RENDER_DISTANCE_2X - 1;
         }
-        chunkToUpdateZ = RENDER_DISTANCE_2X - 1;
-    }
-    else if (playerChunkZ > updatedPlayerChunkZ)
-    {
-        for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+        else if (oldPlayerChunkZ > updatedPlayerChunkZ)
         {
-            for (int j = RENDER_DISTANCE_2X - 1; j >= 1; j--)
-                chunkLoadedData[i * RENDER_DISTANCE_2X + j] = std::move(chunkLoadedData[i * RENDER_DISTANCE_2X + j - 1]);
+            for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+            {
+                for (int j = RENDER_DISTANCE_2X - 1; j >= 1; j--)
+                    chunkLoadedData[i * RENDER_DISTANCE_2X + j] = std::move(chunkLoadedData[i * RENDER_DISTANCE_2X + j - 1]);
+            }
+            chunkToUpdateZ = 0;
         }
-        chunkToUpdateZ = 0;
+        if (oldPlayerChunkZ != updatedPlayerChunkZ)
+        {
+            for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+                chunkLoadedData[i * RENDER_DISTANCE_2X + chunkToUpdateZ] = NULL;
+        }
     }
-    if (playerChunkZ != updatedPlayerChunkZ)
-    {
-         for (int i = 0; i < RENDER_DISTANCE_2X; i++)
-            chunkLoadedData[i * RENDER_DISTANCE_2X + chunkToUpdateZ] = NULL;
-    }
-    playerChunkX = updatedPlayerChunkX;
-    playerChunkZ = updatedPlayerChunkZ;
 }
