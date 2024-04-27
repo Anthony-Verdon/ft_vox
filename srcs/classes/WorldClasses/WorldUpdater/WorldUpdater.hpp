@@ -16,10 +16,10 @@ class WorldUpdater
     int playerChunkZ;
 
     std::mutex chunksToLoadMutex;
-    std::stack<std::pair<int, int>> chunksToLoad;
+    std::vector<std::pair<int, int>> chunksToLoad;
 
     std::mutex chunksLoadedMutex;
-    std::stack<ChunkMesh> chunksLoaded;
+    std::vector<ChunkMesh> chunksLoaded;
 
     std::thread updaterThread;
     std::mutex stopThreadMutex;
