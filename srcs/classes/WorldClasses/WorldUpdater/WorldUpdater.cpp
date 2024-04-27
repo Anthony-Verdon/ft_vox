@@ -48,8 +48,12 @@ void WorldUpdater::loadNewChunks()
         }
         for (size_t i = 0; i < nbChunks; i++)
         {
-            int arrayX = newChunksToLoad2.top().first / 16 - playerChunkX + RENDER_DISTANCE;
-            int arrayZ = newChunksToLoad2.top().second / 16 - playerChunkZ + RENDER_DISTANCE;
+            int arrayX, arrayZ;
+            {
+            std::lock_guard<std::mutex> playerChunkCoordGuard(playerChunkCoordMutex);
+            arrayX = newChunksToLoad2.top().first / 16 - playerChunkX + RENDER_DISTANCE;;
+            arrayZ = newChunksToLoad2.top().second / 16 - playerChunkZ + RENDER_DISTANCE;;
+            }
             if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X)
             {
                 newChunksToLoad2.pop();
@@ -62,9 +66,12 @@ void WorldUpdater::loadNewChunks()
         {
             // time of sleep could be modified in the future
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            int arrayX = newChunksToLoad.top().first / 16 - playerChunkX + RENDER_DISTANCE;
-            int arrayZ = newChunksToLoad.top().second / 16 - playerChunkZ + RENDER_DISTANCE;
-
+            int arrayX, arrayZ;
+            {
+            std::lock_guard<std::mutex> playerChunkCoordGuard(playerChunkCoordMutex);
+            arrayX = newChunksToLoad.top().first / 16 - playerChunkX + RENDER_DISTANCE;;
+            arrayZ = newChunksToLoad.top().second / 16 - playerChunkZ + RENDER_DISTANCE;;
+            }
             if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X || chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ] == NULL)
             {
                 newChunksToLoad.pop();
@@ -72,22 +79,17 @@ void WorldUpdater::loadNewChunks()
             }
             ChunkMesh chunkMesh(*(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ].get()));
 
-            /*
-            todo: really init it
-            I think the best way is to have an array one RENDER_DISTANCE_2X size + 1 * 2
-            because another way would be to generate 4 chunks data next to chunk wanted,
-            but even if it's in a thread, (so it's not visible in game),
-            it would take more time to generate
-            */
             std::array<std::optional<ChunkData>, 4> neighborsChunks;
-            if (arrayX - 1 >= 0)
+            /*
+            if (arrayX - 1 >= 0 && chunkLoadedData[(arrayX  - 1)* RENDER_DISTANCE_2X + arrayZ] != NULL)
                 neighborsChunks[0] = *(chunkLoadedData[(arrayX  - 1)* RENDER_DISTANCE_2X + arrayZ].get());
-            if (arrayX + 1 < RENDER_DISTANCE_2X)
+            if (arrayX + 1 < RENDER_DISTANCE_2X && chunkLoadedData[(arrayX  + 1)* RENDER_DISTANCE_2X + arrayZ] != NULL)
                 neighborsChunks[1] = *(chunkLoadedData[(arrayX + 1)* RENDER_DISTANCE_2X + arrayZ].get());
-            if (arrayZ - 1 >= 0)
+            if (arrayZ - 1 >= 0 && chunkLoadedData[arrayX* RENDER_DISTANCE_2X + arrayZ - 1] != NULL)
                 neighborsChunks[2] = *(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ - 1].get());
-            if (arrayZ + 1  < RENDER_DISTANCE_2X)
+            if (arrayZ + 1  < RENDER_DISTANCE_2X && chunkLoadedData[arrayX* RENDER_DISTANCE_2X + arrayZ + 1] != NULL)
                 neighborsChunks[3] = *(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ + 1].get());
+            */
             chunkMesh.initMesh(neighborsChunks);
             std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
             chunksLoaded.push(chunkMesh);
@@ -149,10 +151,6 @@ std::optional<ChunkMesh> WorldUpdater::getChunkLoaded()
 
 void WorldUpdater::updatePlayerChunkCoord(int updatedPlayerChunkX, int updatedPlayerChunkZ)
 {
-    #ifdef DEBUG_MODE
-    std::cout << "updatePlayerChunkCoord(), return at the start of the function" << std::endl;
-    return;
-    #endif
     std::lock_guard<std::mutex> playerChunkCoordGuard(playerChunkCoordMutex);
 
     int chunkToUpdateX;

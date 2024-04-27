@@ -17,3 +17,4 @@ le travail pourrait presque être séparé en 2 thread mais on y réfléchira pl
 
 - sûrement possibilité de faire une classe parente aux 2 classes world actuelles afin de refactoriser le code
 - peut-être passer les stacks en vector au final
+- besoin de faire le tableau 1 plus grand pour éviter le problème quand l'update des coord se fait plus vite que l'update du joueur, ou alors dans le main thread check régulièrement si on a des chunks pas chargé et les rajouter
