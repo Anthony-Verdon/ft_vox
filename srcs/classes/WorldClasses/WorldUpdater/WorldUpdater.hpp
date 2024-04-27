@@ -32,6 +32,6 @@ class WorldUpdater
     WorldUpdater();
     ~WorldUpdater();
     void addChunkToLoad(int chunkX, int chunkZ);
-    std::optional<ChunkMesh> getChunkLoaded();
+    std::optional<std::vector<ChunkMesh>> getChunkLoaded();
     void updatePlayerChunkCoord(int newPlayerChunkX, int newPlayerChunkZ);
 };

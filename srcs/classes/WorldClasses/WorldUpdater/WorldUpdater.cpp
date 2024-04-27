@@ -1,5 +1,6 @@
 #include "WorldUpdater.hpp"
 #include "../../../globals.hpp"
+#include <chrono>
 #include <iostream>
 
 WorldUpdater::WorldUpdater()
@@ -51,6 +52,7 @@ void WorldUpdater::loadNewChunks()
             actualPlayerChunkX = playerChunkX;
             actualPlayerChunkZ = playerChunkZ;
         }
+        std::this_thread::sleep_for (std::chrono::milliseconds(100));
         std::lock_guard<std::mutex> chunkLoadedDataGuard(chunksLoadedDataMutex);
         for (size_t i = 0; i < nbChunks; i++)
         {
@@ -124,14 +126,14 @@ void WorldUpdater::addChunkToLoad(int chunkX, int chunkZ)
     chunksToLoad.push_back({chunkX, chunkZ});
 }
 
-std::optional<ChunkMesh> WorldUpdater::getChunkLoaded()
+std::optional<std::vector<ChunkMesh>> WorldUpdater::getChunkLoaded()
 {
     std::unique_lock<std::mutex> chunksLoadedGuard(chunksLoadedMutex, std::defer_lock);
-    std::optional<ChunkMesh> chunks;
+    std::optional<std::vector<ChunkMesh>> chunks;
     if (chunksLoadedGuard.try_lock() && !chunksLoaded.empty())
     {
-        chunks = chunksLoaded[chunksLoaded.size() - 1];
-        chunksLoaded.pop_back();
+        chunks = chunksLoaded;
+        chunksLoaded.clear();
     }
     return (chunks);
 }

@@ -29,19 +29,21 @@ WorldData::~WorldData()
 
 void WorldData::updateChunksLoad(float x, float z)
 {
-    while (true)
+    std::optional<std::vector<ChunkMesh>> chunkMeshOptional = worldUpdater.getChunkLoaded();
+    if (chunkMeshOptional.has_value()) 
     {
-        std::optional<ChunkMesh> chunkMesh = worldUpdater.getChunkLoaded();
-        if (!chunkMesh.has_value())
-            break;
-        int arrayX = chunkMesh->getX() - playerChunkX + RENDER_DISTANCE;
-        int arrayZ = chunkMesh->getZ() - playerChunkZ + RENDER_DISTANCE;
+        std::vector<ChunkMesh> chunkMesh = chunkMeshOptional.value();
+        for (size_t i = 0; i < chunkMesh.size(); i++)
+        {
+            int arrayX = chunkMesh[i].getX() - playerChunkX + RENDER_DISTANCE;
+            int arrayZ = chunkMesh[i].getZ() - playerChunkZ + RENDER_DISTANCE;
 
-        if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X)
-            continue;
+            if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X)
+                continue;
 
-        chunks[arrayX * RENDER_DISTANCE_2X + arrayZ] =
-            std::make_unique<ChunkRenderer>(chunkMesh.value());
+            chunks[arrayX * RENDER_DISTANCE_2X + arrayZ] =
+                std::make_unique<ChunkRenderer>(chunkMesh[i]);
+        }
     }
     if (x < 0)
         x = x - 16;
