@@ -1,5 +1,12 @@
+#!/usr/bin/env python
+
+from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+
+# Will hide the open browser
+display = Display(visible=0, size=(800, 600))
+display.start()
 
 # Initialize a browser instance
 driver = webdriver.Chrome()
