@@ -34,12 +34,12 @@ cd stb_image
 wget https://github.com/nothings/stb/raw/master/stb_image.h
 cd ..
 
-wget https://download.savannah.gnu.org/releases/freetype/freetype-2.10.1.tar.xz
-tar -xvf freetype-2.10.1.tar.xz
-rm -rf freetype-2.10.1.tar.xz
-cd freetype-2.10.1
-cmake -E make_directory build
-cmake -E chdir build cmake ..
-cd build
-make
-cd ../..
+#wget https://download.savannah.gnu.org/releases/freetype/freetype-2.10.1.tar.xz
+#tar -xvf freetype-2.10.1.tar.xz
+#rm -rf freetype-2.10.1.tar.xz
+#cd freetype-2.10.1
+#cmake -E make_directory build
+#cmake -E chdir build cmake ..
+#cd build
+#make
+#cd ../..
