@@ -2,6 +2,7 @@
 
 #include "../../../libs/glad/include/glad/glad.h"
 #include "../Camera/Camera.hpp"
+#include "../Shader/Shader.hpp"
 #include <GLFW/glfw3.h>
 #include "../WorldClasses/WorldData/WorldData.hpp"
 #include "../../globals.hpp"
@@ -17,16 +18,25 @@ typedef struct s_ftCharacter {
     unsigned int Advance;    // Offset to advance to next glyph
 } t_ftCharacter;
 
+typedef struct s_textRenderer {
+    std::map<char, t_ftCharacter> characters;
+    unsigned int VAO;
+    unsigned int VBO;
+} t_textRenderer;
+
 class WindowManager
 {
   private:
     GLFWwindow *window;
     Camera camera;
-    std::map<char, t_ftCharacter> characters;
+    t_textRenderer textRenderer;
+
     t_data data;
 
     void start();
+    void setupTextRenderer();
     void updateLoop();
+    void renderText(Shader &textShader, const std::string &text, float x, float y, float scale, const glm::vec3 &color);
     bool isKeyPressed(int key);
     void updateWireframeMode();
     void updateSpeed();
