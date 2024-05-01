@@ -47,6 +47,8 @@ re:
 			make fclean
 			make
 
+install:
+			sh ./scripts/build.sh
 debug:
 			sh ./scripts/useDebugMode.sh true
 			make ${NAME}
@@ -54,4 +56,4 @@ debug:
 nodebug:
 			sh ./scripts/useDebugMode.sh false
 
-.PHONY: 	all clean fclean re debug nodebug
+.PHONY: 	all clean fclean re installcdebug nodebug
