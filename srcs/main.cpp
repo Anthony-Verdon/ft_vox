@@ -5,6 +5,8 @@
 #include <iostream>
 #include "globals.hpp"
 
+#include "../libs/freetype-2.10.1/include/ft2build.h"
+#include FT_FREETYPE_H  
 int main()
 {
 #ifdef DEBUG_MODE

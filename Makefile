@@ -23,9 +23,9 @@ COMPILER ?= c++
 
 RM		:= rm -f
 
-CFLAGS 	:= -Wall -Werror -Wextra -g -std=c++17 -MMD -MP
+CFLAGS 	:= -Wall -Werror -Wextra -g -std=c++17 -MMD -MP `pkg-config --cflags freetype2`
 
-LIBRARIES := -Llibs/glfw-3.4/build/src -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl
+LIBRARIES := -Llibs/glfw-3.4/build/src -lglfw3 -Llibs/freetype-2.10.1/build/ -lfreetype  -lGL -lX11 -lpthread -lXrandr -lXi -ldl
 
 .cpp.o:
 		$(COMPILER) $(CFLAGS)  -c $< -o ${<:.cpp=.o}
