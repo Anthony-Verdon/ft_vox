@@ -11,8 +11,9 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-
+#include <sstream> 
 #include <ft2build.h>
+#include <iomanip> 
 #include FT_FREETYPE_H  
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
@@ -29,6 +30,9 @@ WindowManager::~WindowManager()
 
 void WindowManager::start()
 {
+    data.infoMode = false;
+    data.wireframeMode = false;
+
     if (glfwInit() == GL_FALSE)
         throw(std::runtime_error("INIT_GLFW::INITIALIZATION_FAILED"));
 
@@ -67,8 +71,9 @@ void WindowManager::setupTextRenderer()
     FT_Face face;
     if (FT_New_Face(ft, "assets/fonts/arial.ttf", 0, &face))
         throw(std::runtime_error("INIT_FREETYPE::FONT_LOADING_FAILED"));  
-    
-    FT_Set_Pixel_Sizes(face, 0, 48); 
+
+    textRenderer.pixelSize = 48;
+    FT_Set_Pixel_Sizes(face, 0, textRenderer.pixelSize); 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
     for (unsigned char c = 0; c < 128; c++)
     {
@@ -146,6 +151,7 @@ void WindowManager::updateLoop()
         #endif
         updateWireframeMode();
         updateSpeed();
+        updateInfoMode();
         int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);
         int rightAxis = isKeyPressed(GLFW_KEY_D) - isKeyPressed(GLFW_KEY_A);
         int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
@@ -175,8 +181,14 @@ void WindowManager::updateLoop()
                 glDrawElements(GL_TRIANGLES, chunk->getFaces().size(), GL_UNSIGNED_INT, 0);
             }
         }
-        renderText(TextShader, "This is sample text", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-        renderText(TextShader, "(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
+
+        if (data.infoMode)
+        {
+            const float scaling = 0.5f;
+            renderText(TextShader, "X: " + std::to_string(camera.getPosition().x), 0.0f, WINDOW_HEIGHT - 1 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling, glm::vec3(1, 1, 1));
+            renderText(TextShader, "Y: " + std::to_string(camera.getPosition().y), 0.0f, WINDOW_HEIGHT - 2 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling, glm::vec3(1, 1, 1));
+            renderText(TextShader, "Z: " + std::to_string(camera.getPosition().z), 0.0f, WINDOW_HEIGHT - 3 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling, glm::vec3(1, 1, 1));
+        }
         
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -186,7 +198,7 @@ void WindowManager::updateLoop()
 void WindowManager::renderText(Shader &textShader, const std::string &text, float x, float y, float scale, const glm::vec3 &color)
 {
     textShader.use();
-    glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH), 0.0f, static_cast<float>(WINDOW_HEIGHT));
     textShader.setMat4("projection", projection);
     textShader.setVec3("textColor", color);
     glActiveTexture(GL_TEXTURE0);
@@ -234,15 +246,13 @@ bool WindowManager::isKeyPressed(int key)
 
 void WindowManager::updateWireframeMode()
 {
-    static bool wireFrameMode = false;
     static bool keyEnable = true;
-
     if (isKeyPressed(GLFW_KEY_F1))
     {
         if (keyEnable == true)
         {
-            wireFrameMode = !wireFrameMode;
-            if (wireFrameMode)
+            data.wireframeMode = !data.wireframeMode;
+            if (data.wireframeMode)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             else
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -260,6 +270,20 @@ void WindowManager::updateSpeed()
         camera.setSpeed(20);
     else
         camera.setSpeed(10);
+}
+
+void WindowManager::updateInfoMode()
+{
+    static bool keyEnable = true;
+
+    if (isKeyPressed(GLFW_KEY_F3))
+    {
+        if (keyEnable == true)
+            data.infoMode = !data.infoMode;
+        keyEnable = false;
+    }
+    else
+        keyEnable = true;
 }
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos)

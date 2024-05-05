@@ -9,6 +9,8 @@
 #include <map>
 typedef struct s_data
 {
+    bool infoMode;
+    bool wireframeMode;
 } t_data;
 
 typedef struct s_ftCharacter {
@@ -20,6 +22,7 @@ typedef struct s_ftCharacter {
 
 typedef struct s_textRenderer {
     std::map<char, t_ftCharacter> characters;
+    int pixelSize;
     unsigned int VAO;
     unsigned int VBO;
 } t_textRenderer;
@@ -40,6 +43,7 @@ class WindowManager
     bool isKeyPressed(int key);
     void updateWireframeMode();
     void updateSpeed();
+    void updateInfoMode();
     
 #ifdef DEBUG_MODE
     void DebugWriteMap(const WorldData &world);
