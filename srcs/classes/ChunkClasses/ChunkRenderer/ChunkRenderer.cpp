@@ -1,5 +1,5 @@
 #include "ChunkRenderer.hpp"
-#include "../../../../libs/glad/include/glad/glad.h"
+#include <glad/glad.h>
 
 ChunkRenderer::ChunkRenderer(const ChunkMesh &chunkMesh) : ChunkMesh(chunkMesh)
 {

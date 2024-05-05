@@ -7,6 +7,8 @@ class Texture
   private:
     static bool isTextureParametersInit;
     static void initTextureParameters();
+    void loadTexture(const std::string &path);
+    void loadSkybox(const std::string &path);
 
     unsigned int ID;
 

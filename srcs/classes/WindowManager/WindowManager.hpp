@@ -1,11 +1,10 @@
 #pragma once
 
-#include "../../../libs/glad/include/glad/glad.h"
+#include "../../globals.hpp"
 #include "../Camera/Camera.hpp"
 #include "../Shader/Shader.hpp"
-#include <GLFW/glfw3.h>
 #include "../WorldClasses/WorldData/WorldData.hpp"
-#include "../../globals.hpp"
+#include <GLFW/glfw3.h>
 #include <map>
 typedef struct s_data
 {
@@ -13,14 +12,16 @@ typedef struct s_data
     bool wireframeMode;
 } t_data;
 
-typedef struct s_ftCharacter {
-    unsigned int TextureID;  // ID handle of the glyph texture
-    glm::ivec2   Size;       // Size of glyph
-    glm::ivec2   Bearing;    // Offset from baseline to left/top of glyph
-    unsigned int Advance;    // Offset to advance to next glyph
+typedef struct s_ftCharacter
+{
+    unsigned int TextureID; // ID handle of the glyph texture
+    glm::ivec2 Size;        // Size of glyph
+    glm::ivec2 Bearing;     // Offset from baseline to left/top of glyph
+    unsigned int Advance;   // Offset to advance to next glyph
 } t_ftCharacter;
 
-typedef struct s_textRenderer {
+typedef struct s_textRenderer
+{
     std::map<char, t_ftCharacter> characters;
     int pixelSize;
     unsigned int VAO;
@@ -44,7 +45,7 @@ class WindowManager
     void updateWireframeMode();
     void updateSpeed();
     void updateInfoMode();
-    
+
 #ifdef DEBUG_MODE
     void DebugWriteMap(const WorldData &world);
     void DebugWritePlayerCoord();

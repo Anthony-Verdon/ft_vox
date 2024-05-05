@@ -1,9 +1,9 @@
 #include "classes/WindowManager/WindowManager.hpp"
+#include "globals.hpp"
 #include <GLFW/glfw3.h>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
-#include "globals.hpp"
 int main()
 {
 #ifdef DEBUG_MODE
