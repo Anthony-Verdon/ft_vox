@@ -1,4 +1,11 @@
 set_targetdir("./")
+set_languages("cxx17")
+
+add_cxxflags("clang::-stdlib=libc++")
+add_cxxflags("clang::-std=c++17")
+add_cxxflags("clang::-Wall")
+add_cxxflags("clang::-Werror")
+add_cxxflags("clang::-Wextra")
 
 add_requires("freetype")
 add_requires("glfw")
@@ -7,6 +14,7 @@ add_requires("stb")
 add_requires("glad")
 
 target("ft_vox")
+    set_toolset("clang")
     set_kind("binary")
     add_files("srcs/**.cpp")
     add_packages("freetype")

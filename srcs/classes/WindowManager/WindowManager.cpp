@@ -118,14 +118,21 @@ void WindowManager::setupTextRenderer()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
+
+void loadSkybox(unsigned int *VAO, unsigned int *VBO);
+
 void WindowManager::updateLoop()
 {
     WorldData world;
     // camera.setPosition({0, world.perlinNoise[0] * 256, 0});
     camera.setPosition({8, 64, 8});
-    Texture grassTexture("assets/tileset.jpg");
+    Texture grassTexture("assets/textures/tileset.jpg");
+    Texture skyboxTexture("assets/textures/skybox/");
     Shader WorldShader("srcs/shaders/WorldShader/WorldShader.vs", "srcs/shaders/WorldShader/WorldShader.fs");
     Shader TextShader("srcs/shaders/TextShader/TextShader.vs", "srcs/shaders/TextShader/TextShader.fs");
+    Shader SkyboxShader("srcs/shaders/SkyboxShader/SkyboxShader.vs", "srcs/shaders/SkyboxShader/SkyboxShader.fs");
+    unsigned int skyboxVAO, skyboxVBO;
+    loadSkybox(&skyboxVAO, &skyboxVBO);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -147,16 +154,28 @@ void WindowManager::updateLoop()
         int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
         camera.updatePosition(frontAxis, rightAxis, upAxis);
 
-        /* world shader update */
-        WorldShader.use();
         glm::mat4 view = glm::lookAt(camera.getPosition(), camera.getPosition() + camera.getFrontDirection(),
                                      camera.getUpDirection());
-        WorldShader.setMat4("view", view);
         glm::mat4 projection =
             glm::perspective(glm::radians(camera.getFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+
+        /* skybox rendering */
+        glDepthMask(GL_FALSE);
+        SkyboxShader.use();
+        SkyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
+        SkyboxShader.setMat4("projection", projection);
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.getID());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthMask(GL_TRUE);
+
+        /* world shader update */
+        WorldShader.use();
+        WorldShader.setMat4("view", view);
         WorldShader.setMat4("projection", projection);
 
-        /* rendering */
+        /* world rendering */
         world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
@@ -189,6 +208,41 @@ void WindowManager::updateLoop()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    glDeleteVertexArrays(1, &skyboxVAO);
+    glDeleteBuffers(1, &skyboxVBO);
+}
+
+void loadSkybox(unsigned int *VAO, unsigned int *VBO)
+{
+    float skyboxVertices[] = {// positions
+
+                              -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+                              1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
+
+                              -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+                              -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
+
+                              1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
+                              1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
+
+                              -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+                              1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+
+                              -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
+                              1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
+
+                              -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
+                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
+
+    glGenVertexArrays(1, VAO);
+    glGenBuffers(1, VBO);
+
+    glBindVertexArray(*VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
+    glEnableVertexAttribArray(0);
 }
 
 void WindowManager::renderText(Shader &textShader, const std::string &text, float x, float y, float scale,
