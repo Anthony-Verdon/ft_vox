@@ -159,17 +159,6 @@ void WindowManager::updateLoop()
         glm::mat4 projection =
             glm::perspective(glm::radians(camera.getFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
-        /* skybox rendering */
-        glDepthMask(GL_FALSE);
-        SkyboxShader.use();
-        SkyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
-        SkyboxShader.setMat4("projection", projection);
-        glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.getID());
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthMask(GL_TRUE);
-
         /* world rendering */
         WorldShader.use();
         WorldShader.setMat4("view", view);
@@ -202,6 +191,17 @@ void WindowManager::updateLoop()
                        WINDOW_HEIGHT - 3 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
                        glm::vec3(1, 1, 1));
         }
+
+        /* skybox rendering */
+        glDepthFunc(GL_LEQUAL);
+        SkyboxShader.use();
+        SkyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
+        SkyboxShader.setMat4("projection", projection);
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.getID());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthFunc(GL_LESS);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

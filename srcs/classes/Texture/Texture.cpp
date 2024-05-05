@@ -37,6 +37,7 @@ void Texture::loadTexture(const std::string &path)
     glBindTexture(GL_TEXTURE_2D, ID);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, &data[0]);
     glGenerateMipmap(GL_TEXTURE_2D);
+
     stbi_image_free(data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -55,10 +56,11 @@ void Texture::loadSkybox(const std::string &path)
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, ID);
 
+    stbi_set_flip_vertically_on_load(false);
+
     int width;
     int height;
     int nrChannels;
-    stbi_set_flip_vertically_on_load(false);
     for (unsigned int i = 0; i < faces.size(); i++)
     {
         unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
