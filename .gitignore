@@ -5,6 +5,5 @@ libs
 .vscode
 notes.txt
 
-xmake.lua
 .xmake
 build

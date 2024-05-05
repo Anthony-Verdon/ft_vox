@@ -1,5 +1,5 @@
 #include "WindowManager.hpp"
-#include "../../../libs/glm/glm/gtc/matrix_transform.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 #include "../../globals.hpp"
 #include "../Shader/Shader.hpp"
 #include "../Texture/Texture.hpp"
@@ -12,8 +12,8 @@
 #include <memory>
 #include <stdexcept>
 #include <sstream> 
-#include <ft2build.h>
 #include <iomanip> 
+#include <ft2build.h>
 #include FT_FREETYPE_H  
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);

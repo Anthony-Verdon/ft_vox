@@ -1,5 +1,5 @@
 #include "Shader.hpp"
-#include "../../../libs/glm/glm/gtc/type_ptr.hpp"
+#include <glm/gtc/type_ptr.hpp>
 #include "../Utils/Utils.hpp"
 Shader::Shader()
 {
