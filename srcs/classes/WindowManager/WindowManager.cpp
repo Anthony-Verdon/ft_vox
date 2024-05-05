@@ -170,12 +170,10 @@ void WindowManager::updateLoop()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthMask(GL_TRUE);
 
-        /* world shader update */
+        /* world rendering */
         WorldShader.use();
         WorldShader.setMat4("view", view);
         WorldShader.setMat4("projection", projection);
-
-        /* world rendering */
         world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
