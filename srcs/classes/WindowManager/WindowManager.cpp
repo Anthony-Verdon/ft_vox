@@ -28,6 +28,7 @@ WindowManager::~WindowManager()
 {
     glDeleteVertexArrays(1, &textRenderer.VAO);
     glDeleteBuffers(1, &textRenderer.VBO);
+    glfwTerminate();
 }
 
 void WindowManager::start()
@@ -52,6 +53,10 @@ void WindowManager::start()
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         throw(std::runtime_error("INIT_OPENGL::INITIALIZATION_FAILED"));
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -189,6 +194,9 @@ void WindowManager::updateLoop()
                        glm::vec3(1, 1, 1));
             renderText(TextShader, "Z: " + std::to_string(camera.getPosition().z), 0.0f,
                        WINDOW_HEIGHT - 3 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
+                       glm::vec3(1, 1, 1));
+            renderText(TextShader, "FPS: " + std::to_string(static_cast<int>(std::round(1.0f / Time::getDeltaTime()))),
+                       0.0f, WINDOW_HEIGHT - 4 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
                        glm::vec3(1, 1, 1));
         }
 
