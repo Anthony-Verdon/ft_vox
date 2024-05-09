@@ -1,9 +1,9 @@
 #include "ChunkMesh.hpp"
+#include "../../../globals.hpp"
 #include "../../BlockClasses/BlockMesh/BlockMesh.hpp"
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-
 ChunkMesh::ChunkMesh(const ChunkData &data) : ChunkData(data)
 {
 }

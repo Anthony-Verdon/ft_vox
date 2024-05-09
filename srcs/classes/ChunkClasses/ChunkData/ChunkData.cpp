@@ -1,7 +1,9 @@
 #include "ChunkData.hpp"
+#include "../../../globals.hpp"
 #include "../ChunkMesh/ChunkMesh.hpp"
 #include <iostream>
 #include <memory>
+
 ChunkData::ChunkData()
 {
     blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);

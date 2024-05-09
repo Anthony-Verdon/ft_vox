@@ -162,7 +162,8 @@ void WindowManager::updateLoop()
         glm::mat4 view = glm::lookAt(camera.getPosition(), camera.getPosition() + camera.getFrontDirection(),
                                      camera.getUpDirection());
         glm::mat4 projection =
-            glm::perspective(glm::radians(camera.getFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+            glm::perspective(glm::radians(camera.getFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f,
+                             100.0f); // possiblity to change view distance with this parameter (the 100.0f) too I think
 
         /* world rendering */
         WorldShader.use();

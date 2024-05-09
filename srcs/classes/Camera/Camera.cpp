@@ -1,6 +1,6 @@
 #include "Camera.hpp"
+#include "../../globals.hpp"
 #include "../Time/Time.hpp"
-
 Camera::Camera()
 {
     position = glm::vec3(0.0f, 5.0f, 0.0f);
@@ -10,7 +10,7 @@ Camera::Camera()
     yaw = -90.0f;
     pitch = 0.0f;
     speed = 10.00;
-    fov = 80.0f;
+    fov = FOV;
 }
 
 Camera::~Camera()

@@ -26,7 +26,6 @@ class WorldUpdater
     bool stopThread;
 
     void loadNewChunks();
-    ChunkData initChunkData(int modifierX, int modifierZ);
 
   public:
     WorldUpdater();

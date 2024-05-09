@@ -6,9 +6,6 @@ class ChunkMesh;
 #include <memory>
 #include <optional>
 
-constexpr int CHUNK_LENGTH = 16;
-constexpr int CHUNK_HEIGHT = 256;
-
 class ChunkData
 {
   protected:
@@ -28,5 +25,5 @@ class ChunkData
     int getX() const;
     int getZ() const;
 
-     int convertCoordIntoChunkCoords(int coord) const;
+    int convertCoordIntoChunkCoords(int coord) const;
 };
