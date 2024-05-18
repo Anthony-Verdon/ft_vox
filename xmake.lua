@@ -1,7 +1,9 @@
 set_targetdir("./")
 set_languages("cxx17")
 
-add_cxxflags("clang::-stdlib=libc++")
+set_toolchains("clang")
+
+add_ldflags("clang::-stdlib=libc++")
 add_cxxflags("clang::-std=c++17")
 add_cxxflags("clang::-Wall")
 add_cxxflags("clang::-Werror")
@@ -13,10 +15,24 @@ add_requires("glm")
 add_requires("stb")
 add_requires("glad")
 
+rule("mode.debug")
+    before_build(function (target)
+        target:add("defines", "DEBUG_MODE")
+
+    end)
+rule_end()
+
+if is_mode("debug") then
+    add_rules("mode.debug")
+end
+
 target("ft_vox")
-    set_toolset("clang")
     set_kind("binary")
-    add_files("srcs/**.cpp")
+    if is_mode("gen") then
+        -- nothing for the moment but will add special srcs file for this mode
+    else
+        add_files("srcs/**.cpp")
+    end
     add_packages("freetype")
     add_packages("glfw")
     add_packages("glm")

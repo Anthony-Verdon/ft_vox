@@ -2,10 +2,25 @@
 #include "../../../globals.hpp"
 #include <random>
 unsigned long ChunkGenerator::seed = 0;
+std::unique_ptr<int[]> ChunkGenerator::map = std::make_unique<int[]>(NB_CHUNK_ON_EDGE * NB_CHUNK_ON_EDGE);
 
 void ChunkGenerator::SetSeed(unsigned long seed)
 {
     ChunkGenerator::seed = seed;
+    GenerateMap();
+}
+
+void ChunkGenerator::GenerateMap()
+{
+    srand(seed);
+
+    for (int x = 0; x < NB_CHUNK_ON_EDGE; x++)
+    {
+        for (int z = 0; z < NB_CHUNK_ON_EDGE; z++)
+        {
+            map[x * NB_CHUNK_ON_EDGE + z] = 0;
+        }
+    }
 }
 
 ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
@@ -22,14 +37,12 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
     ChunkData chunkData;
     for (int posX = 0; posX < CHUNK_LENGTH; posX++)
     {
+        for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
         {
-            for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
+            for (int posY = 0; posY < height; posY++)
             {
-                for (int posY = 0; posY < height; posY++)
-                {
-                    BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePattern);
-                    chunkData.addBlock(block);
-                }
+                BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePattern);
+                chunkData.addBlock(block);
             }
         }
     }

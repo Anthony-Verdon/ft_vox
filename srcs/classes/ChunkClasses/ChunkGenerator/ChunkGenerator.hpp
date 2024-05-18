@@ -4,6 +4,9 @@ class ChunkGenerator
 {
   private:
     static unsigned long seed;
+    static std::unique_ptr<int[]> map;
+
+    static void GenerateMap();
 
   public:
     ChunkGenerator() = delete;

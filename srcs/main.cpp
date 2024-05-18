@@ -5,10 +5,11 @@
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+
 int main(int argc, char **argv)
 {
 #ifdef DEBUG_MODE
-    std::cout << "enter debug mode" << std::endl;
+    std::cout << "enter debug  mode" << std::endl;
 #endif
     try
     {
@@ -19,7 +20,8 @@ int main(int argc, char **argv)
             ChunkGenerator::SetSeed(time(nullptr));
         else
             ChunkGenerator::SetSeed(std::stoul(argv[1]));
-        WindowManager windowManager;
+        // WindowManager windowManager;
+        std::cout << "hello" << std::endl;
         return (EXIT_SUCCESS);
     }
     catch (const std::exception &exception)
