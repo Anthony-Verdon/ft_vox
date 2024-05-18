@@ -4,6 +4,6 @@ libs
 *.d
 .vscode
 notes.txt
-
+imagesGenerated
 .xmake
 build
