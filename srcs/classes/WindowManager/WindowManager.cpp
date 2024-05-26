@@ -58,7 +58,7 @@ void WindowManager::start()
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glEnable(GL_DEPTH_TEST);
 
     // cull face enabled make openGL draw only on one side
@@ -157,8 +157,12 @@ void WindowManager::updateLoop()
         int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);
         int rightAxis = isKeyPressed(GLFW_KEY_D) - isKeyPressed(GLFW_KEY_A);
         int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
+        glm::vec3 cameraOldPosition = camera.getPosition();
         camera.updatePosition(frontAxis, rightAxis, upAxis);
-
+        glm::vec3 cameraNewPosition = camera.getPosition();
+        float distanceMade =
+            sqrt(pow(cameraNewPosition.x - cameraOldPosition.x, 2) + pow(cameraNewPosition.y - cameraOldPosition.y, 2) +
+                 pow(cameraNewPosition.z - cameraOldPosition.z, 2));
         glm::mat4 view = glm::lookAt(camera.getPosition(), camera.getPosition() + camera.getFrontDirection(),
                                      camera.getUpDirection());
         glm::mat4 projection =
@@ -184,6 +188,16 @@ void WindowManager::updateLoop()
             }
         }
 
+        /* skybox rendering */
+        glDepthFunc(GL_LEQUAL);
+        SkyboxShader.use();
+        SkyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
+        SkyboxShader.setMat4("projection", projection);
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.getID());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthFunc(GL_LESS);
         if (data.infoMode)
         {
             const float scaling = 0.5f;
@@ -199,18 +213,11 @@ void WindowManager::updateLoop()
             renderText(TextShader, "FPS: " + std::to_string(static_cast<int>(std::round(1.0f / Time::getDeltaTime()))),
                        0.0f, WINDOW_HEIGHT - 4 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
                        glm::vec3(1, 1, 1));
+            renderText(TextShader,
+                       "speed : " + std::to_string(distanceMade / Time::getDeltaTime()) + " blocks per second", 0.0f,
+                       WINDOW_HEIGHT - 5 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
+                       glm::vec3(1, 1, 1));
         }
-
-        /* skybox rendering */
-        glDepthFunc(GL_LEQUAL);
-        SkyboxShader.use();
-        SkyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
-        SkyboxShader.setMat4("projection", projection);
-        glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.getID());
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthFunc(GL_LESS);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -322,7 +329,7 @@ void WindowManager::updateSpeed()
     if (isKeyPressed(GLFW_KEY_LEFT_CONTROL))
         camera.setSpeed(20);
     else
-        camera.setSpeed(10);
+        camera.setSpeed(10); // todo: set to 1 for evaluation
 }
 
 void WindowManager::updateInfoMode()
