@@ -20,8 +20,12 @@ int main(int argc, char **argv)
             ChunkGenerator::SetSeed(time(nullptr));
         else
             ChunkGenerator::SetSeed(std::stoul(argv[1]));
+#ifdef GENERATE_MAP
         ChunkGenerator::GenerateMap();
-        // WindowManager windowManager;
+#else
+        WindowManager windowManager;
+
+#endif
         return (EXIT_SUCCESS);
     }
     catch (const std::exception &exception)

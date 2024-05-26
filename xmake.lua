@@ -18,21 +18,29 @@ add_requires("glad")
 rule("mode.debug")
     before_build(function (target)
         target:add("defines", "DEBUG_MODE")
-
     end)
 rule_end()
 
-if is_mode("debug") then
-    add_rules("mode.debug")
-end
+rule("mode.generateMap")
+    before_build(function (target)
+        target:add("defines", "GENERATE_MAP")
+    end)
+rule_end()
 
 target("ft_vox")
     set_kind("binary")
-    if is_mode("gen") then
-        -- nothing for the moment but will add special srcs file for this mode
-    else
-        add_files("srcs/**.cpp")
+    if is_mode("debug") then
+        add_rules("mode.debug")
     end
+    if is_mode("gen") then
+        add_rules("mode.generateMap")
+    end
+    if is_mode("debugGen") then
+        add_rules("mode.debug")
+        add_rules("mode.generateMap")
+    end
+        
+    add_files("srcs/**.cpp")
     add_packages("freetype")
     add_packages("glfw")
     add_packages("glm")
