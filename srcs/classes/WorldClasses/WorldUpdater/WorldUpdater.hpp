@@ -14,10 +14,9 @@ class WorldUpdater
     std::unique_ptr<std::unique_ptr<ChunkData>[]> chunkLoadedData;
 
     std::mutex playerChunkCoordMutex;
-    int oldPlayerChunkX;
-    int oldPlayerChunkZ;
-    int playerChunkX;
-    int playerChunkZ;
+    // first = x, second = z
+    std::pair<int, int> oldPlayerChunkCoord;
+    std::pair<int, int> playerChunkCoord;
 
     std::mutex chunksToLoadMutex;
     std::vector<std::pair<int, int>> chunksToLoad;
@@ -29,16 +28,18 @@ class WorldUpdater
     bool stopThread;
 
     void loadNewChunks();
-    void moveChunkLoaded();
+    void moveChunkLoaded(const std::pair<int, int> &playerChunkCoordCopy);
+    void moveChunkAxisX(const std::pair<int, int> &playerChunkCoordCopy);
+    void moveChunkAxisZ(const std::pair<int, int> &playerChunkCoordCopy);
     void generateChunkData(const std::vector<std::pair<int, int>> &chunksToLoadCopy,
-                           const std::pair<int, int> &playerChunkCoord);
+                           const std::pair<int, int> &playerChunkCoordCopy);
     void generateChunkMesh(const std::vector<std::pair<int, int>> &chunksToLoadCopy,
-                           const std::pair<int, int> &playerChunkCoord);
+                           const std::pair<int, int> &playerChunkCoordCopy);
 
   public:
     WorldUpdater();
     ~WorldUpdater();
     bool addChunkToLoad(const std::vector<std::pair<int, int>> &chunksToLoadToAdd);
     std::optional<std::vector<ChunkMesh>> getChunkLoaded();
-    bool updatePlayerChunkCoord(int newPlayerChunkX, int newPlayerChunkZ);
+    bool updatePlayerChunkCoord(const std::pair<int, int> &updatedPlayerChunkCoord);
 };

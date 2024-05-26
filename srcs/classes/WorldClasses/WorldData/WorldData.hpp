@@ -8,15 +8,15 @@ class WorldData
 {
   private:
     std::unique_ptr<std::unique_ptr<ChunkRenderer>[]> chunks;
-    int playerChunkX;
-    int playerChunkZ;
+    // first = x, second = z
+    std::pair<int, int> playerChunkCoord;
 
     WorldUpdater worldUpdater;
     std::vector<std::pair<int, int>> chunksToLoad;
     bool updatePlayerCoord;
 
-    void updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ);
-    void updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ);
+    void updateChunkAxisX(const std::pair<int, int> &updatedPlayerChunkCoord);
+    void updateChunkAxisZ(const std::pair<int, int> &updatedPlayerChunkCoord);
 
   public:
     WorldData();
