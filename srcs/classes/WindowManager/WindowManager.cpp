@@ -176,7 +176,7 @@ void WindowManager::updateLoop()
         WorldShader.use();
         WorldShader.setMat4("view", view);
         WorldShader.setMat4("projection", projection);
-        world.updateChunksLoad(camera.getPosition().x, camera.getPosition().z);
+        world.updateWorldData(camera.getPosition().x, camera.getPosition().z);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
         for (size_t x = 0; x < RENDER_DISTANCE_2X; x++)

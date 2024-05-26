@@ -28,9 +28,9 @@ WorldData::~WorldData()
 }
 
 // todo: rename it in UpdateWorldData and separate in multiples functions
-void WorldData::updateChunksLoad(float x, float z)
+void WorldData::updateWorldData(float x, float z)
 {
-
+    // update WorldUpdater informations (chunk to load, player position)
     if (chunksToLoad.size() > 0)
     {
         bool chunkAdded = worldUpdater.addChunkToLoad(chunksToLoad);
@@ -40,6 +40,7 @@ void WorldData::updateChunksLoad(float x, float z)
     if (updatePlayerCoord)
         updatePlayerCoord = worldUpdater.updatePlayerChunkCoord(playerChunkX, playerChunkZ);
 
+    // get chunk loaded by WorldUpdater
     std::optional<std::vector<ChunkMesh>> chunkMeshOptional = worldUpdater.getChunkLoaded();
     if (chunkMeshOptional.has_value())
     {
@@ -55,6 +56,8 @@ void WorldData::updateChunksLoad(float x, float z)
             chunks[arrayX * RENDER_DISTANCE_2X + arrayZ] = std::make_unique<ChunkRenderer>(chunkMesh[i]);
         }
     }
+
+    // check if we need to load new chunks
     if (x < 0)
         x = x - 16;
     if (z < 0)
@@ -151,25 +154,3 @@ const std::unique_ptr<ChunkRenderer> &WorldData::getChunk(int x, int y) const
 {
     return (chunks[x * RENDER_DISTANCE_2X + y]);
 }
-
-#ifdef DEBUG_MODE
-
-void WorldData::DebugWriteMap() const
-{
-    std::cout << std::endl;
-    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
-    {
-        for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-        {
-            if (chunks[i * RENDER_DISTANCE_2X + j] != NULL)
-                std::cout << chunks[i * RENDER_DISTANCE_2X + j]->getX() << " "
-                          << chunks[i * RENDER_DISTANCE_2X + j]->getZ();
-            else
-                std::cout << "not load";
-            std::cout << " | ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
-}
-#endif

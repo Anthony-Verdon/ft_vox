@@ -8,6 +8,8 @@
 class WorldUpdater
 {
   private:
+    std::thread updaterThread;
+
     std::mutex chunksLoadedDataMutex;
     std::unique_ptr<std::unique_ptr<ChunkData>[]> chunkLoadedData;
 
@@ -23,11 +25,15 @@ class WorldUpdater
     std::mutex chunksLoadedMutex;
     std::vector<ChunkMesh> chunksLoaded;
 
-    std::thread updaterThread;
     std::mutex stopThreadMutex;
     bool stopThread;
 
     void loadNewChunks();
+    void moveChunkLoaded();
+    void generateChunkData(const std::vector<std::pair<int, int>> &chunksToLoadCopy,
+                           const std::pair<int, int> &playerChunkCoord);
+    void generateChunkMesh(const std::vector<std::pair<int, int>> &chunksToLoadCopy,
+                           const std::pair<int, int> &playerChunkCoord);
 
   public:
     WorldUpdater();

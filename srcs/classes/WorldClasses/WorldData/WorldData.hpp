@@ -15,18 +15,15 @@ class WorldData
     std::vector<std::pair<int, int>> chunksToLoad;
     bool updatePlayerCoord;
 
+    void updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ);
+    void updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ);
+
   public:
     WorldData();
     WorldData(const WorldData &instance);
     WorldData &operator=(const WorldData &instance);
     ~WorldData();
 
-    void updateChunksLoad(float x, float y);
-    void updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ);
-    void updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int updatedPlayerChunkZ);
+    void updateWorldData(float x, float y);
     const std::unique_ptr<ChunkRenderer> &getChunk(int x, int y) const;
-
-#ifdef DEBUG_MODE
-    void DebugWriteMap() const;
-#endif
 };
