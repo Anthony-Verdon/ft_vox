@@ -1,17 +1,19 @@
 #pragma once
 
+#include "../../../globals.hpp"
 #include "../../ChunkClasses/ChunkRenderer/ChunkRenderer.hpp"
 #include "../WorldUpdater/WorldUpdater.hpp"
-#include "../../../globals.hpp"
 
 class WorldData
 {
   private:
     std::unique_ptr<std::unique_ptr<ChunkRenderer>[]> chunks;
-    WorldUpdater worldUpdater;
-
     int playerChunkX;
     int playerChunkZ;
+
+    WorldUpdater worldUpdater;
+    std::vector<std::pair<int, int>> chunksToLoad;
+    bool updatePlayerCoord;
 
   public:
     WorldData();

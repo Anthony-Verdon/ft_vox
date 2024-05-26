@@ -15,22 +15,33 @@ WorldData::WorldData()
         for (int j = 0; j < RENDER_DISTANCE_2X; j++)
         {
             chunks[i * RENDER_DISTANCE_2X + j] = NULL;
-            worldUpdater.addChunkToLoad((i - RENDER_DISTANCE) * CHUNK_LENGTH, (j - RENDER_DISTANCE) * CHUNK_LENGTH);
+            chunksToLoad.push_back({(i - RENDER_DISTANCE) * CHUNK_LENGTH, (j - RENDER_DISTANCE) * CHUNK_LENGTH});
         }
 
     playerChunkX = 0;
     playerChunkZ = 0;
-    worldUpdater.updatePlayerChunkCoord(playerChunkX, playerChunkZ);
+    updatePlayerCoord = true;
 }
 
 WorldData::~WorldData()
 {
 }
 
+// todo: rename it in UpdateWorldData and separate in multiples functions
 void WorldData::updateChunksLoad(float x, float z)
 {
+
+    if (chunksToLoad.size() > 0)
+    {
+        bool chunkAdded = worldUpdater.addChunkToLoad(chunksToLoad);
+        if (chunkAdded)
+            chunksToLoad.clear();
+    }
+    if (updatePlayerCoord)
+        updatePlayerCoord = worldUpdater.updatePlayerChunkCoord(playerChunkX, playerChunkZ);
+
     std::optional<std::vector<ChunkMesh>> chunkMeshOptional = worldUpdater.getChunkLoaded();
-    if (chunkMeshOptional.has_value()) 
+    if (chunkMeshOptional.has_value())
     {
         std::vector<ChunkMesh> chunkMesh = chunkMeshOptional.value();
         for (size_t i = 0; i < chunkMesh.size(); i++)
@@ -41,8 +52,7 @@ void WorldData::updateChunksLoad(float x, float z)
             if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X)
                 continue;
 
-            chunks[arrayX * RENDER_DISTANCE_2X + arrayZ] =
-                std::make_unique<ChunkRenderer>(chunkMesh[i]);
+            chunks[arrayX * RENDER_DISTANCE_2X + arrayZ] = std::make_unique<ChunkRenderer>(chunkMesh[i]);
         }
     }
     if (x < 0)
@@ -62,7 +72,7 @@ void WorldData::updateChunksLoad(float x, float z)
 
     playerChunkX = updatedPlayerChunkX;
     playerChunkZ = updatedPlayerChunkZ;
-    worldUpdater.updatePlayerChunkCoord(playerChunkX, playerChunkZ);
+    updatePlayerCoord = true;
 }
 
 void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int updatedPlayerChunkZ)
@@ -97,7 +107,7 @@ void WorldData::updateChunkAxisX(int playerChunkX, int updatedPlayerChunkX, int 
     for (int j = 0; j < RENDER_DISTANCE_2X; j++)
     {
         chunks[chunkToUpdate[0] * RENDER_DISTANCE_2X + j] = NULL;
-        worldUpdater.addChunkToLoad(startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH);
+        chunksToLoad.push_back({startX, (updatedPlayerChunkZ + j - RENDER_DISTANCE) * CHUNK_LENGTH});
     }
 }
 
@@ -133,7 +143,7 @@ void WorldData::updateChunkAxisZ(int updatedPlayerChunkX, int playerChunkZ, int 
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
     {
         chunks[i * RENDER_DISTANCE_2X + chunkToUpdate[0]] = NULL;
-        worldUpdater.addChunkToLoad((updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ);
+        chunksToLoad.push_back({(updatedPlayerChunkX + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ});
     }
 }
 

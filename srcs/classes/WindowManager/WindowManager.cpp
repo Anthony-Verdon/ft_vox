@@ -9,6 +9,7 @@
 #include <ctime>
 #include <ft2build.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/noise.hpp>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -129,8 +130,7 @@ void loadSkybox(unsigned int *VAO, unsigned int *VBO);
 void WindowManager::updateLoop()
 {
     WorldData world;
-    // camera.setPosition({0, world.perlinNoise[0] * 256, 0});
-    camera.setPosition({8, 64, 8});
+    camera.setPosition({0, 100 + glm::simplex(glm::vec2(0, 0)) * 20, 0});
     Texture grassTexture("assets/textures/tileset.jpg");
     Texture skyboxTexture("assets/textures/skybox/");
     Shader WorldShader("srcs/shaders/WorldShader/WorldShader.vs", "srcs/shaders/WorldShader/WorldShader.fs");

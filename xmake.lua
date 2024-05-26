@@ -8,6 +8,7 @@ add_cxxflags("clang::-std=c++17")
 add_cxxflags("clang::-Wall")
 add_cxxflags("clang::-Werror")
 add_cxxflags("clang::-Wextra")
+add_cxxflags("clang::-gdwarf-4")
 
 add_requires("freetype")
 add_requires("glfw")
