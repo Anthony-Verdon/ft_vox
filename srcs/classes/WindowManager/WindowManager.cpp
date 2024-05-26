@@ -63,9 +63,9 @@ void WindowManager::start()
     glEnable(GL_DEPTH_TEST);
 
     // cull face enabled make openGL draw only on one side
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-    glFrontFace(GL_CW);
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_FRONT);
+    // glFrontFace(GL_CW);
 
     setupTextRenderer();
 }

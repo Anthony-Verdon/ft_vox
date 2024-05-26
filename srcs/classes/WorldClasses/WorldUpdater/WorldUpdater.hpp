@@ -20,6 +20,7 @@ class WorldUpdater
 
     std::mutex chunksToLoadMutex;
     std::vector<std::pair<int, int>> chunksToLoad;
+    std::vector<int> chunksToReload;
 
     std::mutex chunksLoadedMutex;
     std::vector<ChunkMesh> chunksLoaded;
@@ -33,13 +34,13 @@ class WorldUpdater
     void moveChunkAxisZ(const std::pair<int, int> &playerChunkCoordCopy);
     void generateChunkData(const std::vector<std::pair<int, int>> &chunksToLoadCopy,
                            const std::pair<int, int> &playerChunkCoordCopy);
-    void generateChunkMesh(const std::vector<std::pair<int, int>> &chunksToLoadCopy,
-                           const std::pair<int, int> &playerChunkCoordCopy);
+    void generateChunkMesh(const std::pair<int, int> &arrayCoord);
 
   public:
     WorldUpdater();
     ~WorldUpdater();
-    bool addChunkToLoad(const std::vector<std::pair<int, int>> &chunksToLoadToAdd);
+    bool addChunkToLoad(const std::vector<std::pair<int, int>> &chunksToLoadToAdd,
+                        const std::vector<int> &chunksToReloadToAdd);
     std::optional<std::vector<ChunkMesh>> getChunkLoaded();
     bool updatePlayerChunkCoord(const std::pair<int, int> &updatedPlayerChunkCoord);
 };

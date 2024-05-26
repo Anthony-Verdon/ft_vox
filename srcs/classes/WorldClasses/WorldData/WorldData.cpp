@@ -32,9 +32,12 @@ void WorldData::updateWorldData(float x, float z)
     // update WorldUpdater informations (chunk to load, player position)
     if (chunksToLoad.size() > 0)
     {
-        bool chunkAdded = worldUpdater.addChunkToLoad(chunksToLoad);
+        bool chunkAdded = worldUpdater.addChunkToLoad(chunksToLoad, chunksToReload);
         if (chunkAdded)
+        {
             chunksToLoad.clear();
+            chunksToReload.clear();
+        }
     }
     if (updatePlayerCoord)
         updatePlayerCoord = worldUpdater.updatePlayerChunkCoord(playerChunkCoord);
@@ -110,6 +113,11 @@ void WorldData::updateChunkAxisX(const std::pair<int, int> &updatedPlayerChunkCo
         chunks[chunkToUpdate[0] * RENDER_DISTANCE_2X + j] = NULL;
         chunksToLoad.push_back({startX, (updatedPlayerChunkCoord.second + j - RENDER_DISTANCE) * CHUNK_LENGTH});
     }
+    for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+    {
+        for (int i = 1; i <= 2; i++)
+            chunksToReload.push_back(chunkToUpdate[i] * RENDER_DISTANCE_2X + j);
+    }
 }
 
 void WorldData::updateChunkAxisZ(const std::pair<int, int> &updatedPlayerChunkCoord)
@@ -145,6 +153,11 @@ void WorldData::updateChunkAxisZ(const std::pair<int, int> &updatedPlayerChunkCo
     {
         chunks[i * RENDER_DISTANCE_2X + chunkToUpdate[0]] = NULL;
         chunksToLoad.push_back({(updatedPlayerChunkCoord.first + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ});
+    }
+    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+    {
+        for (int j = 1; j <= 2; j++)
+            chunksToReload.push_back(i * RENDER_DISTANCE_2X + chunkToUpdate[j]);
     }
 }
 

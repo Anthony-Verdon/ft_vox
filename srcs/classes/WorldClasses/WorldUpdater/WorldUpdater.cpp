@@ -39,10 +39,13 @@ void WorldUpdater::loadNewChunks()
         }
 
         std::vector<std::pair<int, int>> ChunksToLoadCopy;
+        std::vector<int> ChunksToReloadCopy;
         {
             std::lock_guard<std::mutex> chunksToLoadGuard(chunksToLoadMutex);
             ChunksToLoadCopy = chunksToLoad;
+            ChunksToReloadCopy = chunksToReload;
             chunksToLoad.clear();
+            chunksToReload.clear();
         }
         std::pair<int, int> playerChunkCoordCopy;
         {
@@ -51,7 +54,20 @@ void WorldUpdater::loadNewChunks()
         }
         moveChunkLoaded(playerChunkCoordCopy);
         generateChunkData(ChunksToLoadCopy, playerChunkCoordCopy);
-        generateChunkMesh(ChunksToLoadCopy, playerChunkCoordCopy);
+        for (size_t i = 0; i < ChunksToLoadCopy.size(); i++)
+        {
+            std::pair<int, int> arrayCoord;
+            arrayCoord.first = ChunksToLoadCopy[i].first / 16 - playerChunkCoordCopy.first + RENDER_DISTANCE;
+            arrayCoord.second = ChunksToLoadCopy[i].second / 16 - playerChunkCoordCopy.second + RENDER_DISTANCE;
+            generateChunkMesh(arrayCoord);
+        }
+        for (size_t i = 0; i < ChunksToReloadCopy.size(); i++)
+        {
+            std::pair<int, int> arrayCoord;
+            arrayCoord.first = ChunksToReloadCopy[i] / RENDER_DISTANCE_2X;
+            arrayCoord.second = ChunksToReloadCopy[i] % RENDER_DISTANCE_2X;
+            generateChunkMesh(arrayCoord);
+        }
     }
 }
 
@@ -144,35 +160,36 @@ void WorldUpdater::generateChunkData(const std::vector<std::pair<int, int>> &chu
     }
 }
 
-void WorldUpdater::generateChunkMesh(const std::vector<std::pair<int, int>> &chunksToLoadCopy,
-                                     const std::pair<int, int> &playerChunkCoordCopy)
+void WorldUpdater::generateChunkMesh(const std::pair<int, int> &arrayCoord)
 {
-    for (size_t i = 0; i < chunksToLoadCopy.size(); i++)
-    {
-        int arrayX = chunksToLoadCopy[i].first / 16 - playerChunkCoordCopy.first + RENDER_DISTANCE;
-        int arrayZ = chunksToLoadCopy[i].second / 16 - playerChunkCoordCopy.second + RENDER_DISTANCE;
-        if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X ||
-            chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ] == NULL)
-            continue;
+    if (arrayCoord.first < 0 || arrayCoord.first >= RENDER_DISTANCE_2X || arrayCoord.second < 0 ||
+        arrayCoord.second >= RENDER_DISTANCE_2X ||
+        chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second] == NULL)
+        return;
 
-        std::array<std::optional<ChunkData>, 4> neighborsChunks;
-        if (arrayX - 1 >= 0 && chunkLoadedData[(arrayX - 1) * RENDER_DISTANCE_2X + arrayZ] != NULL)
-            neighborsChunks[0] = *(chunkLoadedData[(arrayX - 1) * RENDER_DISTANCE_2X + arrayZ].get());
-        if (arrayX + 1 < RENDER_DISTANCE_2X && chunkLoadedData[(arrayX + 1) * RENDER_DISTANCE_2X + arrayZ] != NULL)
-            neighborsChunks[1] = *(chunkLoadedData[(arrayX + 1) * RENDER_DISTANCE_2X + arrayZ].get());
-        if (arrayZ - 1 >= 0 && chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ - 1] != NULL)
-            neighborsChunks[2] = *(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ - 1].get());
-        if (arrayZ + 1 < RENDER_DISTANCE_2X && chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ + 1] != NULL)
-            neighborsChunks[3] = *(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ + 1].get());
+    std::array<std::optional<ChunkData>, 4> neighborsChunks;
+    if (arrayCoord.first - 1 >= 0 &&
+        chunkLoadedData[(arrayCoord.first - 1) * RENDER_DISTANCE_2X + arrayCoord.second] != NULL)
+        neighborsChunks[0] = *(chunkLoadedData[(arrayCoord.first - 1) * RENDER_DISTANCE_2X + arrayCoord.second].get());
+    if (arrayCoord.first + 1 < RENDER_DISTANCE_2X &&
+        chunkLoadedData[(arrayCoord.first + 1) * RENDER_DISTANCE_2X + arrayCoord.second] != NULL)
+        neighborsChunks[1] = *(chunkLoadedData[(arrayCoord.first + 1) * RENDER_DISTANCE_2X + arrayCoord.second].get());
+    if (arrayCoord.second - 1 >= 0 &&
+        chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second - 1] != NULL)
+        neighborsChunks[2] = *(chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second - 1].get());
+    if (arrayCoord.second + 1 < RENDER_DISTANCE_2X &&
+        chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second + 1] != NULL)
+        neighborsChunks[3] = *(chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second + 1].get());
 
-        ChunkMesh chunkMesh(*(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ].get()));
-        chunkMesh.initMesh(neighborsChunks);
-        std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
-        chunksLoaded.push_back(chunkMesh);
-    }
+    ChunkMesh chunkMesh(*(chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second].get()));
+    chunkMesh.initMesh(neighborsChunks);
+    std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
+    chunksLoaded.push_back(chunkMesh);
 }
 
-bool WorldUpdater::addChunkToLoad(const std::vector<std::pair<int, int>> &chunksToLoadToAdd)
+// todo: find better names for argument
+bool WorldUpdater::addChunkToLoad(const std::vector<std::pair<int, int>> &chunksToLoadToAdd,
+                                  const std::vector<int> &chunksToReloadToAdd)
 {
     std::unique_lock<std::mutex> chunksToLoadGuard(chunksToLoadMutex, std::defer_lock);
 
@@ -186,6 +203,8 @@ bool WorldUpdater::addChunkToLoad(const std::vector<std::pair<int, int>> &chunks
                       << std::endl
 #endif
         }
+        for (size_t i = 0; i < chunksToReloadToAdd.size(); i++)
+            chunksToReload.push_back(chunksToReloadToAdd[i]);
         return (true);
     }
     else
