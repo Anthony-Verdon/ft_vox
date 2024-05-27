@@ -18,6 +18,8 @@
 #include FT_FREETYPE_H
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
+void character_callback(GLFWwindow *window, unsigned int character);
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 WindowManager::WindowManager()
 {
@@ -34,6 +36,8 @@ WindowManager::~WindowManager()
 
 void WindowManager::start()
 {
+    data.message = "";
+    data.chatMode = false;
     data.infoMode = false;
     data.wireframeMode = false;
 
@@ -49,9 +53,10 @@ void WindowManager::start()
         throw(std::runtime_error("INIT_WINDOW::INITIALIZATION_FAILED"));
     glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetWindowUserPointer(window, &camera);
+    glfwSetWindowUserPointer(window, this);
     glfwSetCursorPosCallback(window, mouse_callback);
-
+    glfwSetCharCallback(window, character_callback);
+    glfwSetKeyCallback(window, key_callback);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         throw(std::runtime_error("INIT_OPENGL::INITIALIZATION_FAILED"));
 
@@ -147,6 +152,17 @@ void WindowManager::updateLoop()
         /* input processing */
         if (isKeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
+        if (isKeyPressed(GLFW_KEY_ENTER))
+        {
+            data.chatMode = !data.chatMode;
+            if (data.chatMode == false)
+            {
+                std::cout << "message: " << data.message << std::endl;
+                data.message = "";
+            }
+        }
+        if (isKeyPressed(GLFW_KEY_BACKSPACE) && data.message != "")
+            data.message.erase(data.message.length() - 1, 1);
 #ifdef DEBUG_MODE
         DebugWriteMap(world);
         DebugWritePlayerCoord();
@@ -349,7 +365,7 @@ void WindowManager::updateInfoMode()
         keyEnable = true;
 }
 
-void mouse_callback(GLFWwindow *window, double xPos, double yPos)
+void WindowManager::updateCameraAngle(double xPos, double yPos)
 {
     const float sensitivity = 0.1f;
 
@@ -358,20 +374,48 @@ void mouse_callback(GLFWwindow *window, double xPos, double yPos)
 
     float xOffset;
     float yOffset;
-    Camera *camera = reinterpret_cast<Camera *>(glfwGetWindowUserPointer(window));
     xOffset = (xPos - lastX) * sensitivity;
     yOffset = (lastY - yPos) * sensitivity;
     lastX = xPos;
     lastY = yPos;
-    camera->addToYaw(xOffset);
-    camera->addToPitch(yOffset);
-    if (camera->getPitch() > 89.0f)
-        camera->setPitch(89.0f);
-    else if (camera->getPitch() < -89.0f)
-        camera->setPitch(-89.0f);
-    camera->updateDirection();
+    camera.addToYaw(xOffset);
+    camera.addToPitch(yOffset);
+    if (camera.getPitch() > 89.0f)
+        camera.setPitch(89.0f);
+    else if (camera.getPitch() < -89.0f)
+        camera.setPitch(-89.0f);
+    camera.updateDirection();
 }
 
+void WindowManager::updateMessage(unsigned int key)
+{
+    if (key < 256)
+    {
+        data.message += key;
+        std::cout << data.message << std::endl;
+    }
+}
+
+void mouse_callback(GLFWwindow *window, double xPos, double yPos)
+{
+    WindowManager *windowManager = reinterpret_cast<WindowManager *>(glfwGetWindowUserPointer(window));
+    windowManager->updateCameraAngle(xPos, yPos);
+}
+
+void character_callback(GLFWwindow *window, unsigned int character)
+{
+    WindowManager *windowManager = reinterpret_cast<WindowManager *>(glfwGetWindowUserPointer(window));
+    windowManager->updateMessage(character);
+}
+
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    (void)window;
+    (void)scancode;
+    (void)action;
+    (void)mods;
+    (void)key;
+}
 #ifdef DEBUG_MODE
 void WindowManager::DebugWriteMap(const WorldData &world)
 {

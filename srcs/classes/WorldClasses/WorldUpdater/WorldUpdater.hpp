@@ -20,6 +20,7 @@ class WorldUpdater
 
     std::mutex chunksToLoadMutex;
     std::vector<std::pair<int, int>> chunksToLoad;
+    // todo, try to a find a way to detect which chunks has been load without all this neighbors to regen them
     std::vector<int> chunksToReload;
 
     std::mutex chunksLoadedMutex;

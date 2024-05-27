@@ -1,7 +1,7 @@
 #pragma once
 
-constexpr int WINDOW_WIDTH = 1920;
-constexpr int WINDOW_HEIGHT = 1080;
+constexpr int WINDOW_WIDTH = 720;
+constexpr int WINDOW_HEIGHT = 480;
 
 constexpr int RENDER_DISTANCE = 5;
 constexpr int RENDER_DISTANCE_2X = 2 * RENDER_DISTANCE + 1;

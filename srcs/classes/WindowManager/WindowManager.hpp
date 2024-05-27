@@ -8,6 +8,8 @@
 #include <map>
 typedef struct s_data
 {
+    std::string message;
+    bool chatMode;
     bool infoMode;
     bool wireframeMode;
 } t_data;
@@ -34,7 +36,6 @@ class WindowManager
     GLFWwindow *window;
     Camera camera;
     t_textRenderer textRenderer;
-
     t_data data;
 
     void start();
@@ -53,4 +54,7 @@ class WindowManager
   public:
     WindowManager();
     ~WindowManager();
+
+    void updateCameraAngle(double xPos, double yPos);
+    void updateMessage(unsigned int c);
 };
