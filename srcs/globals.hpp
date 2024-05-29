@@ -14,6 +14,9 @@ constexpr int CHUNK_HEIGHT = 256;
 constexpr int HALF_CHUNK_HEIGHT = CHUNK_HEIGHT / 2;
 constexpr int NB_CHUNK_ON_EDGE = WORLD_LENGTH / CHUNK_LENGTH;
 
+constexpr float CHAT_DISPLAY_TIME = 5;
+constexpr float CHAT_FADE_TIME = 5;
+
 #include <array>
 constexpr std::array<int, 3> GREEN_COLOR = {0, 255, 0};
 constexpr std::array<int, 3> BlUE_COLOR = {0, 0, 255};

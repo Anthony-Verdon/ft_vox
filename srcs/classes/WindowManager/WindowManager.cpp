@@ -37,6 +37,7 @@ WindowManager::~WindowManager()
 void WindowManager::start()
 {
     data.message = "";
+    data.lastMessageTimeStamp = -(CHAT_DISPLAY_TIME + CHAT_FADE_TIME + 1);
     data.infoMode = false;
     data.wireframeMode = false;
     data.inputMode = GAME;
@@ -198,25 +199,38 @@ void WindowManager::updateLoop()
         {
             renderText(TextShader, "X: " + std::to_string(camera.getPosition().x), 0.0f,
                        WINDOW_HEIGHT - 1 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec3(1, 1, 1));
+                       glm::vec4(1, 1, 1, 1));
             renderText(TextShader, "Y: " + std::to_string(camera.getPosition().y), 0.0f,
                        WINDOW_HEIGHT - 2 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec3(1, 1, 1));
+                       glm::vec4(1, 1, 1, 1));
             renderText(TextShader, "Z: " + std::to_string(camera.getPosition().z), 0.0f,
                        WINDOW_HEIGHT - 3 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec3(1, 1, 1));
+                       glm::vec4(1, 1, 1, 1));
             renderText(TextShader, "FPS: " + std::to_string(static_cast<int>(std::round(1.0f / Time::getDeltaTime()))),
                        0.0f, WINDOW_HEIGHT - 4 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec3(1, 1, 1));
+                       glm::vec4(1, 1, 1, 1));
             renderText(TextShader,
                        "speed : " + std::to_string(distanceMade / Time::getDeltaTime()) + " blocks per second", 0.0f,
                        WINDOW_HEIGHT - 5 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec3(1, 1, 1));
+                       glm::vec4(1, 1, 1, 1));
         }
         if (data.inputMode == CHAT)
             renderText(TextShader, "message : " + data.message, 0.0f,
                        WINDOW_HEIGHT - 10 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec3(1, 1, 1));
+                       glm::vec4(1, 1, 1, 1));
+        else if (data.inputMode == GAME)
+        {
+            if (Time::getTime() - data.lastMessageTimeStamp < CHAT_DISPLAY_TIME)
+                renderText(TextShader, "last message : " + data.lastMessage, 0.0f,
+                           WINDOW_HEIGHT - 10 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
+                           glm::vec4(1, 1, 1, 1));
+            else if (Time::getTime() - data.lastMessageTimeStamp < CHAT_DISPLAY_TIME + CHAT_FADE_TIME)
+                renderText(TextShader, "last message : " + data.lastMessage, 0.0f,
+                           WINDOW_HEIGHT - 10 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
+                           glm::vec4(1, 1, 1,
+                                     1 - (((Time::getTime() - data.lastMessageTimeStamp) - CHAT_DISPLAY_TIME) /
+                                          CHAT_FADE_TIME)));
+        }
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -234,7 +248,9 @@ void WindowManager::processInput()
             if (data.inputMode == CHAT)
             {
                 std::cout << "message: " << data.message << std::endl;
+                data.lastMessage = data.message;
                 data.message = "";
+                data.lastMessageTimeStamp = Time::getTime();
             }
 
             if (data.inputMode == CHAT)
@@ -269,7 +285,7 @@ void WindowManager::processInput()
     }
 }
 
-void loadSkybox(unsigned int *VAO, unsigned int *VBO)
+void WindowManager::loadSkybox(unsigned int *VAO, unsigned int *VBO)
 {
     float skyboxVertices[] = {// positions
 
@@ -303,12 +319,12 @@ void loadSkybox(unsigned int *VAO, unsigned int *VBO)
 }
 
 void WindowManager::renderText(Shader &textShader, const std::string &text, float x, float y, float scale,
-                               const glm::vec3 &color)
+                               const glm::vec4 &color)
 {
     textShader.use();
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH), 0.0f, static_cast<float>(WINDOW_HEIGHT));
     textShader.setMat4("projection", projection);
-    textShader.setVec3("textColor", color);
+    textShader.setVec4("textColor", color);
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(textRenderer.VAO);
 

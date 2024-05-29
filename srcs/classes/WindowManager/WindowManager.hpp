@@ -17,6 +17,8 @@ typedef struct s_data
 {
     InputMode inputMode;
     std::string message;
+    float lastMessageTimeStamp;
+    std::string lastMessage;
     bool infoMode;
     bool wireframeMode;
 } t_data;
@@ -48,8 +50,9 @@ class WindowManager
     void start();
     void setupTextRenderer();
     void updateLoop();
-    void renderText(Shader &textShader, const std::string &text, float x, float y, float scale, const glm::vec3 &color);
+    void renderText(Shader &textShader, const std::string &text, float x, float y, float scale, const glm::vec4 &color);
 
+    void loadSkybox(unsigned int *VAO, unsigned int *VBO);
     void processInput();
     bool isKeyPressed(int key);
     void updateChat();
