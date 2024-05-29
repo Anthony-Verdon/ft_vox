@@ -16,11 +16,11 @@ enum InputMode
 typedef struct s_data
 {
     InputMode inputMode;
+    bool infoMode;
+    bool wireframeMode;
     std::string message;
     float lastMessageTimeStamp;
     std::string lastMessage;
-    bool infoMode;
-    bool wireframeMode;
 } t_data;
 
 typedef struct s_ftCharacter
@@ -60,10 +60,6 @@ class WindowManager
     void updateSpeed();
     void updateInfoMode();
 
-#ifdef DEBUG_MODE
-    void DebugWriteMap(const WorldData &world);
-    void DebugWritePlayerCoord();
-#endif
   public:
     WindowManager();
     ~WindowManager();

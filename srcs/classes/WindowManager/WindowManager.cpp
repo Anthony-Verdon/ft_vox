@@ -68,9 +68,9 @@ void WindowManager::start()
     glEnable(GL_DEPTH_TEST);
 
     // cull face enabled make openGL draw only on one side
-    // glEnable(GL_CULL_FACE);
-    // glCullFace(GL_FRONT);
-    // glFrontFace(GL_CW);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
 
     setupTextRenderer();
 }
@@ -149,6 +149,7 @@ void WindowManager::updateLoop()
         Time::updateTime();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        /* process input, update camera value */
         glm::vec3 cameraOldPosition = camera.getPosition();
         processInput();
         glm::vec3 cameraNewPosition = camera.getPosition();
@@ -194,6 +195,7 @@ void WindowManager::updateLoop()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
 
+        /* text rendering */
         const float scaling = 0.5f;
         if (data.infoMode)
         {
@@ -225,7 +227,7 @@ void WindowManager::updateLoop()
                            WINDOW_HEIGHT - 10 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
                            glm::vec4(1, 1, 1, 1));
             else if (Time::getTime() - data.lastMessageTimeStamp < CHAT_DISPLAY_TIME + CHAT_FADE_TIME)
-                renderText(TextShader, "last message : " + data.lastMessage, 0.0f,
+                renderText(TextShader, "last message: " + data.lastMessage, 0.0f,
                            WINDOW_HEIGHT - 10 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
                            glm::vec4(1, 1, 1,
                                      1 - (((Time::getTime() - data.lastMessageTimeStamp) - CHAT_DISPLAY_TIME) /
@@ -247,7 +249,6 @@ void WindowManager::processInput()
         {
             if (data.inputMode == CHAT)
             {
-                std::cout << "message: " << data.message << std::endl;
                 data.lastMessage = data.message;
                 data.message = "";
                 data.lastMessageTimeStamp = Time::getTime();
