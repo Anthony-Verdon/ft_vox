@@ -37,10 +37,9 @@ WindowManager::~WindowManager()
 void WindowManager::start()
 {
     data.message = "";
-    data.chatMode = false;
     data.infoMode = false;
     data.wireframeMode = false;
-
+    data.inputMode = GAME;
     if (glfwInit() == GL_FALSE)
         throw(std::runtime_error("INIT_GLFW::INITIALIZATION_FAILED"));
 
@@ -149,32 +148,8 @@ void WindowManager::updateLoop()
         Time::updateTime();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /* input processing */
-        if (isKeyPressed(GLFW_KEY_ESCAPE))
-            glfwSetWindowShouldClose(window, true);
-        if (isKeyPressed(GLFW_KEY_ENTER))
-        {
-            data.chatMode = !data.chatMode;
-            if (data.chatMode == false)
-            {
-                std::cout << "message: " << data.message << std::endl;
-                data.message = "";
-            }
-        }
-        if (isKeyPressed(GLFW_KEY_BACKSPACE) && data.message != "")
-            data.message.erase(data.message.length() - 1, 1);
-#ifdef DEBUG_MODE
-        DebugWriteMap(world);
-        DebugWritePlayerCoord();
-#endif
-        updateWireframeMode();
-        updateSpeed();
-        updateInfoMode();
-        int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);
-        int rightAxis = isKeyPressed(GLFW_KEY_D) - isKeyPressed(GLFW_KEY_A);
-        int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
         glm::vec3 cameraOldPosition = camera.getPosition();
-        camera.updatePosition(frontAxis, rightAxis, upAxis);
+        processInput();
         glm::vec3 cameraNewPosition = camera.getPosition();
         float distanceMade =
             sqrt(pow(cameraNewPosition.x - cameraOldPosition.x, 2) + pow(cameraNewPosition.y - cameraOldPosition.y, 2) +
@@ -217,9 +192,10 @@ void WindowManager::updateLoop()
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.getID());
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
+
+        const float scaling = 0.5f;
         if (data.infoMode)
         {
-            const float scaling = 0.5f;
             renderText(TextShader, "X: " + std::to_string(camera.getPosition().x), 0.0f,
                        WINDOW_HEIGHT - 1 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
                        glm::vec3(1, 1, 1));
@@ -237,12 +213,60 @@ void WindowManager::updateLoop()
                        WINDOW_HEIGHT - 5 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
                        glm::vec3(1, 1, 1));
         }
-
+        if (data.inputMode == CHAT)
+            renderText(TextShader, "message : " + data.message, 0.0f,
+                       WINDOW_HEIGHT - 10 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
+                       glm::vec3(1, 1, 1));
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     glDeleteVertexArrays(1, &skyboxVAO);
     glDeleteBuffers(1, &skyboxVBO);
+}
+
+void WindowManager::processInput()
+{
+    static bool keyEnable = true;
+    if (isKeyPressed(GLFW_KEY_ENTER))
+    {
+        if (keyEnable == true)
+        {
+            if (data.inputMode == CHAT)
+            {
+                std::cout << "message: " << data.message << std::endl;
+                data.message = "";
+            }
+
+            if (data.inputMode == CHAT)
+                data.inputMode = GAME;
+            else if (data.inputMode == GAME)
+                data.inputMode = CHAT;
+        }
+        keyEnable = false;
+    }
+    else
+        keyEnable = true;
+
+    switch (data.inputMode)
+    {
+    case GAME: {
+        if (isKeyPressed(GLFW_KEY_ESCAPE))
+            glfwSetWindowShouldClose(window, true);
+        updateWireframeMode();
+        updateSpeed();
+        updateInfoMode();
+        int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);
+        int rightAxis = isKeyPressed(GLFW_KEY_D) - isKeyPressed(GLFW_KEY_A);
+        int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
+        camera.updatePosition(frontAxis, rightAxis, upAxis);
+        break;
+    }
+    case CHAT:
+        updateChat();
+        break;
+    default:
+        break;
+    }
 }
 
 void loadSkybox(unsigned int *VAO, unsigned int *VBO)
@@ -323,6 +347,22 @@ bool WindowManager::isKeyPressed(int key)
     return (glfwGetKey(window, key) == GLFW_PRESS);
 }
 
+void WindowManager::updateChat()
+{
+    static bool keyEnable = true;
+
+    if (isKeyPressed(GLFW_KEY_BACKSPACE))
+    {
+        if (keyEnable == true && data.message != "")
+        {
+            data.message.erase(data.message.length() - 1, 1);
+        }
+        keyEnable = false;
+    }
+    else
+        keyEnable = true;
+}
+
 void WindowManager::updateWireframeMode()
 {
     static bool keyEnable = true;
@@ -367,32 +407,34 @@ void WindowManager::updateInfoMode()
 
 void WindowManager::updateCameraAngle(double xPos, double yPos)
 {
-    const float sensitivity = 0.1f;
+    if (data.inputMode == GAME)
+    {
+        const float sensitivity = 0.1f;
 
-    static float lastX = xPos;
-    static float lastY = yPos;
+        static float lastX = xPos;
+        static float lastY = yPos;
 
-    float xOffset;
-    float yOffset;
-    xOffset = (xPos - lastX) * sensitivity;
-    yOffset = (lastY - yPos) * sensitivity;
-    lastX = xPos;
-    lastY = yPos;
-    camera.addToYaw(xOffset);
-    camera.addToPitch(yOffset);
-    if (camera.getPitch() > 89.0f)
-        camera.setPitch(89.0f);
-    else if (camera.getPitch() < -89.0f)
-        camera.setPitch(-89.0f);
-    camera.updateDirection();
+        float xOffset;
+        float yOffset;
+        xOffset = (xPos - lastX) * sensitivity;
+        yOffset = (lastY - yPos) * sensitivity;
+        lastX = xPos;
+        lastY = yPos;
+        camera.addToYaw(xOffset);
+        camera.addToPitch(yOffset);
+        if (camera.getPitch() > 89.0f)
+            camera.setPitch(89.0f);
+        else if (camera.getPitch() < -89.0f)
+            camera.setPitch(-89.0f);
+        camera.updateDirection();
+    }
 }
 
 void WindowManager::updateMessage(unsigned int key)
 {
-    if (key < 256)
+    if (key < 256 && data.inputMode == CHAT)
     {
         data.message += key;
-        std::cout << data.message << std::endl;
     }
 }
 

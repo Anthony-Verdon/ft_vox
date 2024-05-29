@@ -6,10 +6,17 @@
 #include "../WorldClasses/WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
 #include <map>
+
+enum InputMode
+{
+    GAME,
+    CHAT
+};
+
 typedef struct s_data
 {
+    InputMode inputMode;
     std::string message;
-    bool chatMode;
     bool infoMode;
     bool wireframeMode;
 } t_data;
@@ -42,7 +49,10 @@ class WindowManager
     void setupTextRenderer();
     void updateLoop();
     void renderText(Shader &textShader, const std::string &text, float x, float y, float scale, const glm::vec3 &color);
+
+    void processInput();
     bool isKeyPressed(int key);
+    void updateChat();
     void updateWireframeMode();
     void updateSpeed();
     void updateInfoMode();
