@@ -33,12 +33,15 @@ class WindowManager
     void start();
     void updateLoop();
 
+    /* process input*/
     void processInput();
     bool isKeyPressed(int key);
-    void updateChat();
     void updateWireframeMode();
-    void updateSpeed();
     void updateInfoMode();
+    void updateSpeed();
+    void updateChat();
+
+    /* text rendering */
     void renderInformations();
     void renderChat();
 
@@ -46,6 +49,7 @@ class WindowManager
     WindowManager();
     ~WindowManager();
 
+    /* callback functions */
     void updateCameraAngle(double xPos, double yPos);
     void updateMessage(unsigned int c);
 };
