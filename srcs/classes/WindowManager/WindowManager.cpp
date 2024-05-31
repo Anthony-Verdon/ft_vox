@@ -1,13 +1,13 @@
 #include "WindowManager.hpp"
 #include "../../globals.hpp"
 #include "../Shader/Shader.hpp"
+#include "../TextRenderer/TextRenderer.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
 #include "../WorldClasses/WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
 #include <cctype>
 #include <ctime>
-#include <ft2build.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/noise.hpp>
 #include <iomanip>
@@ -15,22 +15,20 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-#include FT_FREETYPE_H
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
 void character_callback(GLFWwindow *window, unsigned int character);
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 WindowManager::WindowManager()
 {
     start();
+    TextRenderer::initTextRenderer();
     updateLoop();
 }
 
 WindowManager::~WindowManager()
 {
-    glDeleteVertexArrays(1, &textRenderer.VAO);
-    glDeleteBuffers(1, &textRenderer.VBO);
+    TextRenderer::destructTextRenderer();
     glfwTerminate();
 }
 
@@ -56,7 +54,7 @@ void WindowManager::start()
     glfwSetWindowUserPointer(window, this);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetCharCallback(window, character_callback);
-    glfwSetKeyCallback(window, key_callback);
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         throw(std::runtime_error("INIT_OPENGL::INITIALIZATION_FAILED"));
 
@@ -71,66 +69,7 @@ void WindowManager::start()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     glFrontFace(GL_CW);
-
-    setupTextRenderer();
 }
-
-void WindowManager::setupTextRenderer()
-{
-    FT_Library ft;
-    if (FT_Init_FreeType(&ft))
-        throw(std::runtime_error("INIT_FREETYPE::INITIALIZATION_FAILED"));
-
-    FT_Face face;
-    if (FT_New_Face(ft, "assets/fonts/arial.ttf", 0, &face))
-        throw(std::runtime_error("INIT_FREETYPE::FONT_LOADING_FAILED"));
-
-    textRenderer.pixelSize = 48;
-    FT_Set_Pixel_Sizes(face, 0, textRenderer.pixelSize);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
-    for (unsigned char c = 0; c < 128; c++)
-    {
-        // load character glyph
-        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-        {
-            std::cerr << "ERROR::FREETYTPE::GLYPH_" << toupper(c) << "_LOADING_FAILED" << std::endl;
-            continue;
-        }
-        // generate texture
-        unsigned int texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED,
-                     GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
-        // set texture options
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // now store character for later use
-        t_ftCharacter character = {texture, glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-                                   glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-                                   (unsigned int)face->glyph->advance.x};
-        textRenderer.characters.insert(std::pair<char, t_ftCharacter>(c, character));
-    }
-    FT_Done_Face(face);
-    FT_Done_FreeType(ft);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glGenVertexArrays(1, &textRenderer.VAO);
-    glGenBuffers(1, &textRenderer.VBO);
-    glBindVertexArray(textRenderer.VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, textRenderer.VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}
-
-void loadSkybox(unsigned int *VAO, unsigned int *VBO);
 
 void WindowManager::updateLoop()
 {
@@ -139,7 +78,6 @@ void WindowManager::updateLoop()
     Texture grassTexture("assets/textures/tileset.jpg");
     Texture skyboxTexture("assets/textures/skybox/");
     Shader WorldShader("srcs/shaders/WorldShader/WorldShader.vs", "srcs/shaders/WorldShader/WorldShader.fs");
-    Shader TextShader("srcs/shaders/TextShader/TextShader.vs", "srcs/shaders/TextShader/TextShader.fs");
     Shader SkyboxShader("srcs/shaders/SkyboxShader/SkyboxShader.vs", "srcs/shaders/SkyboxShader/SkyboxShader.fs");
     unsigned int skyboxVAO, skyboxVBO;
     loadSkybox(&skyboxVAO, &skyboxVBO);
@@ -149,13 +87,10 @@ void WindowManager::updateLoop()
         Time::updateTime();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /* process input, update camera value */
-        glm::vec3 cameraOldPosition = camera.getPosition();
+        /* process input*/
         processInput();
-        glm::vec3 cameraNewPosition = camera.getPosition();
-        float distanceMade =
-            sqrt(pow(cameraNewPosition.x - cameraOldPosition.x, 2) + pow(cameraNewPosition.y - cameraOldPosition.y, 2) +
-                 pow(cameraNewPosition.z - cameraOldPosition.z, 2));
+
+        /* update matrix for world rendering */
         glm::mat4 view = glm::lookAt(camera.getPosition(), camera.getPosition() + camera.getFrontDirection(),
                                      camera.getUpDirection());
 
@@ -196,48 +131,48 @@ void WindowManager::updateLoop()
         glDepthFunc(GL_LESS);
 
         /* text rendering */
-        const float scaling = 0.5f;
         if (data.infoMode)
-        {
-            renderText(TextShader, "X: " + std::to_string(camera.getPosition().x), 0.0f,
-                       WINDOW_HEIGHT - 1 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec4(1, 1, 1, 1));
-            renderText(TextShader, "Y: " + std::to_string(camera.getPosition().y), 0.0f,
-                       WINDOW_HEIGHT - 2 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec4(1, 1, 1, 1));
-            renderText(TextShader, "Z: " + std::to_string(camera.getPosition().z), 0.0f,
-                       WINDOW_HEIGHT - 3 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec4(1, 1, 1, 1));
-            renderText(TextShader, "FPS: " + std::to_string(static_cast<int>(std::round(1.0f / Time::getDeltaTime()))),
-                       0.0f, WINDOW_HEIGHT - 4 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec4(1, 1, 1, 1));
-            renderText(TextShader,
-                       "speed : " + std::to_string(distanceMade / Time::getDeltaTime()) + " blocks per second", 0.0f,
-                       WINDOW_HEIGHT - 5 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec4(1, 1, 1, 1));
-        }
-        if (data.inputMode == CHAT)
-            renderText(TextShader, "message : " + data.message, 0.0f,
-                       WINDOW_HEIGHT - 10 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                       glm::vec4(1, 1, 1, 1));
-        else if (data.inputMode == GAME)
-        {
-            if (Time::getTime() - data.lastMessageTimeStamp < CHAT_DISPLAY_TIME)
-                renderText(TextShader, "last message : " + data.lastMessage, 0.0f,
-                           WINDOW_HEIGHT - 10 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                           glm::vec4(1, 1, 1, 1));
-            else if (Time::getTime() - data.lastMessageTimeStamp < CHAT_DISPLAY_TIME + CHAT_FADE_TIME)
-                renderText(TextShader, "last message: " + data.lastMessage, 0.0f,
-                           WINDOW_HEIGHT - 10 * static_cast<float>(textRenderer.pixelSize) * scaling, scaling,
-                           glm::vec4(1, 1, 1,
-                                     1 - (((Time::getTime() - data.lastMessageTimeStamp) - CHAT_DISPLAY_TIME) /
-                                          CHAT_FADE_TIME)));
-        }
+            renderInformations();
+        renderChat();
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     glDeleteVertexArrays(1, &skyboxVAO);
     glDeleteBuffers(1, &skyboxVBO);
+}
+
+void WindowManager::loadSkybox(unsigned int *VAO, unsigned int *VBO)
+{
+    float skyboxVertices[] = {// positions
+
+                              -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+                              1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
+
+                              -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+                              -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
+
+                              1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
+                              1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
+
+                              -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+                              1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+
+                              -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
+                              1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
+
+                              -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
+                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
+
+    glGenVertexArrays(1, VAO);
+    glGenBuffers(1, VBO);
+
+    glBindVertexArray(*VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
+    glEnableVertexAttribArray(0);
 }
 
 void WindowManager::processInput()
@@ -284,79 +219,6 @@ void WindowManager::processInput()
     default:
         break;
     }
-}
-
-void WindowManager::loadSkybox(unsigned int *VAO, unsigned int *VBO)
-{
-    float skyboxVertices[] = {// positions
-
-                              -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
-                              1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
-
-                              -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
-                              -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
-
-                              1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
-                              1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
-
-                              -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
-                              1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
-
-                              -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
-                              1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
-
-                              -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
-                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
-
-    glGenVertexArrays(1, VAO);
-    glGenBuffers(1, VBO);
-
-    glBindVertexArray(*VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
-    glEnableVertexAttribArray(0);
-}
-
-void WindowManager::renderText(Shader &textShader, const std::string &text, float x, float y, float scale,
-                               const glm::vec4 &color)
-{
-    textShader.use();
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH), 0.0f, static_cast<float>(WINDOW_HEIGHT));
-    textShader.setMat4("projection", projection);
-    textShader.setVec4("textColor", color);
-    glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(textRenderer.VAO);
-
-    for (size_t i = 0; i < text.length(); i++)
-    {
-        unsigned char character = text[i];
-        t_ftCharacter ftCharacter = textRenderer.characters[character];
-
-        float xpos = x + ftCharacter.Bearing.x * scale;
-        float ypos = y - (ftCharacter.Size.y - ftCharacter.Bearing.y) * scale;
-
-        float w = ftCharacter.Size.x * scale;
-        float h = ftCharacter.Size.y * scale;
-        // update VBO for each character
-        float vertices[6][4] = {
-            {xpos, ypos + h, 0.0f, 0.0f}, {xpos, ypos, 0.0f, 1.0f},     {xpos + w, ypos, 1.0f, 1.0f},
-
-            {xpos, ypos + h, 0.0f, 0.0f}, {xpos + w, ypos, 1.0f, 1.0f}, {xpos + w, ypos + h, 1.0f, 0.0f}};
-        // render glyph texture over quad
-        glBindTexture(GL_TEXTURE_2D, ftCharacter.TextureID);
-        // update content of VBO memory
-        glBindBuffer(GL_ARRAY_BUFFER, textRenderer.VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        // render quad
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-        x += (ftCharacter.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
-    }
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 bool WindowManager::isKeyPressed(int key)
@@ -422,6 +284,63 @@ void WindowManager::updateInfoMode()
         keyEnable = true;
 }
 
+void WindowManager::renderInformations()
+{
+    static glm::vec3 cameraOldPosition = camera.getPosition();
+    glm::vec3 cameraNewPosition = camera.getPosition();
+
+    const float scaling = 0.5f;
+    TextRenderer::renderText("X: " + std::to_string(camera.getPosition().x), 0.0f,
+                             WINDOW_HEIGHT - 1 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
+                             glm::vec4(1, 1, 1, 1));
+    TextRenderer::renderText("Y: " + std::to_string(camera.getPosition().y), 0.0f,
+                             WINDOW_HEIGHT - 2 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
+                             glm::vec4(1, 1, 1, 1));
+    TextRenderer::renderText("Z: " + std::to_string(camera.getPosition().z), 0.0f,
+                             WINDOW_HEIGHT - 3 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
+                             glm::vec4(1, 1, 1, 1));
+    TextRenderer::renderText("FPS: " + std::to_string(static_cast<int>(std::round(1.0f / Time::getDeltaTime()))), 0.0f,
+                             WINDOW_HEIGHT - 4 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
+                             glm::vec4(1, 1, 1, 1));
+    float distanceMade =
+        sqrt(pow(cameraNewPosition.x - cameraOldPosition.x, 2) + pow(cameraNewPosition.y - cameraOldPosition.y, 2) +
+             pow(cameraNewPosition.z - cameraOldPosition.z, 2));
+    TextRenderer::renderText("speed : " + std::to_string(distanceMade / Time::getDeltaTime()) + " blocks per second",
+                             0.0f, WINDOW_HEIGHT - 5 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
+                             glm::vec4(1, 1, 1, 1));
+
+    cameraOldPosition = cameraNewPosition;
+}
+
+void WindowManager::renderChat()
+{
+    const float scaling = 0.5f;
+    if (data.inputMode == CHAT)
+        TextRenderer::renderText("message : " + data.message, 0.0f,
+                                 WINDOW_HEIGHT - 10 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
+                                 glm::vec4(1, 1, 1, 1));
+    else if (data.inputMode == GAME)
+    {
+        if (Time::getTime() - data.lastMessageTimeStamp < CHAT_DISPLAY_TIME + CHAT_FADE_TIME)
+        {
+            float fading;
+            if (Time::getTime() - data.lastMessageTimeStamp < CHAT_DISPLAY_TIME)
+                fading = 1;
+            else
+                fading = 1 - (((Time::getTime() - data.lastMessageTimeStamp) - CHAT_DISPLAY_TIME) / CHAT_FADE_TIME);
+            TextRenderer::renderText("last message : " + data.lastMessage, 0.0f,
+                                     WINDOW_HEIGHT - 10 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
+                                     glm::vec4(1, 1, 1, fading));
+        }
+    }
+}
+
+void mouse_callback(GLFWwindow *window, double xPos, double yPos)
+{
+    WindowManager *windowManager = reinterpret_cast<WindowManager *>(glfwGetWindowUserPointer(window));
+    windowManager->updateCameraAngle(xPos, yPos);
+}
+
 void WindowManager::updateCameraAngle(double xPos, double yPos)
 {
     if (data.inputMode == GAME)
@@ -447,6 +366,12 @@ void WindowManager::updateCameraAngle(double xPos, double yPos)
     }
 }
 
+void character_callback(GLFWwindow *window, unsigned int character)
+{
+    WindowManager *windowManager = reinterpret_cast<WindowManager *>(glfwGetWindowUserPointer(window));
+    windowManager->updateMessage(character);
+}
+
 void WindowManager::updateMessage(unsigned int key)
 {
     if (key < 256 && data.inputMode == CHAT)
@@ -454,55 +379,3 @@ void WindowManager::updateMessage(unsigned int key)
         data.message += key;
     }
 }
-
-void mouse_callback(GLFWwindow *window, double xPos, double yPos)
-{
-    WindowManager *windowManager = reinterpret_cast<WindowManager *>(glfwGetWindowUserPointer(window));
-    windowManager->updateCameraAngle(xPos, yPos);
-}
-
-void character_callback(GLFWwindow *window, unsigned int character)
-{
-    WindowManager *windowManager = reinterpret_cast<WindowManager *>(glfwGetWindowUserPointer(window));
-    windowManager->updateMessage(character);
-}
-
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-    (void)window;
-    (void)scancode;
-    (void)action;
-    (void)mods;
-    (void)key;
-}
-#ifdef DEBUG_MODE
-void WindowManager::DebugWriteMap(const WorldData &world)
-{
-    static bool keyEnable = true;
-    if (isKeyPressed(GLFW_KEY_1))
-    {
-        if (keyEnable)
-            world.DebugWriteMap();
-        keyEnable = false;
-    }
-    else
-        keyEnable = true;
-}
-
-void WindowManager::DebugWritePlayerCoord()
-{
-    static bool keyEnable = true;
-    if (isKeyPressed(GLFW_KEY_2))
-    {
-        if (keyEnable)
-            std::cout << std::endl
-                      << "x: " << camera.getPosition()[0] << " "
-                      << "y: " << camera.getPosition()[1] << " "
-                      << "z: " << camera.getPosition()[2] << " " << std::endl
-                      << std::endl;
-        keyEnable = false;
-    }
-    else
-        keyEnable = true;
-}
-#endif
