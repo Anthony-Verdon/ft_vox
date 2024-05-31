@@ -14,6 +14,9 @@ constexpr int CHUNK_HEIGHT = 256;
 constexpr int HALF_CHUNK_HEIGHT = CHUNK_HEIGHT / 2;
 constexpr int NB_CHUNK_ON_EDGE = WORLD_LENGTH / CHUNK_LENGTH;
 
+constexpr int DAY_DURATION_IN_MIN = 20;
+constexpr int DAY_DURATION_IN_SEC = DAY_DURATION_IN_MIN * 60;
+
 constexpr int TEXT_PIXEL_SIZE = 48;
 constexpr float CHAT_DISPLAY_TIME = 5;
 constexpr float CHAT_FADE_TIME = 5;

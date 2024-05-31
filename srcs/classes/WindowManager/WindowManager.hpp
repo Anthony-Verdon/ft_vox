@@ -33,7 +33,6 @@ class WindowManager
     void start();
     void updateLoop();
 
-    void loadSkybox(unsigned int *VAO, unsigned int *VBO);
     void processInput();
     bool isKeyPressed(int key);
     void updateChat();

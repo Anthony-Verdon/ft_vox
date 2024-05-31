@@ -1,6 +1,7 @@
 #include "WindowManager.hpp"
 #include "../../globals.hpp"
 #include "../Shader/Shader.hpp"
+#include "../SkyboxRenderer/SkyboxRenderer.hpp"
 #include "../TextRenderer/TextRenderer.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
@@ -15,7 +16,6 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
 void character_callback(GLFWwindow *window, unsigned int character);
 
@@ -75,12 +75,11 @@ void WindowManager::updateLoop()
 {
     WorldData world;
     camera.setPosition({0, 100 + glm::simplex(glm::vec2(0, 0)) * 20, 0});
+    SkyboxRenderer skybox;
     Texture grassTexture("assets/textures/tileset.jpg");
     Texture skyboxTexture("assets/textures/skybox/");
     Shader WorldShader("srcs/shaders/WorldShader/WorldShader.vs", "srcs/shaders/WorldShader/WorldShader.fs");
     Shader SkyboxShader("srcs/shaders/SkyboxShader/SkyboxShader.vs", "srcs/shaders/SkyboxShader/SkyboxShader.fs");
-    unsigned int skyboxVAO, skyboxVBO;
-    loadSkybox(&skyboxVAO, &skyboxVBO);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -124,7 +123,11 @@ void WindowManager::updateLoop()
         SkyboxShader.use();
         SkyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
         SkyboxShader.setMat4("projection", projection);
-        glBindVertexArray(skyboxVAO);
+        glm::mat4 rotation = glm::mat4(1.0f);
+        rotation = glm::rotate(rotation, Time::getTime() / DAY_DURATION_IN_SEC * glm::radians(50.0f),
+                               glm::vec3(1.0f, 0.0f, 0.0f));
+        SkyboxShader.setMat4("rotation", rotation);
+        glBindVertexArray(skybox.getVAO());
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.getID());
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -138,41 +141,6 @@ void WindowManager::updateLoop()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    glDeleteVertexArrays(1, &skyboxVAO);
-    glDeleteBuffers(1, &skyboxVBO);
-}
-
-void WindowManager::loadSkybox(unsigned int *VAO, unsigned int *VBO)
-{
-    float skyboxVertices[] = {// positions
-
-                              -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
-                              1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
-
-                              -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
-                              -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
-
-                              1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
-                              1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
-
-                              -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
-                              1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
-
-                              -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
-                              1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
-
-                              -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
-                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
-
-    glGenVertexArrays(1, VAO);
-    glGenBuffers(1, VBO);
-
-    glBindVertexArray(*VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
-    glEnableVertexAttribArray(0);
 }
 
 void WindowManager::processInput()
