@@ -232,9 +232,17 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
     {
         for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
         {
-            int height = 100 + glm::simplex(glm::vec2((float)(chunkX + posX) / WORLD_LENGTH + modifierX,
-                                                      (float)(chunkZ + posZ) / WORLD_LENGTH + modifierZ)) *
-                                   20;
+            float noiseValue = glm::simplex(glm::vec2((float)(chunkX + posX) / WORLD_LENGTH + modifierX,
+                                                      (float)(chunkZ + posZ) / WORLD_LENGTH + modifierZ));
+
+            int height;
+            if (noiseValue <= 0.3)
+                height = 50 + (noiseValue + 1) / 1.3 * 50;
+            else if (noiseValue <= 0.4)
+                height = 100 + (noiseValue - 0.3) / 0.1 * 50;
+            else
+                height = 150 + (noiseValue - 0.4) / 0.6 * 50;
+
             for (int posY = 0; posY < height; posY++)
             {
                 BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePattern);
@@ -243,4 +251,9 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
         }
     }
     return (chunkData);
+}
+
+float ChunkGenerator::getNoiseValue(int x, int z)
+{
+    return (glm::simplex(glm::vec2((float)x / WORLD_LENGTH + modifierX, (float)z / WORLD_LENGTH + modifierZ)));
 }

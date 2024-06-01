@@ -18,4 +18,6 @@ class ChunkGenerator
     static ChunkData GenerateChunkData(int x, int z);
 
     static void GenerateMap();
+
+    static float getNoiseValue(int x, int z);
 };

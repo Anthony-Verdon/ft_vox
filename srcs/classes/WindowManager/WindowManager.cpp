@@ -1,5 +1,6 @@
 #include "WindowManager.hpp"
 #include "../../globals.hpp"
+#include "../ChunkClasses/ChunkGenerator/ChunkGenerator.hpp"
 #include "../Shader/Shader.hpp"
 #include "../SkyboxRenderer/SkyboxRenderer.hpp"
 #include "../TextRenderer/TextRenderer.hpp"
@@ -276,6 +277,9 @@ void WindowManager::renderInformations()
     TextRenderer::renderText("speed : " + std::to_string(distanceMade / Time::getDeltaTime()) + " blocks per second",
                              0.0f, WINDOW_HEIGHT - 5 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                              glm::vec4(1, 1, 1, 1));
+    TextRenderer::renderText(
+        "noise value : " + std::to_string(ChunkGenerator::getNoiseValue(cameraNewPosition.x, cameraNewPosition.z)),
+        0.0f, WINDOW_HEIGHT - 6 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
 
     cameraOldPosition = cameraNewPosition;
 }
