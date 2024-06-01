@@ -4,6 +4,8 @@ class ChunkGenerator
 {
   private:
     static unsigned long seed;
+    static float modifierX;
+    static float modifierZ;
 
     static std::unique_ptr<unsigned char[]> Zoom(int scale, const std::unique_ptr<unsigned char[]> &mapBeforeZoom);
     static void AddIsland();

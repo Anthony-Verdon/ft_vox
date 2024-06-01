@@ -5,13 +5,18 @@
 #include <sstream>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <filesystem>
+#include <glm/gtc/noise.hpp>
 #include <stb/stb_image_write.h>
 unsigned long ChunkGenerator::seed = 0;
+float ChunkGenerator::modifierX = 0;
+float ChunkGenerator::modifierZ = 0;
 int CHANNEL_NUM = 3;
-#include <glm/gtc/noise.hpp>
 void ChunkGenerator::SetSeed(unsigned long seed)
 {
     ChunkGenerator::seed = seed;
+    srand(seed);
+    modifierX = (float)rand() / (double)RAND_MAX;
+    modifierZ = (float)rand() / (double)RAND_MAX;
 }
 
 void ChunkGenerator::GenerateMap()
@@ -227,8 +232,8 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
     {
         for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
         {
-            int height = 100 + glm::simplex(glm::vec2((float)(chunkX + posX) / WORLD_LENGTH,
-                                                      (float)(chunkZ + posZ) / WORLD_LENGTH)) *
+            int height = 100 + glm::simplex(glm::vec2((float)(chunkX + posX) / WORLD_LENGTH + modifierX,
+                                                      (float)(chunkZ + posZ) / WORLD_LENGTH + modifierZ)) *
                                    20;
             for (int posY = 0; posY < height; posY++)
             {
