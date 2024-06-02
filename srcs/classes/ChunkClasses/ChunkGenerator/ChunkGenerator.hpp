@@ -19,4 +19,6 @@ class ChunkGenerator
 #ifdef GENERATE_MAP
 #endif
     static void GenerateNoiseMap();
+    static void generateImage(const std::string &name, int octaves, float frequency, float persistence,
+                              int roundFactor);
 };

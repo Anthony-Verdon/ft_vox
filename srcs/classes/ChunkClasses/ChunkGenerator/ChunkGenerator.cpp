@@ -68,7 +68,7 @@ float ChunkGenerator::getFractalNoise(float x, float z, int octaves, float frequ
 {
     float lacunarity = 2;
 
-    float amplitude = 2;
+    float amplitude = 4;
     float max_amplitude = 0;
     float total = 0;
     for (int i = 0; i < octaves; i++)
@@ -80,8 +80,35 @@ float ChunkGenerator::getFractalNoise(float x, float z, int octaves, float frequ
     }
     return total / max_amplitude;
 }
+
 #ifdef GENERATE_MAP
 #endif
+
+void ChunkGenerator::generateImage(const std::string &name, int octaves, float frequency, float persistence,
+                                   int roundFactor)
+{
+    static const int mapLength = 256;
+    std::unique_ptr<unsigned char[]> noiseMap = std::make_unique<unsigned char[]>(mapLength * mapLength * CHANNEL_NUM);
+    for (int x = 0; x < mapLength; x++)
+    {
+        for (int z = 0; z < mapLength; z++)
+        {
+            float value = (getFractalNoise((float)(x) / mapLength + modifierX, (float)(z) / mapLength + modifierZ,
+                                           octaves, frequency, persistence) +
+                           1) /
+                          2;
+            int valueRounded = value * roundFactor;
+            value = (float)valueRounded / roundFactor;
+            value = value * 256;
+            for (int c = 0; c < CHANNEL_NUM; c++)
+                noiseMap[(x * mapLength + z) * CHANNEL_NUM + c] = value;
+        }
+    }
+    std::ostringstream filename;
+    filename << "imagesGenerated/" << std::to_string(seed) << "/" << name << ".png";
+    stbi_write_png(filename.str().c_str(), mapLength, mapLength, CHANNEL_NUM, noiseMap.get(), mapLength * CHANNEL_NUM);
+}
+
 void ChunkGenerator::GenerateNoiseMap()
 {
     if (!std::filesystem::is_directory("imagesGenerated"))
@@ -89,21 +116,7 @@ void ChunkGenerator::GenerateNoiseMap()
     if (!std::filesystem::is_directory("imagesGenerated/" + std::to_string(seed)))
         std::filesystem::create_directory("imagesGenerated/" + std::to_string(seed));
 
-    static const int mapLength = 256;
-    std::unique_ptr<unsigned char[]> noiseMap = std::make_unique<unsigned char[]>(mapLength * mapLength * CHANNEL_NUM);
-    for (int x = 0; x < mapLength; x++)
-    {
-        for (int z = 0; z < mapLength; z++)
-        {
-            float value =
-                (getFractalNoise((float)(x) / mapLength + modifierX, (float)(z) / mapLength + modifierZ, 10, 4, 0.5) +
-                 1) /
-                2 * 256;
-            for (int c = 0; c < CHANNEL_NUM; c++)
-                noiseMap[(x * mapLength + z) * CHANNEL_NUM + c] = value;
-        }
-    }
-    std::ostringstream filename;
-    filename << "imagesGenerated/" << std::to_string(seed) << "/noiseMap.png";
-    stbi_write_png(filename.str().c_str(), mapLength, mapLength, CHANNEL_NUM, noiseMap.get(), mapLength * CHANNEL_NUM);
+    generateImage("continentalness", 8, 4, 0.3, 10);
+    generateImage("erosion", 8, 2, 0.2, 5);
+    generateImage("peakAndValleys", 8, 8, 0.1, 5);
 }
