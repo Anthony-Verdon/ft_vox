@@ -277,10 +277,22 @@ void WindowManager::renderInformations()
     TextRenderer::renderText("speed : " + std::to_string(distanceMade / Time::getDeltaTime()) + " blocks per second",
                              0.0f, WINDOW_HEIGHT - 5 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                              glm::vec4(1, 1, 1, 1));
-    TextRenderer::renderText(
-        "noise value : " + std::to_string(ChunkGenerator::getNoiseValue(cameraNewPosition.x, cameraNewPosition.z)),
-        0.0f, WINDOW_HEIGHT - 6 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
 
+    TextRenderer::renderText(
+        "continentalness value : " + std::to_string(ChunkGenerator::getFractalNoise(
+                                         cameraNewPosition.x, cameraNewPosition.z, CONTINENTALNESS_OCTAVES,
+                                         CONTINENTALNESS_FREQUENCY, CONTINENTALNESS_PERSISTENCE)),
+        0.0f, WINDOW_HEIGHT - 6 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
+    TextRenderer::renderText(
+        "erosion value : " +
+            std::to_string(ChunkGenerator::getFractalNoise(cameraNewPosition.x, cameraNewPosition.z, EROSION_OCTAVES,
+                                                           EROSION_FREQUENCY, EROSION_PERSISTENCE)),
+        0.0f, WINDOW_HEIGHT - 7 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
+    TextRenderer::renderText(
+        "peak and valleys value : " +
+            std::to_string(ChunkGenerator::getFractalNoise(cameraNewPosition.x, cameraNewPosition.z, PV_OCTAVES,
+                                                           PV_FREQUENCY, PV_PERSISTENCE)),
+        0.0f, WINDOW_HEIGHT - 8 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
     cameraOldPosition = cameraNewPosition;
 }
 

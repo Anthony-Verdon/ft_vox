@@ -21,6 +21,17 @@ constexpr int TEXT_PIXEL_SIZE = 48;
 constexpr float CHAT_DISPLAY_TIME = 5;
 constexpr float CHAT_FADE_TIME = 5;
 
-#include <array>
-constexpr std::array<int, 3> GREEN_COLOR = {0, 255, 0};
-constexpr std::array<int, 3> BlUE_COLOR = {0, 0, 255};
+constexpr int CONTINENTALNESS_OCTAVES = 8;
+constexpr float CONTINENTALNESS_FREQUENCY = 4;
+constexpr float CONTINENTALNESS_PERSISTENCE = 0.3;
+constexpr int CONTINENTALNESS_ROUND_FACTOR = 10;
+
+constexpr int EROSION_OCTAVES = 8;
+constexpr float EROSION_FREQUENCY = 2;
+constexpr float EROSION_PERSISTENCE = 0.2;
+constexpr int EROSION_ROUND_FACTOR = 5;
+
+constexpr int PV_OCTAVES = 8;
+constexpr float PV_FREQUENCY = 8;
+constexpr float PV_PERSISTENCE = 0.1;
+constexpr int PV_ROUND_FACTOR = 5;

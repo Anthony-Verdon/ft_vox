@@ -1,5 +1,13 @@
 #pragma once
 #include "../ChunkData/ChunkData.hpp"
+
+enum eGraphType
+{
+    CONTINENTALNESS_GRAPH,
+    EROSION_GRAPH,
+    PV_GRAPH
+};
+
 class ChunkGenerator
 {
   private:
@@ -13,12 +21,13 @@ class ChunkGenerator
 
     static void SetSeed(unsigned long seed);
     static ChunkData GenerateChunkData(int x, int z);
-    static float getNoiseValue(int x, int z);
+    static float convertRange(float value);
+    static float roundValue(float value, int roundFactor);
+    static float getValueFromGraph(float value, eGraphType graph);
     static float getFractalNoise(float x, float z, int octaves, float frequency, float persistence);
-
 #ifdef GENERATE_MAP
-#endif
     static void GenerateNoiseMap();
     static void generateImage(const std::string &name, int octaves, float frequency, float persistence,
                               int roundFactor);
+#endif
 };
