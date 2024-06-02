@@ -21,7 +21,7 @@ int main(int argc, char **argv)
         else
             ChunkGenerator::SetSeed(std::stoul(argv[1]));
 #ifdef GENERATE_MAP
-        ChunkGenerator::GenerateMap();
+        ChunkGenerator::GenerateNoiseMap();
 #else
         WindowManager windowManager;
 
