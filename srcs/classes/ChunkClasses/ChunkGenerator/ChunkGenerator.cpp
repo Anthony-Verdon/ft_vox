@@ -11,53 +11,56 @@
 
 unsigned long ChunkGenerator::seed = 0;
 float ChunkGenerator::modifierX = 0;
+float ChunkGenerator::modifierY = 0;
 float ChunkGenerator::modifierZ = 0;
 int CHANNEL_NUM = 3;
+
 void ChunkGenerator::SetSeed(unsigned long seed)
 {
     ChunkGenerator::seed = seed;
     srand(seed);
     modifierX = (float)rand() / (double)RAND_MAX;
+    modifierY = (float)rand() / (double)RAND_MAX;
     modifierZ = (float)rand() / (double)RAND_MAX;
 }
 
 ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
 {
-    std::array<std::pair<unsigned int, unsigned int>, 6> texturePattern;
+    std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternBlock;
     // bottom left is 0/0 and top right is 1/1
     for (int i = 0; i < 6; i++)
-        texturePattern[i] = {0, 1}; // side
-    texturePattern[2] = {1, 1};     // top
-    texturePattern[3] = {0, 0};     // bottom
+        texturePatternBlock[i] = {0, 1}; // side
+    texturePatternBlock[2] = {1, 1};     // top
+    texturePatternBlock[3] = {0, 0};     // bottom
+
+    std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternWater;
+    // bottom left is 0/0 and top right is 1/1
+    for (int i = 0; i < 6; i++)
+        texturePatternWater[i] = {1, 0}; // side
 
     ChunkData chunkData;
+    // y value could be calculated one time and accessed via an array after
     for (int posX = 0; posX < CHUNK_LENGTH; posX++)
     {
-        for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
+        float x = (float)(chunkX + posX) / WORLD_LENGTH + modifierX;
+        for (int posY = 0; posY < CHUNK_HEIGHT; posY++)
         {
-            float x = (float)(chunkX + posX) / WORLD_LENGTH + modifierX;
-            float z = (float)(chunkZ + posZ) / WORLD_LENGTH + modifierZ;
-
-            float continentalnessValue =
-                getFractalNoise(x, z, CONTINENTALNESS_OCTAVES, CONTINENTALNESS_FREQUENCY, CONTINENTALNESS_PERSISTENCE);
-            continentalnessValue = convertRange(continentalnessValue);
-            continentalnessValue = getValueFromGraph(continentalnessValue, CONTINENTALNESS_GRAPH);
-
-            float erosionValue = getFractalNoise(x, z, EROSION_OCTAVES, EROSION_FREQUENCY, EROSION_PERSISTENCE);
-            erosionValue = convertRange(erosionValue);
-            erosionValue = getValueFromGraph(erosionValue, EROSION_GRAPH);
-
-            float peakAndValleysValue = getFractalNoise(x, z, PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE);
-            peakAndValleysValue = convertRange(peakAndValleysValue);
-            peakAndValleysValue = getValueFromGraph(peakAndValleysValue, PV_GRAPH);
-
-            int height = continentalnessValue;
-            if (height > 100)
-                height = (continentalnessValue + erosionValue + peakAndValleysValue) / 3;
-            for (int posY = 0; posY < height && posY < 256; posY++)
+            float y = (float)posY / CHUNK_HEIGHT + modifierY;
+            float bias = 2 * cos((float)posY / CHUNK_HEIGHT * M_PI);
+            for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
             {
-                BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePattern);
-                chunkData.addBlock(block);
+                float z = (float)(chunkZ + posZ) / WORLD_LENGTH + modifierZ;
+                float density = glm::simplex(glm::vec3(x, y, z)) + bias;
+                if (density >= 0)
+                {
+                    BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePatternBlock);
+                    chunkData.addBlock(block);
+                }
+                else if (density < 0 && posY <= WATER_LEVEL)
+                {
+                    BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePatternWater);
+                    chunkData.addBlock(block);
+                }
             }
         }
     }
@@ -82,8 +85,10 @@ float ChunkGenerator::getValueFromGraph(float value, eGraphType graphType)
     float is between [0; 1]
     and int is value between [0; 256]
     */
-    static const std::map<float, int> continentalnessGraph = {{0, 10},    {0.25, 10}, {0.3, 50},
-                                                              {0.39, 50}, {0.4, 100}, {1, 120}};
+    static const std::map<float, int> continentalnessGraph = {{0, 50},     {0.1, 50},  {0.11, 85},
+                                                              {0.65, 100}, {0.8, 130}, {1, 150}};
+    // static const std::map<float, int> continentalnessGraph = {{0, 10},    {0.25, 10}, {0.3, 50},
+    //                                                          {0.39, 50}, {0.4, 100}, {1, 120}};
     static const std::map<float, int> erosionGraph = {{0, 120}, {0.3, 100}, {0.4, 50}, {1, 50}};
     static const std::map<float, int> pvGraph = {{0, 100}, {0.2, 150}, {0.5, 200}, {0.6, 250}, {1, 250}};
 

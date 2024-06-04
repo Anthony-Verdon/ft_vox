@@ -35,3 +35,5 @@ constexpr int PV_OCTAVES = 8;
 constexpr float PV_FREQUENCY = 8;
 constexpr float PV_PERSISTENCE = 0.1;
 constexpr int PV_ROUND_FACTOR = 5;
+
+constexpr int WATER_LEVEL = 80;

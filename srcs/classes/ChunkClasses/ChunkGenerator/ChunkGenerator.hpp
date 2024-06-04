@@ -13,6 +13,7 @@ class ChunkGenerator
   private:
     static unsigned long seed;
     static float modifierX;
+    static float modifierY;
     static float modifierZ;
 
   public:
