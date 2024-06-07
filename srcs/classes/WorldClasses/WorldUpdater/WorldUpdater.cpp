@@ -162,8 +162,8 @@ bool WorldUpdater::addChunkToLoad(const std::vector<std::pair<int, int>> &chunks
         {
             chunksToLoad.push_back(chunksToLoadToAdd[i]);
 #ifdef DEBUG_MODE
-            std::cout << "new chunk to load: " << chunksToLoadToAdd[i].first / 16 << " "
-                      << chunksToLoadToAdd[i].second / 16 << std::endl;
+            std::cout << "new chunk to load: " << chunksToLoadToAdd[i].first / CHUNK_LENGTH << " "
+                      << chunksToLoadToAdd[i].second / CHUNK_LENGTH << std::endl;
 #endif
         }
         for (size_t i = 0; i < chunksToReloadToAdd.size(); i++)

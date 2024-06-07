@@ -61,9 +61,9 @@ void WorldData::updateWorldData(float x, float z)
 
     // check if we need to load new chunks
     if (x < 0)
-        x = x - 16;
+        x = x - CHUNK_LENGTH;
     if (z < 0)
-        z = z - 16;
+        z = z - CHUNK_LENGTH;
 
     std::pair<int, int> updatedPlayerChunkCoord = {static_cast<int>(x) / CHUNK_LENGTH,
                                                    static_cast<int>(z) / CHUNK_LENGTH};
