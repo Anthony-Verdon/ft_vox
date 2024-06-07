@@ -33,9 +33,6 @@ class WorldUpdater
     void moveChunkLoaded(const std::pair<int, int> &playerChunkCoordCopy);
     void moveChunkAxisX(const std::pair<int, int> &playerChunkCoordCopy);
     void moveChunkAxisZ(const std::pair<int, int> &playerChunkCoordCopy);
-    void generateChunkData(const std::vector<std::pair<int, int>> &chunksToLoadCopy,
-                           const std::pair<int, int> &playerChunkCoordCopy);
-    void generateChunkMesh(const std::pair<int, int> &arrayCoord);
 
   public:
     WorldUpdater();
