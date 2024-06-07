@@ -21,7 +21,7 @@ class ChunkMesh : public ChunkData
     ChunkMesh &operator=(const ChunkMesh &instance);
     ~ChunkMesh();
 
-    void initMesh(const std::array<std::optional<ChunkData>, 4> &neighborsChunks);
+    void initMesh();
 
     std::vector<float> getVertices() const;
     std::vector<unsigned int> getFaces() const;

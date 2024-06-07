@@ -40,7 +40,7 @@ ChunkMesh::~ChunkMesh()
 {
 }
 
-void ChunkMesh::initMesh(const std::array<std::optional<ChunkData>, 4> &neighborsChunks)
+void ChunkMesh::initMesh()
 {
     faces.clear();
     vertices.clear();
@@ -58,25 +58,10 @@ void ChunkMesh::initMesh(const std::array<std::optional<ChunkData>, 4> &neighbor
         {
             if (x + modifiers[j] >= 0 && x + modifiers[j] < CHUNK_LENGTH)
                 neighborsExist[j + 0] = getBlock(x + modifiers[j], y, z).has_value();
-            else if (neighborsChunks[j + 0].has_value())
-            {
-                if (j == 0)
-                    neighborsExist[j + 0] = neighborsChunks[j + 0]->getBlock(CHUNK_LENGTH - 1, y, z).has_value();
-                else
-                    neighborsExist[j + 0] = neighborsChunks[j + 0]->getBlock(0, y, z).has_value();
-            }
             if (y + modifiers[j] >= 0 && y + modifiers[j] < CHUNK_HEIGHT)
                 neighborsExist[j + 2] = getBlock(x, y + modifiers[j], z).has_value();
-
             if (z + modifiers[j] >= 0 && z + modifiers[j] < CHUNK_LENGTH)
                 neighborsExist[j + 4] = getBlock(x, y, z + modifiers[j]).has_value();
-            else if (neighborsChunks[j + 2].has_value())
-            {
-                if (j == 0)
-                    neighborsExist[j + 4] = neighborsChunks[j + 2]->getBlock(x, y, CHUNK_LENGTH - 1).has_value();
-                else
-                    neighborsExist[j + 4] = neighborsChunks[j + 2]->getBlock(x, y, 0).has_value();
-            }
         }
         BlockMesh blockMesh(blockData.value(), neighborsExist);
         addBlockMesh(blockMesh);

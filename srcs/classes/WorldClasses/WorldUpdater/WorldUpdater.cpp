@@ -167,22 +167,8 @@ void WorldUpdater::generateChunkMesh(const std::pair<int, int> &arrayCoord)
         chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second] == NULL)
         return;
 
-    std::array<std::optional<ChunkData>, 4> neighborsChunks;
-    if (arrayCoord.first - 1 >= 0 &&
-        chunkLoadedData[(arrayCoord.first - 1) * RENDER_DISTANCE_2X + arrayCoord.second] != NULL)
-        neighborsChunks[0] = *(chunkLoadedData[(arrayCoord.first - 1) * RENDER_DISTANCE_2X + arrayCoord.second].get());
-    if (arrayCoord.first + 1 < RENDER_DISTANCE_2X &&
-        chunkLoadedData[(arrayCoord.first + 1) * RENDER_DISTANCE_2X + arrayCoord.second] != NULL)
-        neighborsChunks[1] = *(chunkLoadedData[(arrayCoord.first + 1) * RENDER_DISTANCE_2X + arrayCoord.second].get());
-    if (arrayCoord.second - 1 >= 0 &&
-        chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second - 1] != NULL)
-        neighborsChunks[2] = *(chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second - 1].get());
-    if (arrayCoord.second + 1 < RENDER_DISTANCE_2X &&
-        chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second + 1] != NULL)
-        neighborsChunks[3] = *(chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second + 1].get());
-
     ChunkMesh chunkMesh(*(chunkLoadedData[arrayCoord.first * RENDER_DISTANCE_2X + arrayCoord.second].get()));
-    chunkMesh.initMesh(neighborsChunks);
+    chunkMesh.initMesh();
     std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
     chunksLoaded.push_back(chunkMesh);
 }
