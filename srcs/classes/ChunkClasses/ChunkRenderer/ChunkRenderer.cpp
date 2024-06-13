@@ -1,6 +1,6 @@
 #include "ChunkRenderer.hpp"
 #include <glad/glad.h>
-
+#include <iostream>
 ChunkRenderer::ChunkRenderer(const ChunkMesh &chunkMesh) : ChunkMesh(chunkMesh)
 {
     glGenVertexArrays(1, &VAO);

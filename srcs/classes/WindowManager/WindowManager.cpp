@@ -6,6 +6,7 @@
 #include "../TextRenderer/TextRenderer.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
+#include "../Utils/Utils.hpp"
 #include "../WorldClasses/WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
 #include <cctype>
@@ -17,7 +18,6 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
 void character_callback(GLFWwindow *window, unsigned int character);
 
@@ -75,7 +75,6 @@ void WindowManager::start()
 
 void WindowManager::updateLoop()
 {
-    WorldData world;
     camera.setPosition({8, 1, 8});
     SkyboxRenderer skybox;
     Texture grassTexture("assets/textures/tileset.jpg");
@@ -157,6 +156,36 @@ void WindowManager::processInput()
                 data.lastMessage = data.message;
                 data.message = "";
                 data.lastMessageTimeStamp = Time::getTime();
+
+                std::vector<std::string> lastMessageSplit = Utils::splitLine(data.lastMessage);
+                if (lastMessageSplit.size() == 4 and lastMessageSplit[0] == "/getBlock")
+                {
+                    try
+                    {
+                        int x = std::stoi(lastMessageSplit[1]);
+                        int y = std::stoi(lastMessageSplit[2]);
+                        int z = std::stoi(lastMessageSplit[3]);
+                        int chunkX = (x + x % CHUNK_LENGTH) / CHUNK_LENGTH;
+                        int chunkZ = (z + z % CHUNK_LENGTH) / CHUNK_LENGTH;
+                        int convertedX = ChunkData::convertCoordIntoChunkCoords(x, chunkX);
+                        int convertedZ = ChunkData::convertCoordIntoChunkCoords(z, chunkZ);
+                        const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(x, z);
+                        if (chunk == NULL)
+                            throw(std::runtime_error("chunk not loaded"));
+                        std::cout << "block at " << x << " " << y << " " << z;
+                        std::cout << " [chunk " << chunkX << " " << chunkZ << "]";
+                        std::cout << " [coord in chunk " << convertedX << " " << y << " " << convertedZ << "]";
+                        if (chunk->getBlock(convertedX, y, convertedZ).has_value())
+                            std::cout << " is set";
+                        else
+                            std::cout << " isn't set";
+                        std::cout << std::endl;
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cerr << e.what() << std::endl;
+                    }
+                }
             }
 
             if (data.inputMode == CHAT)
@@ -300,9 +329,11 @@ void WindowManager::renderChat()
 {
     const float scaling = 0.5f;
     if (data.inputMode == CHAT)
+    {
         TextRenderer::renderText("message : " + data.message, 0.0f,
                                  WINDOW_HEIGHT - 10 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                                  glm::vec4(1, 1, 1, 1));
+    }
     else if (data.inputMode == GAME)
     {
         if (Time::getTime() - data.lastMessageTimeStamp < CHAT_DISPLAY_TIME + CHAT_FADE_TIME)

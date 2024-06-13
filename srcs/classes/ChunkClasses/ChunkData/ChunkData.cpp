@@ -4,9 +4,11 @@
 #include <iostream>
 #include <memory>
 
-ChunkData::ChunkData()
+ChunkData::ChunkData(int coordX, int coordZ)
 {
-    blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
+    this->coordX = coordX;
+    this->coordZ = coordZ;
+    blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT * CHUNK_LENGTH_PLUS_2);
 }
 
 ChunkData::ChunkData(const ChunkData &instance)
@@ -20,15 +22,14 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
     {
         coordX = instance.getX();
         coordZ = instance.getZ();
-        blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
-        for (int x = 0; x < CHUNK_LENGTH; x++)
+        blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT * CHUNK_LENGTH_PLUS_2);
+        for (int x = 0; x < CHUNK_LENGTH_PLUS_2; x++)
         {
             for (int y = 0; y < CHUNK_HEIGHT; y++)
             {
-                for (int z = 0; z < CHUNK_LENGTH; z++)
+                for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
                 {
-                    this->blocks[convertCoordIntoChunkCoords(x) * CHUNK_LENGTH + y * CHUNK_HEIGHT +
-                                 convertCoordIntoChunkCoords(z)] = instance.getBlock(x, y, z);
+                    this->blocks[x * CHUNK_LENGTH_PLUS_2 + y * CHUNK_HEIGHT + z] = instance.getBlock(x, y, z);
                 }
             }
         }
@@ -41,15 +42,14 @@ ChunkData &ChunkData::operator=(const ChunkMesh &instance)
     coordX = instance.getX();
     coordZ = instance.getZ();
 
-    blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH);
-    for (int x = 0; x < CHUNK_LENGTH; x++)
+    blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT * CHUNK_LENGTH_PLUS_2);
+    for (int x = 0; x < CHUNK_LENGTH_PLUS_2; x++)
     {
         for (int y = 0; y < CHUNK_HEIGHT; y++)
         {
-            for (int z = 0; z < CHUNK_LENGTH; z++)
+            for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
             {
-                this->blocks[convertCoordIntoChunkCoords(x) * CHUNK_LENGTH + y * CHUNK_HEIGHT +
-                             convertCoordIntoChunkCoords(z)] = instance.getBlock(x, y, z);
+                this->blocks[x * CHUNK_LENGTH_PLUS_2 + y * CHUNK_HEIGHT + z] = instance.getBlock(x, y, z);
             }
         }
     }
@@ -62,30 +62,32 @@ ChunkData::~ChunkData()
 
 std::optional<BlockData> ChunkData::getBlock(int x, int y, int z) const
 {
-    x = convertCoordIntoChunkCoords(x);
-    z = convertCoordIntoChunkCoords(z);
-    return (blocks[x * CHUNK_LENGTH + y * CHUNK_HEIGHT + z]);
+    return (blocks[x * CHUNK_LENGTH_PLUS_2 + y * CHUNK_HEIGHT + z]);
 }
 
 void ChunkData::addBlock(const BlockData &block)
 {
-    int x = convertCoordIntoChunkCoords(block.getX());
-    int z = convertCoordIntoChunkCoords(block.getZ());
-    blocks[x * CHUNK_LENGTH + block.getY() * CHUNK_HEIGHT + z] = block;
-    coordX = block.getX() / CHUNK_LENGTH;
-    if (block.getX() < 0)
-        coordX = coordX - 1;
-    coordZ = block.getZ() / CHUNK_LENGTH;
-    if (block.getZ() < 0)
-        coordZ = coordZ - 1;
+    blocks[convertCoordIntoChunkCoords(block.getX(), coordX) * CHUNK_LENGTH_PLUS_2 + block.getY() * CHUNK_HEIGHT +
+           convertCoordIntoChunkCoords(block.getZ(), coordZ)] = block;
 }
 
-int ChunkData::convertCoordIntoChunkCoords(int coord) const
+int ChunkData::convertCoordIntoChunkCoords(int coord, int chunkCoord)
 {
-    coord = coord % CHUNK_LENGTH;
-    if (coord < 0)
-        coord += CHUNK_LENGTH;
-    return (coord);
+    if (coord >= chunkCoord * CHUNK_LENGTH && coord < (chunkCoord + 1) * CHUNK_LENGTH)
+    {
+        coord = coord % CHUNK_LENGTH;
+        if (coord < 0)
+            coord += CHUNK_LENGTH;
+        return (coord + 1);
+    }
+    else if (coord < chunkCoord * CHUNK_LENGTH)
+    {
+        return (0);
+    }
+    else
+    {
+        return (CHUNK_LENGTH_PLUS_2 - 1);
+    }
 }
 int ChunkData::getX() const
 {

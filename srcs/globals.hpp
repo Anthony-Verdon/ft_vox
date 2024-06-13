@@ -3,14 +3,15 @@
 constexpr int WINDOW_WIDTH = 720;
 constexpr int WINDOW_HEIGHT = 480;
 
-constexpr int RENDER_DISTANCE = 1;
+constexpr int RENDER_DISTANCE = 0;
 constexpr int RENDER_DISTANCE_2X = 2 * RENDER_DISTANCE + 1;
 constexpr int FOV = 80;
 
 constexpr int WORLD_LENGTH = 256; // ?
 
 constexpr int CHUNK_LENGTH = 16;
-constexpr int CHUNK_HEIGHT = 1; // 256
+constexpr int CHUNK_LENGTH_PLUS_2 = CHUNK_LENGTH + 2;
+constexpr int CHUNK_HEIGHT = 3;
 constexpr int HALF_CHUNK_HEIGHT = CHUNK_HEIGHT / 2;
 constexpr int NB_CHUNK_ON_EDGE = WORLD_LENGTH / CHUNK_LENGTH;
 

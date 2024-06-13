@@ -14,7 +14,7 @@ class ChunkData
     std::unique_ptr<std::optional<BlockData>[]> blocks;
 
   public:
-    ChunkData();
+    ChunkData(int coordX, int coordZ);
     ChunkData(const ChunkData &instance);
     ChunkData &operator=(const ChunkData &instance);
     ChunkData &operator=(const ChunkMesh &instance);
@@ -25,5 +25,5 @@ class ChunkData
     int getX() const;
     int getZ() const;
 
-    int convertCoordIntoChunkCoords(int coord) const;
+    static int convertCoordIntoChunkCoords(int coord, int chunkCoord);
 };

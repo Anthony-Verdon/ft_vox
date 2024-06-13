@@ -21,14 +21,13 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
         faces = instance.getFaces();
         coordX = instance.getX();
         coordZ = instance.getZ();
-        for (int x = 0; x < CHUNK_LENGTH; x++)
+        for (int x = 0; x < CHUNK_LENGTH_PLUS_2; x++)
         {
             for (int y = 0; y < CHUNK_HEIGHT; y++)
             {
-                for (int z = 0; z < CHUNK_LENGTH; z++)
+                for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
                 {
-                    this->blocks[std::abs(x) % CHUNK_LENGTH * CHUNK_LENGTH + std::abs(y) % CHUNK_HEIGHT * CHUNK_HEIGHT +
-                                 std::abs(z) % CHUNK_LENGTH] = instance.getBlock(x, y, z);
+                    this->blocks[x * CHUNK_LENGTH_PLUS_2 + y * CHUNK_HEIGHT + z] = instance.getBlock(x, y, z);
                 }
             }
         }
@@ -44,24 +43,28 @@ void ChunkMesh::initMesh()
 {
     faces.clear();
     vertices.clear();
-    const std::array<int, 2> modifiers = {-1, 1};
-    for (int i = 0; i < CHUNK_LENGTH * CHUNK_HEIGHT * CHUNK_LENGTH; i++)
+    // const std::array<int, 2> modifiers = {-1, 1};
+    for (int i = 0; i < CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT * CHUNK_LENGTH_PLUS_2; i++)
     {
         std::optional<BlockData> blockData = blocks[i];
         if (!blockData.has_value())
             continue;
-        const int x = convertCoordIntoChunkCoords(blocks[i]->getX());
-        const int y = blocks[i]->getY();
-        const int z = convertCoordIntoChunkCoords(blocks[i]->getZ());
+        /*
+    const int x = convertCoordIntoChunkCoords(blockData->getX(), coordX);
+    const int y = blockData->getY();
+    const int z = convertCoordIntoChunkCoords(blockData->getZ(), coordZ);
+    if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
+        continue;
+        */
         std::array<bool, 6> neighborsExist = {false}; // left, right, bottom, top, back, front
         for (int j = 0; j < 2; j++)
         {
-            if (x + modifiers[j] >= 0 && x + modifiers[j] < CHUNK_LENGTH)
-                neighborsExist[j + 0] = getBlock(x + modifiers[j], y, z).has_value();
+            /*
+            neighborsExist[j + 0] = getBlock(x + modifiers[j], y, z).has_value();
             if (y + modifiers[j] >= 0 && y + modifiers[j] < CHUNK_HEIGHT)
                 neighborsExist[j + 2] = getBlock(x, y + modifiers[j], z).has_value();
-            if (z + modifiers[j] >= 0 && z + modifiers[j] < CHUNK_LENGTH)
-                neighborsExist[j + 4] = getBlock(x, y, z + modifiers[j]).has_value();
+            neighborsExist[j + 4] = getBlock(x, y, z + modifiers[j]).has_value();
+            */
         }
         BlockMesh blockMesh(blockData.value(), neighborsExist);
         addBlockMesh(blockMesh);

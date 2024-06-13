@@ -38,16 +38,16 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
     for (int i = 0; i < 6; i++)
         texturePatternWater[i] = {1, 0}; // side
 
-    ChunkData chunkData;
+    ChunkData chunkData(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH);
     // y value could be calculated one time and accessed via an array after
-    for (int posX = 0; posX < CHUNK_LENGTH; posX++)
+    for (int posX = -1; posX < CHUNK_LENGTH_PLUS_2 - 1; posX++)
     {
         float x = (float)(chunkX + posX) / WORLD_LENGTH + modifierX;
         for (int posY = 0; posY < CHUNK_HEIGHT; posY++)
         {
             float y = (float)posY / CHUNK_HEIGHT + modifierY;
             float bias = 2 * cos((float)posY / CHUNK_HEIGHT * M_PI);
-            for (int posZ = 0; posZ < CHUNK_LENGTH; posZ++)
+            for (int posZ = -1; posZ < CHUNK_LENGTH_PLUS_2 - 1; posZ++)
             {
                 float z = (float)(chunkZ + posZ) / WORLD_LENGTH + modifierZ;
                 float density = glm::simplex(glm::vec3(x, y, z)) + bias;

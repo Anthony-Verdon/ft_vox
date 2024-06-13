@@ -28,6 +28,8 @@ class WindowManager
   private:
     GLFWwindow *window;
     Camera camera;
+
+    WorldData world;
     t_data data;
 
     void start();
