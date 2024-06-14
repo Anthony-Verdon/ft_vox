@@ -1,4 +1,5 @@
 #include "ChunkData.hpp"
+#include "../../../assert.hpp"
 #include "../../../globals.hpp"
 #include "../ChunkMesh/ChunkMesh.hpp"
 #include <iostream>
@@ -67,6 +68,16 @@ std::optional<BlockData> ChunkData::getBlock(int x, int y, int z) const
 
 void ChunkData::addBlock(const BlockData &block)
 {
+    ASSERT_RETURN_VOID(blocks[convertCoordIntoChunkCoords(block.getX(), coordX) * CHUNK_LENGTH_PLUS_2 +
+                              block.getY() * CHUNK_HEIGHT + convertCoordIntoChunkCoords(block.getZ(), coordZ)]
+                           .has_value(),
+                       "ChunkData::addBlock : Block already define at this position"
+                           << std::endl
+                           << "Block coords: " << block.getX() << " " << block.getY() << " " << block.getZ()
+                           << std::endl
+                           << "Chunk coords: " << convertCoordIntoChunkCoords(block.getX(), coordX) << " "
+                           << block.getY() << " " << convertCoordIntoChunkCoords(block.getZ(), coordZ))
+
     blocks[convertCoordIntoChunkCoords(block.getX(), coordX) * CHUNK_LENGTH_PLUS_2 + block.getY() * CHUNK_HEIGHT +
            convertCoordIntoChunkCoords(block.getZ(), coordZ)] = block;
 }

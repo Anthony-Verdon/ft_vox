@@ -165,13 +165,27 @@ void WindowManager::processInput()
                         int x = std::stoi(lastMessageSplit[1]);
                         int y = std::stoi(lastMessageSplit[2]);
                         int z = std::stoi(lastMessageSplit[3]);
-                        int chunkX = (x + x % CHUNK_LENGTH) / CHUNK_LENGTH;
-                        int chunkZ = (z + z % CHUNK_LENGTH) / CHUNK_LENGTH;
+                        int chunkX = x / CHUNK_LENGTH;
+                        int chunkZ = z / CHUNK_LENGTH;
+                        if (x < 0)
+                            chunkX--;
+                        if (z < 0)
+                            chunkZ--;
+                        int playerChunkX = camera.getPosition().x / CHUNK_LENGTH;
+                        int playerChunkZ = camera.getPosition().z / CHUNK_LENGTH;
+                        if (camera.getPosition().x < 0)
+                            playerChunkX--;
+                        if (camera.getPosition().z < 0)
+                            playerChunkZ--;
+                        int arrayX = chunkX - playerChunkX + RENDER_DISTANCE;
+                        int arrayZ = chunkZ - playerChunkZ + RENDER_DISTANCE;
                         int convertedX = ChunkData::convertCoordIntoChunkCoords(x, chunkX);
                         int convertedZ = ChunkData::convertCoordIntoChunkCoords(z, chunkZ);
-                        const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(x, z);
+                        if (arrayX >= RENDER_DISTANCE_2X || arrayZ >= RENDER_DISTANCE_2X)
+                            throw(std::runtime_error("chunk not loaded, be closer to it"));
+                        const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(arrayX, arrayZ);
                         if (chunk == NULL)
-                            throw(std::runtime_error("chunk not loaded"));
+                            throw(std::runtime_error("chunk not loaded, wait a bit"));
                         std::cout << "block at " << x << " " << y << " " << z;
                         std::cout << " [chunk " << chunkX << " " << chunkZ << "]";
                         std::cout << " [coord in chunk " << convertedX << " " << y << " " << convertedZ << "]";

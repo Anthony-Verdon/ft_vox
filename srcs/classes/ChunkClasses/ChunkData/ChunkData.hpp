@@ -11,9 +11,9 @@ class ChunkData
   protected:
     int coordX;
     int coordZ;
-    std::unique_ptr<std::optional<BlockData>[]> blocks;
 
   public:
+    std::unique_ptr<std::optional<BlockData>[]> blocks;
     ChunkData(int coordX, int coordZ);
     ChunkData(const ChunkData &instance);
     ChunkData &operator=(const ChunkData &instance);
