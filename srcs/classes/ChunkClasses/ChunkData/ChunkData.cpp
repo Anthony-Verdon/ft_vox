@@ -100,3 +100,13 @@ glm::vec2 ChunkData::getChunkCoord() const
 {
     return chunkCoord;
 }
+
+int ChunkData::getChunkCoordX() const
+{
+    return chunkCoord.x;
+}
+
+int ChunkData::getChunkCoordZ() const
+{
+    return chunkCoord.y;
+}
