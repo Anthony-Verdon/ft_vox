@@ -3,9 +3,9 @@
 class ChunkMesh;
 
 #include "../../BlockClasses/BlockData/BlockData.hpp"
+#include <glm/glm.hpp>
 #include <memory>
 #include <optional>
-
 class ChunkData
 {
   protected:

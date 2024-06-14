@@ -75,7 +75,7 @@ void WindowManager::start()
 
 void WindowManager::updateLoop()
 {
-    camera.setPosition({8, 1, 8});
+    camera.setPosition({1, 1, 1});
     SkyboxRenderer skybox;
     Texture grassTexture("assets/textures/tileset.jpg");
     Texture skyboxTexture("assets/textures/skybox/");

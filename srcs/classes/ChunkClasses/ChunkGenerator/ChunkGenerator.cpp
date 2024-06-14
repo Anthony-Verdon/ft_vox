@@ -51,7 +51,6 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
             {
                 float z = (float)(chunkZ + posZ) / WORLD_LENGTH + modifierZ;
                 float density = glm::simplex(glm::vec3(x, y, z)) + bias;
-                density = 1;
                 if (density >= 0)
                 {
                     BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePatternBlock);

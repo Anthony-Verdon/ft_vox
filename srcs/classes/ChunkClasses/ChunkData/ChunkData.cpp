@@ -30,7 +30,8 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
             {
                 for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
                 {
-                    this->blocks[x * CHUNK_LENGTH_PLUS_2 + y * CHUNK_HEIGHT + z] = instance.getBlock(x, y, z);
+                    this->blocks[x + y * CHUNK_LENGTH_PLUS_2 + z * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT] =
+                        instance.getBlock(x, y, z);
                 }
             }
         }
@@ -50,7 +51,8 @@ ChunkData &ChunkData::operator=(const ChunkMesh &instance)
         {
             for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
             {
-                this->blocks[x * CHUNK_LENGTH_PLUS_2 + y * CHUNK_HEIGHT + z] = instance.getBlock(x, y, z);
+                this->blocks[x + y * CHUNK_LENGTH_PLUS_2 + z * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT] =
+                    instance.getBlock(x, y, z);
             }
         }
     }
@@ -63,13 +65,13 @@ ChunkData::~ChunkData()
 
 std::optional<BlockData> ChunkData::getBlock(int x, int y, int z) const
 {
-    return (blocks[x * CHUNK_LENGTH_PLUS_2 + y * CHUNK_HEIGHT + z]);
+    return (blocks[x + y * CHUNK_LENGTH_PLUS_2 + z * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT]);
 }
 
 void ChunkData::addBlock(const BlockData &block)
 {
-    ASSERT_RETURN_VOID(blocks[convertCoordIntoChunkCoords(block.getX(), coordX) * CHUNK_LENGTH_PLUS_2 +
-                              block.getY() * CHUNK_HEIGHT + convertCoordIntoChunkCoords(block.getZ(), coordZ)]
+    ASSERT_RETURN_VOID(blocks[convertCoordIntoChunkCoords(block.getX(), coordX) + block.getY() * CHUNK_LENGTH_PLUS_2 +
+                              convertCoordIntoChunkCoords(block.getZ(), coordZ) * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT]
                            .has_value(),
                        "ChunkData::addBlock : Block already define at this position"
                            << std::endl
@@ -78,8 +80,8 @@ void ChunkData::addBlock(const BlockData &block)
                            << "Chunk coords: " << convertCoordIntoChunkCoords(block.getX(), coordX) << " "
                            << block.getY() << " " << convertCoordIntoChunkCoords(block.getZ(), coordZ))
 
-    blocks[convertCoordIntoChunkCoords(block.getX(), coordX) * CHUNK_LENGTH_PLUS_2 + block.getY() * CHUNK_HEIGHT +
-           convertCoordIntoChunkCoords(block.getZ(), coordZ)] = block;
+    blocks[convertCoordIntoChunkCoords(block.getX(), coordX) + block.getY() * CHUNK_LENGTH_PLUS_2 +
+           convertCoordIntoChunkCoords(block.getZ(), coordZ) * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT] = block;
 }
 
 int ChunkData::convertCoordIntoChunkCoords(int coord, int chunkCoord)
@@ -89,11 +91,6 @@ int ChunkData::convertCoordIntoChunkCoords(int coord, int chunkCoord)
         coord = coord % CHUNK_LENGTH;
         if (coord < 0)
             coord += CHUNK_LENGTH;
-        ASSERT_RETURN_VALUE(coord + 1 < 0 || coord + 1 > CHUNK_LENGTH_PLUS_2 - 1,
-                            "ChunkData::convertCoordIntoChunkCoords: return value ("
-                                << coord + 1 << ") should be between 0 and " << CHUNK_LENGTH_PLUS_2 - 1 << std::endl
-                                << "return 0 instead",
-                            0)
         return (coord + 1);
     }
     else if (coord < chunkCoord * CHUNK_LENGTH)
