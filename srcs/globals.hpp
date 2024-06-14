@@ -1,6 +1,9 @@
 #pragma once
 
-//@todo clean unused globals
+//@todo clean unused globals and sort them by files
+
+constexpr int TILESET_WIDTH = 2;
+constexpr int TILESET_HEIGHT = 2;
 
 constexpr int WINDOW_WIDTH = 720;
 constexpr int WINDOW_HEIGHT = 480;

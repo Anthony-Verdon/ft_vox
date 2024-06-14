@@ -1,10 +1,13 @@
 #include "BlockData.hpp"
 
-BlockData::BlockData(int x, int y, int z, std::array<std::pair<unsigned int, unsigned int>, 6> textureCoords)
+BlockData::BlockData(int x, int y, int z, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords)
 {
-    this->x = x;
-    this->y = y;
-    this->z = z;
+    *this = BlockData(glm::vec3(x, y, z), textureCoords);
+}
+
+BlockData::BlockData(const glm::vec3 &coords, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords)
+{
+    this->coords = coords;
     this->textureCoords = textureCoords;
 }
 
@@ -17,9 +20,7 @@ BlockData &BlockData::operator=(const BlockData &instance)
 {
     if (this != &instance)
     {
-        x = instance.getX();
-        y = instance.getY();
-        z = instance.getZ();
+        coords = instance.getCoords();
         textureCoords = instance.getTextureCoords();
     }
     return (*this);
@@ -29,19 +30,24 @@ BlockData::~BlockData()
 {
 }
 
+glm::vec3 BlockData::getCoords() const
+{
+    return (coords);
+}
+
 int BlockData::getX() const
 {
-    return (x);
+    return (coords.x);
 }
 
 int BlockData::getY() const
 {
-    return (y);
+    return (coords.y);
 }
 
 int BlockData::getZ() const
 {
-    return (z);
+    return (coords.z);
 }
 
 std::array<std::pair<unsigned int, unsigned int>, 6> BlockData::getTextureCoords() const

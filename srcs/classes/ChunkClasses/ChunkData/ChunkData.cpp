@@ -5,7 +5,12 @@
 #include <iostream>
 #include <memory>
 
-ChunkData::ChunkData(glm::vec2 chunkCoord)
+ChunkData::ChunkData(int chunkCoordX, int chunkCoordZ)
+{
+    *this = ChunkData(glm::vec2(chunkCoordX, chunkCoordZ));
+}
+
+ChunkData::ChunkData(const glm::vec2 &chunkCoord)
 {
     this->chunkCoord = chunkCoord;
     blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_ARRAY_SIZE);
@@ -41,7 +46,12 @@ ChunkData::~ChunkData()
 {
 }
 
-std::optional<BlockData> ChunkData::getBlock(glm::vec3 coords) const
+std::optional<BlockData> ChunkData::getBlock(int x, int y, int z) const
+{
+    return (getBlock(convert3DcoordsInto1Dcoords(x, y, z)));
+}
+
+std::optional<BlockData> ChunkData::getBlock(const glm::vec3 &coords) const
 {
     return (getBlock(convert3DcoordsInto1Dcoords(coords)));
 }
@@ -91,7 +101,12 @@ unsigned int ChunkData::convertWorldCoordIntoChunkCoords(int coord, int chunkCoo
     }
 }
 
-unsigned int ChunkData::convert3DcoordsInto1Dcoords(glm::vec3 coords)
+unsigned int ChunkData::convert3DcoordsInto1Dcoords(int x, int y, int z)
+{
+    return (convert3DcoordsInto1Dcoords(glm::vec3(x, y, z)));
+}
+
+unsigned int ChunkData::convert3DcoordsInto1Dcoords(const glm::vec3 &coords)
 {
     return (coords.x + coords.y * CHUNK_LENGTH_PLUS_2 + coords.z * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT);
 }

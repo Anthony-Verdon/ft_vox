@@ -1,10 +1,7 @@
 
 #include "BlockMesh.hpp"
+#include "../../../globals.hpp"
 #include <algorithm>
-
-constexpr int TILESET_WIDTH = 2;
-constexpr int TILESET_HEIGHT = 2;
-
 // possibility to reduce size of initCoords
 constexpr float initCoords[8 * 3] = {
     0, 0, 0, //
@@ -59,8 +56,7 @@ BlockMesh::~BlockMesh()
 {
 }
 
-BlockMesh::BlockMesh(const BlockMesh &instance)
-    : BlockData(instance.getX(), instance.getY(), instance.getZ(), instance.getTextureCoords())
+BlockMesh::BlockMesh(const BlockMesh &instance) : BlockData(instance.getCoords(), instance.getTextureCoords())
 {
     *this = instance;
 }
@@ -69,9 +65,7 @@ BlockMesh &BlockMesh::operator=(const BlockMesh &instance)
 {
     if (this != &instance)
     {
-        x = instance.getX();
-        y = instance.getY();
-        z = instance.getZ();
+        coords = instance.getCoords();
         textureCoords = instance.getTextureCoords();
         vertices = instance.getVertices();
         faces = instance.getFaces();
@@ -99,9 +93,9 @@ void BlockMesh::initMesh(const std::array<bool, 6> &neighborsExist)
 unsigned int BlockMesh::combineVertices(unsigned int vertexIndex, unsigned int textureVertexIndex, int side)
 {
     std::vector<float> vertexCombined(5);
-    vertexCombined[0] = initCoords[vertexIndex * 3 + 0] + x;
-    vertexCombined[1] = initCoords[vertexIndex * 3 + 1] + y;
-    vertexCombined[2] = initCoords[vertexIndex * 3 + 2] + z;
+    vertexCombined[0] = initCoords[vertexIndex * 3 + 0] + coords.x;
+    vertexCombined[1] = initCoords[vertexIndex * 3 + 1] + coords.y;
+    vertexCombined[2] = initCoords[vertexIndex * 3 + 2] + coords.z;
 
     std::pair<unsigned int, unsigned int> texture = textureCoords[side];
     vertexCombined[3] =
