@@ -89,6 +89,11 @@ int ChunkData::convertCoordIntoChunkCoords(int coord, int chunkCoord)
         coord = coord % CHUNK_LENGTH;
         if (coord < 0)
             coord += CHUNK_LENGTH;
+        ASSERT_RETURN_VALUE(coord + 1 < 0 || coord + 1 > CHUNK_LENGTH_PLUS_2 - 1,
+                            "ChunkData::convertCoordIntoChunkCoords: return value ("
+                                << coord + 1 << ") should be between 0 and " << CHUNK_LENGTH_PLUS_2 - 1 << std::endl
+                                << "return 0 instead",
+                            0)
         return (coord + 1);
     }
     else if (coord < chunkCoord * CHUNK_LENGTH)
@@ -100,6 +105,7 @@ int ChunkData::convertCoordIntoChunkCoords(int coord, int chunkCoord)
         return (CHUNK_LENGTH_PLUS_2 - 1);
     }
 }
+
 int ChunkData::getX() const
 {
     return coordX;

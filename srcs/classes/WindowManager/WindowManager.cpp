@@ -157,49 +157,8 @@ void WindowManager::processInput()
                 data.message = "";
                 data.lastMessageTimeStamp = Time::getTime();
 
-                std::vector<std::string> lastMessageSplit = Utils::splitLine(data.lastMessage);
-                if (lastMessageSplit.size() == 4 and lastMessageSplit[0] == "/getBlock")
-                {
-                    try
-                    {
-                        int x = std::stoi(lastMessageSplit[1]);
-                        int y = std::stoi(lastMessageSplit[2]);
-                        int z = std::stoi(lastMessageSplit[3]);
-                        int chunkX = x / CHUNK_LENGTH;
-                        int chunkZ = z / CHUNK_LENGTH;
-                        if (x < 0)
-                            chunkX--;
-                        if (z < 0)
-                            chunkZ--;
-                        int playerChunkX = camera.getPosition().x / CHUNK_LENGTH;
-                        int playerChunkZ = camera.getPosition().z / CHUNK_LENGTH;
-                        if (camera.getPosition().x < 0)
-                            playerChunkX--;
-                        if (camera.getPosition().z < 0)
-                            playerChunkZ--;
-                        int arrayX = chunkX - playerChunkX + RENDER_DISTANCE;
-                        int arrayZ = chunkZ - playerChunkZ + RENDER_DISTANCE;
-                        int convertedX = ChunkData::convertCoordIntoChunkCoords(x, chunkX);
-                        int convertedZ = ChunkData::convertCoordIntoChunkCoords(z, chunkZ);
-                        if (arrayX >= RENDER_DISTANCE_2X || arrayZ >= RENDER_DISTANCE_2X)
-                            throw(std::runtime_error("chunk not loaded, be closer to it"));
-                        const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(arrayX, arrayZ);
-                        if (chunk == NULL)
-                            throw(std::runtime_error("chunk not loaded, wait a bit"));
-                        std::cout << "block at " << x << " " << y << " " << z;
-                        std::cout << " [chunk " << chunkX << " " << chunkZ << "]";
-                        std::cout << " [coord in chunk " << convertedX << " " << y << " " << convertedZ << "]";
-                        if (chunk->getBlock(convertedX, y, convertedZ).has_value())
-                            std::cout << " is set";
-                        else
-                            std::cout << " isn't set";
-                        std::cout << std::endl;
-                    }
-                    catch (const std::exception &e)
-                    {
-                        std::cerr << e.what() << std::endl;
-                    }
-                }
+                if (data.lastMessage.size() > 0 && data.lastMessage[0] == '/')
+                    parseCommand();
             }
 
             if (data.inputMode == CHAT)
@@ -361,6 +320,86 @@ void WindowManager::renderChat()
                                      WINDOW_HEIGHT - 10 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                                      glm::vec4(1, 1, 1, fading));
         }
+    }
+}
+
+void WindowManager::parseCommand()
+{
+    static const std::map<std::string, void (WindowManager::*)(const std::vector<std::string> &)> commands = {
+        {"/getBlock", &WindowManager::getBlockCommand}, {"/tp", &WindowManager::teleportCommand}};
+
+    std::vector<std::string> commandSplit = Utils::splitLine(data.lastMessage);
+    for (auto it = commands.begin(); it != commands.end(); it++)
+    {
+        if (it->first == commandSplit[0])
+        {
+            (this->*(it->second))(commandSplit);
+            return;
+        }
+    }
+    std::cout << "command unknown" << std::endl;
+}
+
+void WindowManager::getBlockCommand(const std::vector<std::string> &commandSplit)
+{
+    try
+    {
+        if (commandSplit.size() != 4)
+            throw(std::runtime_error("invalid number of arguments"));
+        int x = std::stoi(commandSplit[1]);
+        int y = std::stoi(commandSplit[2]);
+        int z = std::stoi(commandSplit[3]);
+        int chunkX = x / CHUNK_LENGTH;
+        int chunkZ = z / CHUNK_LENGTH;
+        if (x < 0)
+            chunkX--;
+        if (z < 0)
+            chunkZ--;
+        int playerChunkX = camera.getPosition().x / CHUNK_LENGTH;
+        int playerChunkZ = camera.getPosition().z / CHUNK_LENGTH;
+        if (camera.getPosition().x < 0)
+            playerChunkX--;
+        if (camera.getPosition().z < 0)
+            playerChunkZ--;
+        int arrayX = chunkX - playerChunkX + RENDER_DISTANCE;
+        int arrayZ = chunkZ - playerChunkZ + RENDER_DISTANCE;
+        int convertedX = ChunkData::convertCoordIntoChunkCoords(x, chunkX);
+        int convertedZ = ChunkData::convertCoordIntoChunkCoords(z, chunkZ);
+        if (arrayX >= RENDER_DISTANCE_2X || arrayZ >= RENDER_DISTANCE_2X)
+            throw(std::runtime_error("chunk not loaded, be closer to it"));
+        const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(arrayX, arrayZ);
+        if (chunk == NULL)
+            throw(std::runtime_error("chunk not loaded, wait a bit"));
+        std::cout << "block at " << x << " " << y << " " << z;
+        std::cout << " [chunk " << chunkX << " " << chunkZ << "]";
+        std::cout << " [coord in chunk " << convertedX << " " << y << " " << convertedZ << "]";
+        if (chunk->getBlock(convertedX, y, convertedZ).has_value())
+            std::cout << " is set";
+        else
+            std::cout << " isn't set";
+        std::cout << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
+void WindowManager::teleportCommand(const std::vector<std::string> &commandSplit)
+{
+    try
+    {
+        if (commandSplit.size() != 4)
+            throw(std::runtime_error("invalid number of arguments"));
+        int x = std::stoi(commandSplit[1]);
+        int y = std::stoi(commandSplit[2]);
+        int z = std::stoi(commandSplit[3]);
+        camera.setPosition(glm::vec3(x, y, z));
+        std::cout << "be careful, generation of chunks can be bug if you teleport too far" << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << std::endl;
     }
 }
 

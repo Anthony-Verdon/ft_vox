@@ -12,3 +12,10 @@
         std::cerr << "ASSERT ! " << message << std::endl;                                                              \
         return;                                                                                                        \
     }
+
+#define ASSERT_RETURN_VALUE(condition, message, returnValue)                                                           \
+    if (condition)                                                                                                     \
+    {                                                                                                                  \
+        std::cerr << "ASSERT ! " << message << std::endl;                                                              \
+        return returnValue;                                                                                            \
+    }

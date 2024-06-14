@@ -47,6 +47,11 @@ class WindowManager
     void renderInformations();
     void renderChat();
 
+    /* commands */
+    void parseCommand();
+    void getBlockCommand(const std::vector<std::string> &commandSplit);
+    void teleportCommand(const std::vector<std::string> &commandSplit);
+
   public:
     WindowManager();
     ~WindowManager();

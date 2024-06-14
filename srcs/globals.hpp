@@ -11,7 +11,7 @@ constexpr int WORLD_LENGTH = 256; // ?
 
 constexpr int CHUNK_LENGTH = 16;
 constexpr int CHUNK_LENGTH_PLUS_2 = CHUNK_LENGTH + 2;
-constexpr int CHUNK_HEIGHT = 5;
+constexpr int CHUNK_HEIGHT = 256;
 constexpr int HALF_CHUNK_HEIGHT = CHUNK_HEIGHT / 2;
 constexpr int NB_CHUNK_ON_EDGE = WORLD_LENGTH / CHUNK_LENGTH;
 
