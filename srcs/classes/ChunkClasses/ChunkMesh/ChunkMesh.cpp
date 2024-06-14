@@ -49,9 +49,9 @@ void ChunkMesh::initMesh()
         std::optional<BlockData> blockData = blocks[i];
         if (!blockData.has_value())
             continue;
-        const int x = convertCoordIntoChunkCoords(blockData->getX(), chunkCoord.x);
+        const int x = convertWorldCoordIntoChunkCoords(blockData->getX(), chunkCoord.x);
         const int y = blockData->getY();
-        const int z = convertCoordIntoChunkCoords(blockData->getZ(), chunkCoord.y);
+        const int z = convertWorldCoordIntoChunkCoords(blockData->getZ(), chunkCoord.y);
         if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
             continue;
         std::array<bool, 6> neighborsExist = {false}; // left, right, bottom, top, back, front

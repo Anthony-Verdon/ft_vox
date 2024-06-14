@@ -20,10 +20,10 @@ class ChunkData
     ~ChunkData();
 
     std::optional<BlockData> getBlock(glm::vec3 blockCoord) const;
-    std::optional<BlockData> getBlock(int arrayCoord) const;
+    std::optional<BlockData> getBlock(unsigned int arrayCoord) const;
     void addBlock(const BlockData &block);
     glm::vec2 getChunkCoord() const;
 
-    static int convertCoordIntoChunkCoords(int coord, int chunkCoord);
-    static int convert3DcoordsInto1Dcoords(glm::vec3 coords);
+    static unsigned int convertWorldCoordIntoChunkCoords(int coord, int chunkCoord);
+    static unsigned int convert3DcoordsInto1Dcoords(glm::vec3 coords);
 };

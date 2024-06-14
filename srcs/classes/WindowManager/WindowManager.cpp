@@ -363,8 +363,8 @@ void WindowManager::getBlockCommand(const std::vector<std::string> &commandSplit
             playerChunkZ--;
         int arrayX = chunkX - playerChunkX + RENDER_DISTANCE;
         int arrayZ = chunkZ - playerChunkZ + RENDER_DISTANCE;
-        int convertedX = ChunkData::convertCoordIntoChunkCoords(x, chunkX);
-        int convertedZ = ChunkData::convertCoordIntoChunkCoords(z, chunkZ);
+        int convertedX = ChunkData::convertWorldCoordIntoChunkCoords(x, chunkX);
+        int convertedZ = ChunkData::convertWorldCoordIntoChunkCoords(z, chunkZ);
         if (arrayX >= RENDER_DISTANCE_2X || arrayZ >= RENDER_DISTANCE_2X)
             throw(std::runtime_error("chunk not loaded, be closer to it"));
         const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(arrayX, arrayZ);
