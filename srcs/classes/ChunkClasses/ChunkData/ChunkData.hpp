@@ -9,21 +9,21 @@ class ChunkMesh;
 class ChunkData
 {
   protected:
-    int coordX;
-    int coordZ;
+    glm::vec2 chunkCoord;
 
   public:
     std::unique_ptr<std::optional<BlockData>[]> blocks;
-    ChunkData(int coordX, int coordZ);
+    ChunkData(glm::vec2 chunkCoord);
     ChunkData(const ChunkData &instance);
     ChunkData &operator=(const ChunkData &instance);
     ChunkData &operator=(const ChunkMesh &instance);
     ~ChunkData();
 
-    std::optional<BlockData> getBlock(int x, int y, int z) const;
+    std::optional<BlockData> getBlock(glm::vec3 blockCoord) const;
+    std::optional<BlockData> getBlock(int arrayCoord) const;
     void addBlock(const BlockData &block);
-    int getX() const;
-    int getZ() const;
+    glm::vec2 getChunkCoord() const;
 
     static int convertCoordIntoChunkCoords(int coord, int chunkCoord);
+    static int convert3DcoordsInto1Dcoords(glm::vec3 coords);
 };

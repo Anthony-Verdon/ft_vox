@@ -38,7 +38,7 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
     for (int i = 0; i < 6; i++)
         texturePatternWater[i] = {1, 0}; // side
 
-    ChunkData chunkData(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH);
+    ChunkData chunkData(glm::vec2(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH));
     // y value could be calculated one time and accessed via an array after
     for (int posX = -1; posX < CHUNK_LENGTH_PLUS_2 - 1; posX++)
     {

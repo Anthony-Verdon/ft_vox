@@ -19,8 +19,7 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
     {
         vertices = instance.getVertices();
         faces = instance.getFaces();
-        coordX = instance.getX();
-        coordZ = instance.getZ();
+        chunkCoord = instance.getChunkCoord();
         for (int x = 0; x < CHUNK_LENGTH_PLUS_2; x++)
         {
             for (int y = 0; y < CHUNK_HEIGHT; y++)
@@ -28,7 +27,7 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
                 for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
                 {
                     this->blocks[x + y * CHUNK_LENGTH_PLUS_2 + z * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT] =
-                        instance.getBlock(x, y, z);
+                        instance.getBlock(glm::vec3(x, y, z));
                 }
             }
         }
@@ -50,18 +49,18 @@ void ChunkMesh::initMesh()
         std::optional<BlockData> blockData = blocks[i];
         if (!blockData.has_value())
             continue;
-        const int x = convertCoordIntoChunkCoords(blockData->getX(), coordX);
+        const int x = convertCoordIntoChunkCoords(blockData->getX(), chunkCoord.x);
         const int y = blockData->getY();
-        const int z = convertCoordIntoChunkCoords(blockData->getZ(), coordZ);
+        const int z = convertCoordIntoChunkCoords(blockData->getZ(), chunkCoord.y);
         if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
             continue;
         std::array<bool, 6> neighborsExist = {false}; // left, right, bottom, top, back, front
         for (int j = 0; j < 2; j++)
         {
-            neighborsExist[j + 0] = getBlock(x + modifiers[j], y, z).has_value();
+            neighborsExist[j + 0] = getBlock(glm::vec3(x + modifiers[j], y, z)).has_value();
             if (y + modifiers[j] >= 0 && y + modifiers[j] < CHUNK_HEIGHT)
-                neighborsExist[j + 2] = getBlock(x, y + modifiers[j], z).has_value();
-            neighborsExist[j + 4] = getBlock(x, y, z + modifiers[j]).has_value();
+                neighborsExist[j + 2] = getBlock(glm::vec3(x, y + modifiers[j], z)).has_value();
+            neighborsExist[j + 4] = getBlock(glm::vec3(x, y, z + modifiers[j])).has_value();
         }
         BlockMesh blockMesh(blockData.value(), neighborsExist);
         addBlockMesh(blockMesh);

@@ -49,8 +49,9 @@ void WorldData::updateWorldData(float x, float z)
         std::vector<ChunkMesh> chunkMesh = chunkMeshOptional.value();
         for (size_t i = 0; i < chunkMesh.size(); i++)
         {
-            int arrayX = chunkMesh[i].getX() - playerChunkCoord.first + RENDER_DISTANCE;
-            int arrayZ = chunkMesh[i].getZ() - playerChunkCoord.second + RENDER_DISTANCE;
+            glm::vec2 chunkCoord = chunkMesh[i].getChunkCoord();
+            int arrayX = chunkCoord.x - playerChunkCoord.first + RENDER_DISTANCE;
+            int arrayZ = chunkCoord.y - playerChunkCoord.second + RENDER_DISTANCE;
 
             if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X)
                 continue;
