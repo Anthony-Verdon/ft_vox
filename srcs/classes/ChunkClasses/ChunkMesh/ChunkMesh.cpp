@@ -20,17 +20,8 @@ ChunkMesh &ChunkMesh::operator=(const ChunkMesh &instance)
         vertices = instance.getVertices();
         faces = instance.getFaces();
         chunkCoord = instance.getChunkCoord();
-        for (int x = 0; x < CHUNK_LENGTH_PLUS_2; x++)
-        {
-            for (int y = 0; y < CHUNK_HEIGHT; y++)
-            {
-                for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
-                {
-                    this->blocks[x + y * CHUNK_LENGTH_PLUS_2 + z * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT] =
-                        instance.getBlock(glm::vec3(x, y, z));
-                }
-            }
-        }
+        for (unsigned int i = 0; i < CHUNK_ARRAY_SIZE; i++)
+            this->blocks[i] = instance.getBlock(i);
     }
     return (*this);
 }
@@ -41,19 +32,23 @@ ChunkMesh::~ChunkMesh()
 
 void ChunkMesh::initMesh()
 {
+    static const std::array<int, 2> modifiers = {-1, 1};
+
     faces.clear();
     vertices.clear();
-    const std::array<int, 2> modifiers = {-1, 1};
-    for (int i = 0; i < CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT * CHUNK_LENGTH_PLUS_2; i++)
+
+    for (int i = 0; i < CHUNK_ARRAY_SIZE; i++)
     {
         std::optional<BlockData> blockData = blocks[i];
         if (!blockData.has_value())
             continue;
+
         const int x = convertWorldCoordIntoChunkCoords(blockData->getX(), chunkCoord.x);
         const int y = blockData->getY();
         const int z = convertWorldCoordIntoChunkCoords(blockData->getZ(), chunkCoord.y);
         if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
             continue;
+
         std::array<bool, 6> neighborsExist = {false}; // left, right, bottom, top, back, front
         for (int j = 0; j < 2; j++)
         {
@@ -67,7 +62,7 @@ void ChunkMesh::initMesh()
     }
 }
 
-// could be opti probably
+//@todo check if it could be opti (probably)
 void ChunkMesh::addBlockMesh(const BlockMesh &blockMesh)
 {
     size_t nbVerticesInChunkMesh = vertices.size() / 5;
