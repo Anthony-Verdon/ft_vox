@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../ChunkClasses/ChunkMesh/ChunkMesh.hpp"
+#include <glm/glm.hpp>
 #include <mutex>
 #include <stack>
 #include <thread>
@@ -14,12 +15,11 @@ class WorldUpdater
     std::unique_ptr<std::unique_ptr<ChunkData>[]> chunkLoadedData;
 
     std::mutex playerChunkCoordMutex;
-    // first = x, second = z
-    std::pair<int, int> oldPlayerChunkCoord;
-    std::pair<int, int> playerChunkCoord;
+    glm::vec2 oldPlayerChunkCoord;
+    glm::vec2 playerChunkCoord;
 
     std::mutex chunksToLoadMutex;
-    std::vector<std::pair<int, int>> chunksToLoad;
+    std::vector<glm::vec2> chunksToLoad;
     // todo, try to a find a way to detect which chunks has been load without all this neighbors to regen them
     std::vector<int> chunksToReload;
 
@@ -30,15 +30,15 @@ class WorldUpdater
     bool stopThread;
 
     void loadNewChunks();
-    void moveChunkLoaded(const std::pair<int, int> &playerChunkCoordCopy);
-    void moveChunkAxisX(const std::pair<int, int> &playerChunkCoordCopy);
-    void moveChunkAxisZ(const std::pair<int, int> &playerChunkCoordCopy);
+    void moveChunkLoaded(const glm::vec2 &playerChunkCoordCopy);
+    void moveChunkAxisX(const glm::vec2 &playerChunkCoordCopy);
+    void moveChunkAxisZ(const glm::vec2 &playerChunkCoordCopy);
 
   public:
     WorldUpdater();
     ~WorldUpdater();
-    bool addChunkToLoad(const std::vector<std::pair<int, int>> &chunksToLoadToAdd,
-                        const std::vector<int> &chunksToReloadToAdd);
+
+    bool addChunkToLoad(const std::vector<glm::vec2> &chunksToLoadToAdd, const std::vector<int> &chunksToReloadToAdd);
     std::optional<std::vector<ChunkMesh>> getChunkLoaded();
-    bool updatePlayerChunkCoord(const std::pair<int, int> &updatedPlayerChunkCoord);
+    bool updatePlayerChunkCoord(const glm::vec2 &updatedPlayerChunkCoord);
 };

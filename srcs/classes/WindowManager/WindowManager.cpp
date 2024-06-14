@@ -18,6 +18,7 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
+
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
 void character_callback(GLFWwindow *window, unsigned int character);
 
