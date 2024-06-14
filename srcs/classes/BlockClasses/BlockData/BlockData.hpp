@@ -2,6 +2,7 @@
 
 #include <array>
 #include <glm/glm.hpp>
+
 enum DIRECTIONS
 {
     TOP,
@@ -11,6 +12,7 @@ enum DIRECTIONS
     LEFT,
     BOTTOM
 };
+
 class BlockData
 {
   protected:

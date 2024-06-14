@@ -38,13 +38,14 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
     for (int i = 0; i < 6; i++)
         texturePatternWater[i] = {1, 0}; // side
 
-    ChunkData chunkData(glm::vec2(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH));
-    // y value could be calculated one time and accessed via an array after
+    ChunkData chunkData(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH);
     for (int posX = -1; posX < CHUNK_LENGTH_PLUS_2 - 1; posX++)
     {
         float x = (float)(chunkX + posX) / WORLD_LENGTH + modifierX;
         for (int posY = 0; posY < CHUNK_HEIGHT; posY++)
         {
+            //@todo y value could be calculated one time and accessed via an array after. Bias also maybe, depending of
+            // the calculus
             float y = (float)posY / CHUNK_HEIGHT + modifierY;
             float bias = 2 * cos((float)posY / CHUNK_HEIGHT * M_PI);
             for (int posZ = -1; posZ < CHUNK_LENGTH_PLUS_2 - 1; posZ++)
@@ -67,24 +68,13 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
     return (chunkData);
 }
 
-// convert a value in [-1; 1] to [0; 1]
-float ChunkGenerator::convertRange(float value)
-{
-    return ((value + 1) / 2);
-}
-
-float ChunkGenerator::roundValue(float value, int roundFactor)
-{
-    int roundedValue = value * roundFactor;
-    return ((float)roundedValue / roundFactor);
-}
-
+/* could be useful later
 float ChunkGenerator::getValueFromGraph(float value, eGraphType graphType)
 {
-    /* these map correspond to graphics,
-    float is between [0; 1]
-    and int is value between [0; 256]
-    */
+    // these map correspond to graphics,
+    //float is between [0; 1]
+    //and int is value between [0; 256]
+
     static const std::map<float, int> continentalnessGraph = {{0, 50},     {0.1, 50},  {0.11, 85},
                                                               {0.65, 100}, {0.8, 130}, {1, 150}};
     // static const std::map<float, int> continentalnessGraph = {{0, 10},    {0.25, 10}, {0.3, 50},
@@ -117,11 +107,11 @@ float ChunkGenerator::getValueFromGraph(float value, eGraphType graphType)
                                               (upperIt->second - lowerIt->second);
     return (returnValue);
 }
-/*
- * octaves = nb of layer
- * frequency = zoom
- * persistence = smooth
- */
+
+
+// octaves = nb of layer
+// frequency = zoom
+// persistence = smooth
 float ChunkGenerator::getFractalNoise(float x, float z, int octaves, float frequency, float persistence)
 {
     float lacunarity = 2;
@@ -138,6 +128,7 @@ float ChunkGenerator::getFractalNoise(float x, float z, int octaves, float frequ
     }
     return total / max_amplitude;
 }
+*/
 
 #ifdef GENERATE_MAP
 

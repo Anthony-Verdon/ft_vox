@@ -10,6 +10,9 @@ class BlockMesh : public BlockData
     std::vector<float> vertices;
     std::vector<unsigned int> faces;
 
+    unsigned int combineVertices(unsigned int vertexIndex, unsigned int textureVertexIndex, int side);
+    int vertexIndexInMesh(const std::vector<float> &vertex);
+
   public:
     BlockMesh() = delete;
     BlockMesh(const BlockData &data, const std::array<bool, 6> neighborsExist);
@@ -18,8 +21,6 @@ class BlockMesh : public BlockData
     ~BlockMesh();
 
     void initMesh(const std::array<bool, 6> &neighborsExist);
-    unsigned int combineVertices(unsigned int vertexIndex, unsigned int textureVertexIndex, int side);
-    int vertexIndexInMesh(const std::vector<float> &vertex);
 
     size_t nbVertices() const;
     size_t nbFaces() const;

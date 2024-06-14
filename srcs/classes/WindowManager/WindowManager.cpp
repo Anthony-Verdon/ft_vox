@@ -280,6 +280,7 @@ void WindowManager::renderInformations()
                              0.0f, WINDOW_HEIGHT - 5 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                              glm::vec4(1, 1, 1, 1));
 
+    /*
     TextRenderer::renderText(
         "continentalness value : " +
             std::to_string(ChunkGenerator::convertRange(ChunkGenerator::getFractalNoise(
@@ -295,6 +296,7 @@ void WindowManager::renderInformations()
             std::to_string(ChunkGenerator::convertRange(ChunkGenerator::getFractalNoise(
                 cameraNewPosition.x, cameraNewPosition.z, PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE))),
         0.0f, WINDOW_HEIGHT - 8 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
+    */
     cameraOldPosition = cameraNewPosition;
 }
 
