@@ -8,9 +8,6 @@ class WorldData
 {
   private:
     std::unique_ptr<std::unique_ptr<ChunkRenderer>[]> chunks;
-    // first = x, second = z
-    // todo, maybe instead of std pair create just a struct holding it, so I don't use first and second so it's more
-    // clear
     glm::vec2 playerChunkCoord;
 
     WorldUpdater worldUpdater;

@@ -261,6 +261,7 @@ void WindowManager::renderInformations()
     static glm::vec3 cameraOldPosition = camera.getPosition();
     glm::vec3 cameraNewPosition = camera.getPosition();
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     const float scaling = 0.5f;
     TextRenderer::renderText("X: " + std::to_string(camera.getPosition().x), 0.0f,
                              WINDOW_HEIGHT - 1 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
@@ -298,6 +299,8 @@ void WindowManager::renderInformations()
                 cameraNewPosition.x, cameraNewPosition.z, PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE))),
         0.0f, WINDOW_HEIGHT - 8 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
     */
+    if (data.wireframeMode)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     cameraOldPosition = cameraNewPosition;
 }
 
