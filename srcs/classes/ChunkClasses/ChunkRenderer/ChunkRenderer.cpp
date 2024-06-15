@@ -23,7 +23,7 @@ ChunkRenderer &ChunkRenderer::operator=(const ChunkRenderer &instance)
         glGenBuffers(1, &VBO);
         glGenBuffers(1, &EBO);
         initRenderer();
-        // todo: copy
+        // @todo: copy
     }
     return (*this);
 }

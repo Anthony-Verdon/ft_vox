@@ -41,16 +41,16 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
     ChunkData chunkData(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH);
     for (int posX = -1; posX < CHUNK_LENGTH_PLUS_2 - 1; posX++)
     {
-        float x = (float)(chunkX + posX) / WORLD_LENGTH + modifierX;
+        float x = (float)(chunkX + posX) / NOISE_SIZE + modifierX;
         for (int posY = 0; posY < CHUNK_HEIGHT; posY++)
         {
             //@todo y value could be calculated one time and accessed via an array after. Bias also maybe, depending of
             // the calculus
             float y = (float)posY / CHUNK_HEIGHT + modifierY;
-            float bias = 2 * cos((float)posY / CHUNK_HEIGHT * M_PI);
+            float bias = cos((float)posY / CHUNK_HEIGHT * M_PI);
             for (int posZ = -1; posZ < CHUNK_LENGTH_PLUS_2 - 1; posZ++)
             {
-                float z = (float)(chunkZ + posZ) / WORLD_LENGTH + modifierZ;
+                float z = (float)(chunkZ + posZ) / NOISE_SIZE + modifierZ;
                 float density = glm::simplex(glm::vec3(x, y, z)) + bias;
                 if (density >= 0)
                 {

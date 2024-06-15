@@ -10,7 +10,7 @@ constexpr float CHAT_DISPLAY_TIME = 5;
 constexpr float CHAT_FADE_TIME = 5;
 
 // camera
-constexpr int RENDER_DISTANCE = 1;
+constexpr int RENDER_DISTANCE = 3;
 constexpr int RENDER_DISTANCE_2X = 2 * RENDER_DISTANCE + 1;
 constexpr int FOV = 80;
 
@@ -19,7 +19,7 @@ constexpr int CHUNK_LENGTH = 16;
 constexpr int CHUNK_LENGTH_PLUS_2 = CHUNK_LENGTH + 2;
 constexpr int CHUNK_HEIGHT = 256;
 constexpr int CHUNK_ARRAY_SIZE = CHUNK_LENGTH_PLUS_2 * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT;
-constexpr int WORLD_LENGTH = 256; // should be 16384 but need to be update when I do generation
+constexpr int NOISE_SIZE = 128;
 constexpr int WATER_LEVEL = 80;
 
 // textures

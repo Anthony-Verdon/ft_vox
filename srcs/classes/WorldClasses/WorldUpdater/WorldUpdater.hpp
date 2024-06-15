@@ -24,7 +24,7 @@ class WorldUpdater
     std::vector<int> chunksToReload;
 
     std::mutex chunksLoadedMutex;
-    std::vector<ChunkMesh> chunksLoaded;
+    std::vector<std::unique_ptr<ChunkMesh>> chunksLoaded;
 
     std::mutex stopThreadMutex;
     bool stopThread;
@@ -39,6 +39,6 @@ class WorldUpdater
     ~WorldUpdater();
 
     bool addChunkToLoad(const std::vector<glm::vec2> &chunksToLoadToAdd, const std::vector<int> &chunksToReloadToAdd);
-    std::optional<std::vector<ChunkMesh>> getChunkLoaded();
+    std::unique_ptr<ChunkMesh> getChunkLoaded();
     bool updatePlayerChunkCoord(const glm::vec2 &updatedPlayerChunkCoord);
 };

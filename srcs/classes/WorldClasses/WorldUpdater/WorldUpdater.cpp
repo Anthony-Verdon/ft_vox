@@ -67,11 +67,11 @@ void WorldUpdater::loadNewChunks()
                     std::make_unique<ChunkData>(ChunkGenerator::GenerateChunkData(chunkCoordX, chunkCoordZ));
             }
             {
-
-                ChunkMesh chunkMesh(*(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ].get()));
-                chunkMesh.initMesh();
+                std::unique_ptr<ChunkMesh> chunkMesh =
+                    std::make_unique<ChunkMesh>(*(chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ].get()));
+                chunkMesh->initMesh();
                 std::lock_guard<std::mutex> chunksLoadedGuard(chunksLoadedMutex);
-                chunksLoaded.push_back(chunkMesh);
+                chunksLoaded.push_back(std::move(chunkMesh));
             }
         }
     }
@@ -174,16 +174,16 @@ bool WorldUpdater::addChunkToLoad(const std::vector<glm::vec2> &chunksToLoadToAd
         return (false);
 }
 
-std::optional<std::vector<ChunkMesh>> WorldUpdater::getChunkLoaded()
+std::unique_ptr<ChunkMesh> WorldUpdater::getChunkLoaded()
 {
     std::unique_lock<std::mutex> chunksLoadedGuard(chunksLoadedMutex, std::defer_lock);
-    std::optional<std::vector<ChunkMesh>> chunks;
+    std::unique_ptr<ChunkMesh> chunk = NULL;
     if (chunksLoadedGuard.try_lock() && !chunksLoaded.empty())
     {
-        chunks = chunksLoaded;
-        chunksLoaded.clear();
+        chunk = std::move(chunksLoaded[chunksLoaded.size() - 1]);
+        chunksLoaded.pop_back();
     }
-    return (chunks);
+    return (chunk);
 }
 
 bool WorldUpdater::updatePlayerChunkCoord(const glm::vec2 &updatedPlayerChunkCoord)

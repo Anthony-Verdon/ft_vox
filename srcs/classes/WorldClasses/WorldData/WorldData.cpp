@@ -42,22 +42,15 @@ void WorldData::updateWorldData(float x, float z)
         updatePlayerCoord = worldUpdater.updatePlayerChunkCoord(playerChunkCoord);
 
     // get chunk loaded by WorldUpdater
-    std::optional<std::vector<ChunkMesh>> chunkMeshOptional = worldUpdater.getChunkLoaded();
-    if (chunkMeshOptional.has_value())
+    std::unique_ptr<ChunkMesh> chunkMesh = worldUpdater.getChunkLoaded();
+    if (chunkMesh)
     {
-        std::vector<ChunkMesh> chunkMesh = chunkMeshOptional.value();
-        for (size_t i = 0; i < chunkMesh.size(); i++)
-        {
-            int arrayX = chunkMesh[i].getChunkCoordX() - playerChunkCoord.x + RENDER_DISTANCE;
-            int arrayZ = chunkMesh[i].getChunkCoordZ() - playerChunkCoord.y + RENDER_DISTANCE;
+        int arrayX = chunkMesh->getChunkCoordX() - playerChunkCoord.x + RENDER_DISTANCE;
+        int arrayZ = chunkMesh->getChunkCoordZ() - playerChunkCoord.y + RENDER_DISTANCE;
 
-            if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X)
-                continue;
-
-            chunks[arrayX * RENDER_DISTANCE_2X + arrayZ] = std::make_unique<ChunkRenderer>(chunkMesh[i]);
-        }
+        if (arrayX >= 0 && arrayX < RENDER_DISTANCE_2X && arrayZ >= 0 && arrayZ < RENDER_DISTANCE_2X)
+            chunks[arrayX * RENDER_DISTANCE_2X + arrayZ] = std::make_unique<ChunkRenderer>(*chunkMesh);
     }
-
     // check if we need to load new chunks
     if (x < 0)
         x = x - CHUNK_LENGTH;
