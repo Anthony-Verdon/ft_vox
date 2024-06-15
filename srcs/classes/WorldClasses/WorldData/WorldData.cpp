@@ -69,65 +69,91 @@ void WorldData::updateWorldData(float x, float z)
 
 void WorldData::updateChunkAxisX(const glm::vec2 &updatedPlayerChunkCoord)
 {
-    int chunkArrayCoord;
-    int startX;
     if (playerChunkCoord.x < updatedPlayerChunkCoord.x)
     {
-        for (int i = 0; i < RENDER_DISTANCE_2X - 1; i++)
+        int diff = updatedPlayerChunkCoord.x - playerChunkCoord.x;
+        if (diff > RENDER_DISTANCE_2X)
+            diff = RENDER_DISTANCE_2X;
+        for (int i = 0; i < RENDER_DISTANCE_2X - diff; i++)
         {
             for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i + 1) * RENDER_DISTANCE_2X + j]);
+                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i + diff) * RENDER_DISTANCE_2X + j]);
         }
-        startX = (updatedPlayerChunkCoord.x + RENDER_DISTANCE) * CHUNK_LENGTH;
-        chunkArrayCoord = RENDER_DISTANCE_2X - 1;
+
+        for (int i = 0; i < diff; i++)
+        {
+            for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+            {
+                chunks[(RENDER_DISTANCE_2X - 1 - i) * RENDER_DISTANCE_2X + j] = NULL;
+                chunksToLoad.push_back({(updatedPlayerChunkCoord.x + RENDER_DISTANCE - i) * CHUNK_LENGTH,
+                                        (updatedPlayerChunkCoord.y + j - RENDER_DISTANCE) * CHUNK_LENGTH});
+            }
+        }
     }
     else if (playerChunkCoord.x > updatedPlayerChunkCoord.x)
     {
-        for (int i = RENDER_DISTANCE_2X - 1; i >= 1; i--)
+        int diff = playerChunkCoord.x - updatedPlayerChunkCoord.x;
+        if (diff > RENDER_DISTANCE_2X)
+            diff = RENDER_DISTANCE_2X;
+        for (int i = RENDER_DISTANCE_2X - 1; i >= diff; i--)
         {
             for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i - 1) * RENDER_DISTANCE_2X + j]);
+                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i - diff) * RENDER_DISTANCE_2X + j]);
         }
-        startX = (updatedPlayerChunkCoord.x - RENDER_DISTANCE) * CHUNK_LENGTH;
-        chunkArrayCoord = 0;
-    }
 
-    for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-    {
-        chunks[chunkArrayCoord * RENDER_DISTANCE_2X + j] = NULL;
-        chunksToLoad.push_back({startX, (updatedPlayerChunkCoord.y + j - RENDER_DISTANCE) * CHUNK_LENGTH});
+        for (int i = 0; i < diff; i++)
+        {
+            for (int j = 0; j < RENDER_DISTANCE_2X; j++)
+            {
+                chunks[i * RENDER_DISTANCE_2X + j] = NULL;
+                chunksToLoad.push_back({(updatedPlayerChunkCoord.x - RENDER_DISTANCE + i) * CHUNK_LENGTH,
+                                        (updatedPlayerChunkCoord.y + j - RENDER_DISTANCE) * CHUNK_LENGTH});
+            }
+        }
     }
 }
 
 void WorldData::updateChunkAxisZ(const glm::vec2 &updatedPlayerChunkCoord)
 {
-    int chunkArrayCoord;
-    int startZ;
     if (playerChunkCoord.y < updatedPlayerChunkCoord.y)
     {
+        int diff = updatedPlayerChunkCoord.y - playerChunkCoord.y;
+        if (diff > RENDER_DISTANCE_2X)
+            diff = RENDER_DISTANCE_2X;
         for (int i = 0; i < RENDER_DISTANCE_2X; i++)
         {
-            for (int j = 0; j < RENDER_DISTANCE_2X - 1; j++)
-                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j + 1]);
+            for (int j = 0; j < RENDER_DISTANCE_2X - diff; j++)
+                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j + diff]);
         }
-        startZ = (updatedPlayerChunkCoord.y + RENDER_DISTANCE) * CHUNK_LENGTH;
-        chunkArrayCoord = RENDER_DISTANCE_2X - 1;
+        for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+        {
+            for (int j = 0; j < diff; j++)
+            {
+                chunks[i * RENDER_DISTANCE_2X + RENDER_DISTANCE_2X - 1 - j] = NULL;
+                chunksToLoad.push_back({(updatedPlayerChunkCoord.x + i - RENDER_DISTANCE) * CHUNK_LENGTH,
+                                        (updatedPlayerChunkCoord.y + RENDER_DISTANCE - j) * CHUNK_LENGTH});
+            }
+        }
     }
     else if (playerChunkCoord.y > updatedPlayerChunkCoord.y)
     {
+        int diff = playerChunkCoord.y - updatedPlayerChunkCoord.y;
+        if (diff > RENDER_DISTANCE_2X)
+            diff = RENDER_DISTANCE_2X;
         for (int i = 0; i < RENDER_DISTANCE_2X; i++)
         {
-            for (int j = RENDER_DISTANCE_2X - 1; j >= 1; j--)
-                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j - 1]);
+            for (int j = RENDER_DISTANCE_2X - 1; j >= diff; j--)
+                chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j - diff]);
         }
-        startZ = (updatedPlayerChunkCoord.y - RENDER_DISTANCE) * CHUNK_LENGTH;
-        chunkArrayCoord = 0;
-    }
-
-    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
-    {
-        chunks[i * RENDER_DISTANCE_2X + chunkArrayCoord] = NULL;
-        chunksToLoad.push_back({(updatedPlayerChunkCoord.x + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ});
+        for (int i = 0; i < RENDER_DISTANCE_2X; i++)
+        {
+            for (int j = 0; j < diff; j++)
+            {
+                chunks[i * RENDER_DISTANCE_2X + j] = NULL;
+                chunksToLoad.push_back({(updatedPlayerChunkCoord.x + i - RENDER_DISTANCE) * CHUNK_LENGTH,
+                                        (updatedPlayerChunkCoord.y - RENDER_DISTANCE + j) * CHUNK_LENGTH});
+            }
+        }
     }
 }
 

@@ -25,4 +25,4 @@ this project is a minecraft clone made in C++ with OpenGL in the context of my s
 
 ## Bug knowns
 
-- tp command is probably broken
+feel free to test my program if you want to !

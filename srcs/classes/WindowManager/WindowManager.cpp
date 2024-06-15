@@ -76,7 +76,7 @@ void WindowManager::start()
 
 void WindowManager::updateLoop()
 {
-    camera.setPosition({1, 1, 1});
+    camera.setPosition({8, 256, 8});
     SkyboxRenderer skybox;
     Texture grassTexture("assets/textures/tileset.jpg");
     Texture skyboxTexture("assets/textures/skybox/");
@@ -401,7 +401,6 @@ void WindowManager::teleportCommand(const std::vector<std::string> &commandSplit
         int y = std::stoi(commandSplit[2]);
         int z = std::stoi(commandSplit[3]);
         camera.setPosition(glm::vec3(x, y, z));
-        std::cout << "be careful, generation of chunks can be bug if you teleport too far" << std::endl;
     }
     catch (const std::exception &e)
     {
