@@ -39,13 +39,10 @@ void WorldUpdater::loadNewChunks()
         }
 
         std::vector<glm::vec2> ChunksToLoadCopy;
-        std::vector<int> ChunksToReloadCopy;
         {
             std::lock_guard<std::mutex> chunksToLoadGuard(chunksToLoadMutex);
             ChunksToLoadCopy = chunksToLoad;
-            ChunksToReloadCopy = chunksToReload;
             chunksToLoad.clear();
-            chunksToReload.clear();
         }
         glm::vec2 playerChunkCoordCopy;
         {
@@ -62,6 +59,7 @@ void WorldUpdater::loadNewChunks()
             if (arrayX < 0 || arrayX >= RENDER_DISTANCE_2X || arrayZ < 0 || arrayZ >= RENDER_DISTANCE_2X)
                 continue;
             {
+                // biggest time to generate a chunk is here (logic)
                 std::lock_guard<std::mutex> chunkLoadedDataGuard(chunksLoadedDataMutex);
                 chunkLoadedData[arrayX * RENDER_DISTANCE_2X + arrayZ] =
                     std::make_unique<ChunkData>(ChunkGenerator::GenerateChunkData(chunkCoordX, chunkCoordZ));
@@ -150,24 +148,20 @@ void WorldUpdater::moveChunkAxisZ(const glm::vec2 &playerChunkCoordCopy)
     }
 }
 
-// @todo: find better names for argument
-bool WorldUpdater::addChunkToLoad(const std::vector<glm::vec2> &chunksToLoadToAdd,
-                                  const std::vector<int> &chunksToReloadToAdd)
+bool WorldUpdater::addChunkToLoad(const std::vector<glm::vec2> &newChunksToLoad)
 {
     std::unique_lock<std::mutex> chunksToLoadGuard(chunksToLoadMutex, std::defer_lock);
 
     if (chunksToLoadGuard.try_lock())
     {
-        for (size_t i = 0; i < chunksToLoadToAdd.size(); i++)
+        for (size_t i = 0; i < newChunksToLoad.size(); i++)
         {
-            chunksToLoad.push_back(chunksToLoadToAdd[i]);
+            chunksToLoad.push_back(newChunksToLoad[i]);
 #ifdef DEBUG_MODE
-            std::cout << "new chunk to load: " << chunksToLoadToAdd[i].first / CHUNK_LENGTH << " "
-                      << chunksToLoadToAdd[i].second / CHUNK_LENGTH << std::endl;
+            std::cout << "new chunk to load: " << newChunksToLoad[i].first / CHUNK_LENGTH << " "
+                      << newChunksToLoad[i].second / CHUNK_LENGTH << std::endl;
 #endif
         }
-        for (size_t i = 0; i < chunksToReloadToAdd.size(); i++)
-            chunksToReload.push_back(chunksToReloadToAdd[i]);
         return (true);
     }
     else

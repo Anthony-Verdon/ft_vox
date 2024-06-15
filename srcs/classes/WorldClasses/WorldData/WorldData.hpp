@@ -12,7 +12,6 @@ class WorldData
 
     WorldUpdater worldUpdater;
     std::vector<glm::vec2> chunksToLoad;
-    std::vector<int> chunksToReload;
     bool updatePlayerCoord;
 
     void updateChunkAxisX(const glm::vec2 &updatedPlayerChunkCoord);

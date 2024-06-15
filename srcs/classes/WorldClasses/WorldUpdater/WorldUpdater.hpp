@@ -20,8 +20,6 @@ class WorldUpdater
 
     std::mutex chunksToLoadMutex;
     std::vector<glm::vec2> chunksToLoad;
-    // @todo, try to a find a way to detect which chunks has been load without all this neighbors to regen them
-    std::vector<int> chunksToReload;
 
     std::mutex chunksLoadedMutex;
     std::vector<std::unique_ptr<ChunkMesh>> chunksLoaded;
@@ -38,7 +36,7 @@ class WorldUpdater
     WorldUpdater();
     ~WorldUpdater();
 
-    bool addChunkToLoad(const std::vector<glm::vec2> &chunksToLoadToAdd, const std::vector<int> &chunksToReloadToAdd);
+    bool addChunkToLoad(const std::vector<glm::vec2> &newChunksToLoad);
     std::unique_ptr<ChunkMesh> getChunkLoaded();
     bool updatePlayerChunkCoord(const glm::vec2 &updatedPlayerChunkCoord);
 };

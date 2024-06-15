@@ -31,12 +31,9 @@ void WorldData::updateWorldData(float x, float z)
     // update WorldUpdater informations (chunk to load, player position)
     if (chunksToLoad.size() > 0)
     {
-        bool chunkAdded = worldUpdater.addChunkToLoad(chunksToLoad, chunksToReload);
+        bool chunkAdded = worldUpdater.addChunkToLoad(chunksToLoad);
         if (chunkAdded)
-        {
             chunksToLoad.clear();
-            chunksToReload.clear();
-        }
     }
     if (updatePlayerCoord)
         updatePlayerCoord = worldUpdater.updatePlayerChunkCoord(playerChunkCoord);
@@ -72,7 +69,7 @@ void WorldData::updateWorldData(float x, float z)
 
 void WorldData::updateChunkAxisX(const glm::vec2 &updatedPlayerChunkCoord)
 {
-    std::array<int, 3> chunkToUpdate;
+    int chunkArrayCoord;
     int startX;
     if (playerChunkCoord.x < updatedPlayerChunkCoord.x)
     {
@@ -82,9 +79,7 @@ void WorldData::updateChunkAxisX(const glm::vec2 &updatedPlayerChunkCoord)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i + 1) * RENDER_DISTANCE_2X + j]);
         }
         startX = (updatedPlayerChunkCoord.x + RENDER_DISTANCE) * CHUNK_LENGTH;
-        chunkToUpdate[0] = RENDER_DISTANCE_2X - 1;
-        chunkToUpdate[1] = RENDER_DISTANCE_2X - 2;
-        chunkToUpdate[2] = 0;
+        chunkArrayCoord = RENDER_DISTANCE_2X - 1;
     }
     else if (playerChunkCoord.x > updatedPlayerChunkCoord.x)
     {
@@ -94,26 +89,19 @@ void WorldData::updateChunkAxisX(const glm::vec2 &updatedPlayerChunkCoord)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[(i - 1) * RENDER_DISTANCE_2X + j]);
         }
         startX = (updatedPlayerChunkCoord.x - RENDER_DISTANCE) * CHUNK_LENGTH;
-        chunkToUpdate[0] = 0;
-        chunkToUpdate[1] = 1;
-        chunkToUpdate[2] = RENDER_DISTANCE_2X - 1;
+        chunkArrayCoord = 0;
     }
 
     for (int j = 0; j < RENDER_DISTANCE_2X; j++)
     {
-        chunks[chunkToUpdate[0] * RENDER_DISTANCE_2X + j] = NULL;
+        chunks[chunkArrayCoord * RENDER_DISTANCE_2X + j] = NULL;
         chunksToLoad.push_back({startX, (updatedPlayerChunkCoord.y + j - RENDER_DISTANCE) * CHUNK_LENGTH});
-    }
-    for (int j = 0; j < RENDER_DISTANCE_2X; j++)
-    {
-        for (int i = 1; i <= 2; i++)
-            chunksToReload.push_back(chunkToUpdate[i] * RENDER_DISTANCE_2X + j);
     }
 }
 
 void WorldData::updateChunkAxisZ(const glm::vec2 &updatedPlayerChunkCoord)
 {
-    std::array<int, 3> chunkToUpdate;
+    int chunkArrayCoord;
     int startZ;
     if (playerChunkCoord.y < updatedPlayerChunkCoord.y)
     {
@@ -123,9 +111,7 @@ void WorldData::updateChunkAxisZ(const glm::vec2 &updatedPlayerChunkCoord)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j + 1]);
         }
         startZ = (updatedPlayerChunkCoord.y + RENDER_DISTANCE) * CHUNK_LENGTH;
-        chunkToUpdate[0] = RENDER_DISTANCE_2X - 1;
-        chunkToUpdate[1] = RENDER_DISTANCE_2X - 2;
-        chunkToUpdate[2] = 0;
+        chunkArrayCoord = RENDER_DISTANCE_2X - 1;
     }
     else if (playerChunkCoord.y > updatedPlayerChunkCoord.y)
     {
@@ -135,20 +121,13 @@ void WorldData::updateChunkAxisZ(const glm::vec2 &updatedPlayerChunkCoord)
                 chunks[i * RENDER_DISTANCE_2X + j] = std::move(chunks[i * RENDER_DISTANCE_2X + j - 1]);
         }
         startZ = (updatedPlayerChunkCoord.y - RENDER_DISTANCE) * CHUNK_LENGTH;
-        chunkToUpdate[0] = 0;
-        chunkToUpdate[1] = 1;
-        chunkToUpdate[2] = RENDER_DISTANCE_2X - 1;
+        chunkArrayCoord = 0;
     }
 
     for (int i = 0; i < RENDER_DISTANCE_2X; i++)
     {
-        chunks[i * RENDER_DISTANCE_2X + chunkToUpdate[0]] = NULL;
+        chunks[i * RENDER_DISTANCE_2X + chunkArrayCoord] = NULL;
         chunksToLoad.push_back({(updatedPlayerChunkCoord.x + i - RENDER_DISTANCE) * CHUNK_LENGTH, startZ});
-    }
-    for (int i = 0; i < RENDER_DISTANCE_2X; i++)
-    {
-        for (int j = 1; j <= 2; j++)
-            chunksToReload.push_back(i * RENDER_DISTANCE_2X + chunkToUpdate[j]);
     }
 }
 
