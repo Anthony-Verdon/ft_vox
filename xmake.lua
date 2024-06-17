@@ -9,6 +9,7 @@ add_cxxflags("clang::-Wall")
 add_cxxflags("clang::-Werror")
 add_cxxflags("clang::-Wextra")
 add_cxxflags("clang::-gdwarf-4")
+add_cxxflags("clang::-O3")
 
 add_requires("freetype")
 add_requires("glfw")
@@ -22,23 +23,11 @@ rule("mode.debug")
     end)
 rule_end()
 
-rule("mode.generateMap")
-    before_build(function (target)
-        target:add("defines", "GENERATE_MAP")
-    end)
-rule_end()
-
 target("ft_vox")
     set_kind("binary")
     if is_mode("debug") then
         add_rules("mode.debug")
-    end
-    if is_mode("gen") then
-        add_rules("mode.generateMap")
-    end
-    if is_mode("debugGen") then
-        add_rules("mode.debug")
-        add_rules("mode.generateMap")
+        set_symbols("debug") -- add -g when compile
     end
         
     add_files("srcs/**.cpp")
@@ -47,4 +36,3 @@ target("ft_vox")
     add_packages("glm")
     add_packages("stb")
     add_packages("glad")
-    set_symbols("debug") -- add -g when compile

@@ -183,8 +183,8 @@ bool WorldUpdater::addChunkToLoad(const std::vector<glm::vec2> &newChunksToLoad)
         {
             chunksToLoad.push_back(newChunksToLoad[i]);
 #ifdef DEBUG_MODE
-            std::cout << "new chunk to load: " << newChunksToLoad[i].first / CHUNK_LENGTH << " "
-                      << newChunksToLoad[i].second / CHUNK_LENGTH << std::endl;
+            std::cout << "new chunk to load: " << newChunksToLoad[i].x / CHUNK_LENGTH << " "
+                      << newChunksToLoad[i].y / CHUNK_LENGTH << std::endl;
 #endif
         }
         return (true);

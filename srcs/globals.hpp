@@ -29,20 +29,3 @@ constexpr int TILESET_HEIGHT = 2;
 // gameplay
 constexpr int DAY_DURATION_IN_MIN = 20;
 constexpr int DAY_DURATION_IN_SEC = DAY_DURATION_IN_MIN * 60;
-
-/*
-constexpr int CONTINENTALNESS_OCTAVES = 8;
-constexpr float CONTINENTALNESS_FREQUENCY = 4;
-constexpr float CONTINENTALNESS_PERSISTENCE = 0.3;
-constexpr int CONTINENTALNESS_ROUND_FACTOR = 10;
-
-constexpr int EROSION_OCTAVES = 8;
-constexpr float EROSION_FREQUENCY = 2;
-constexpr float EROSION_PERSISTENCE = 0.2;
-constexpr int EROSION_ROUND_FACTOR = 5;
-
-constexpr int PV_OCTAVES = 8;
-constexpr float PV_FREQUENCY = 8;
-constexpr float PV_PERSISTENCE = 0.1;
-constexpr int PV_ROUND_FACTOR = 5;
-*/
