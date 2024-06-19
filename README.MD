@@ -19,9 +19,10 @@ this project is a minecraft clone made in C++ with OpenGL in the context of my s
 ## features I want to add
 - lines in chunk border in F3 mode to see the delimitation
 - I don't know how it's called, but something to see camera orientation in F3 mode
-- multiples camera angle to play (implied player body)
+- multiples camera angle to play (imply player body)
 - sound 
 - multiplayer
+- fog for long distance
 
 ## Bug knowns
 

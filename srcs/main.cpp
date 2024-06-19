@@ -20,6 +20,7 @@ int main(int argc, char **argv)
             ChunkGenerator::SetSeed(time(nullptr));
         else
             ChunkGenerator::SetSeed(std::stoul(argv[1]));
+        std::cout << "seed: " << ChunkGenerator::GetSeed() << std::endl;
         WindowManager windowManager;
         return (EXIT_SUCCESS);
     }

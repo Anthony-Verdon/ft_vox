@@ -52,6 +52,12 @@ void WorldUpdater::loadNewChunks()
         moveChunkLoaded(playerChunkCoordCopy);
         for (size_t i = 0; i < ChunksToLoadCopy.size(); i++)
         {
+            {
+                std::lock_guard<std::mutex> stopThreadGuard(stopThreadMutex);
+                if (stopThread)
+                    return;
+            }
+
             int chunkCoordX = ChunksToLoadCopy[i].x;
             int chunkCoordZ = ChunksToLoadCopy[i].y;
             int arrayX = chunkCoordX / CHUNK_LENGTH - playerChunkCoordCopy.x + RENDER_DISTANCE;

@@ -1,8 +1,8 @@
 #pragma once
 
 // window
-constexpr int WINDOW_WIDTH = 720;
-constexpr int WINDOW_HEIGHT = 480;
+constexpr int WINDOW_WIDTH = 1920;
+constexpr int WINDOW_HEIGHT = 1080;
 
 // text
 constexpr int TEXT_PIXEL_SIZE = 48;
@@ -10,7 +10,7 @@ constexpr float CHAT_DISPLAY_TIME = 5;
 constexpr float CHAT_FADE_TIME = 5;
 
 // camera
-constexpr int RENDER_DISTANCE = 3;
+constexpr int RENDER_DISTANCE = 7;
 constexpr int RENDER_DISTANCE_2X = 2 * RENDER_DISTANCE + 1;
 constexpr int FOV = 80;
 

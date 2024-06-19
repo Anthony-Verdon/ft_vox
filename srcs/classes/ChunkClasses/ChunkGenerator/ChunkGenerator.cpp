@@ -24,6 +24,11 @@ void ChunkGenerator::SetSeed(unsigned long seed)
     modifierZ = (float)rand() / (double)RAND_MAX;
 }
 
+unsigned long ChunkGenerator::GetSeed()
+{
+    return seed;
+}
+
 ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
 {
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternBlock;
@@ -38,19 +43,23 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
     for (int i = 0; i < 6; i++)
         texturePatternWater[i] = {1, 0}; // side
 
+    int tmpNoiseSize = 128;
+    int squashingFactor = 3;
+    int baseTerrainEvelation = 118;
     ChunkData chunkData(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH);
     for (int posX = -1; posX < CHUNK_LENGTH_PLUS_2 - 1; posX++)
     {
-        float x = (float)(chunkX + posX) / NOISE_SIZE + modifierX;
+        float x = (float)(chunkX + posX) / tmpNoiseSize + modifierX;
         for (int posY = 0; posY < CHUNK_HEIGHT; posY++)
         {
             //@todo y value could be calculated one time and accessed via an array after. Bias also maybe, depending of
             // the calculus
-            float y = (float)posY / CHUNK_HEIGHT + modifierY;
-            float bias = cos((float)posY / CHUNK_HEIGHT * M_PI);
+            float y = (float)(posY + CHUNK_HEIGHT / 2 - baseTerrainEvelation) / tmpNoiseSize + modifierY;
+            float bias =
+                cos((float)(posY + CHUNK_HEIGHT / 2 - baseTerrainEvelation) / CHUNK_HEIGHT * M_PI) * squashingFactor;
             for (int posZ = -1; posZ < CHUNK_LENGTH_PLUS_2 - 1; posZ++)
             {
-                float z = (float)(chunkZ + posZ) / NOISE_SIZE + modifierZ;
+                float z = (float)(chunkZ + posZ) / tmpNoiseSize + modifierZ;
                 float density = glm::simplex(glm::vec3(x, y, z)) + bias;
                 if (density >= 0)
                 {

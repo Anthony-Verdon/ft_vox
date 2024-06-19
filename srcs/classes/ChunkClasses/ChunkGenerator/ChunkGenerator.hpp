@@ -21,5 +21,6 @@ class ChunkGenerator
     ~ChunkGenerator() = delete;
 
     static void SetSeed(unsigned long seed);
+    static unsigned long GetSeed();
     static ChunkData GenerateChunkData(int x, int z);
 };
