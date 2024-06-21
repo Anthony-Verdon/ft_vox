@@ -23,11 +23,21 @@ rule("mode.debug")
     end)
 rule_end()
 
+rule("mode.generateMap")
+    before_build(function (target)
+        target:add("defines", "GENERATE_MAP")
+    end)
+rule_end()
+
 target("ft_vox")
     set_kind("binary")
     if is_mode("debug") then
         add_rules("mode.debug")
         set_symbols("debug") -- add -g when compile
+    end
+    
+    if is_mode("gen") then
+        add_rules("mode.generateMap")
     end
         
     add_files("srcs/**.cpp")

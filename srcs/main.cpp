@@ -21,6 +21,11 @@ int main(int argc, char **argv)
         else
             ChunkGenerator::SetSeed(std::stoul(argv[1]));
         std::cout << "seed: " << ChunkGenerator::GetSeed() << std::endl;
+
+#ifdef GENERATE_MAP
+        ChunkGenerator::GenerateNoiseMap();
+        return (EXIT_SUCCESS);
+#endif
         WindowManager windowManager;
         return (EXIT_SUCCESS);
     }

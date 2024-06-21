@@ -2,6 +2,9 @@
 
 this project is a minecraft clone made in C++ with OpenGL in the context of my studies at 42 School.
 
+## my reflexion
+
+I decided to note everything I think about this project on Miro: https://miro.com/app/board/uXjVK6B1Tlo=/?share_link_id=193715330065
 ## what has been made
 
 - Window Management

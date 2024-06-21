@@ -23,4 +23,12 @@ class ChunkGenerator
     static void SetSeed(unsigned long seed);
     static unsigned long GetSeed();
     static ChunkData GenerateChunkData(int x, int z);
+
+#ifdef GENERATE_MAP
+    static float getValueFromGraph(float value, eGraphType graph);
+    static float getFractalNoise(float x, float z, int octaves, float frequency, float persistence);
+    static void GenerateNoiseMap();
+    static void generateImage(const std::string &name, int octaves, float frequency, float persistence,
+                              int roundFactor);
+#endif
 };
