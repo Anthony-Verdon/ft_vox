@@ -1,6 +1,10 @@
 #pragma once
 #include "../ChunkData/ChunkData.hpp"
 
+#ifndef GENERATE_MAP
+#define GENERATE_MAP //@todo suppress, just use it for visual code
+#endif
+
 enum eGraphType
 {
     CONTINENTALNESS_GRAPH,
@@ -28,7 +32,7 @@ class ChunkGenerator
     static float getValueFromGraph(float value, eGraphType graph);
     static float getFractalNoise(float x, float z, int octaves, float frequency, float persistence);
     static void GenerateNoiseMap();
-    static void generateImage(const std::string &name, int octaves, float frequency, float persistence,
-                              int roundFactor);
+    static void generateImage(const std::string &name, int octaves, float frequency, float persistence, int roundFactor,
+                              bool drawColor, bool ridgedNoise);
 #endif
 };

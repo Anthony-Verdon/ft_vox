@@ -131,7 +131,7 @@ float ChunkGenerator::getFractalNoise(float x, float z, int octaves, float frequ
 }
 
 void ChunkGenerator::generateImage(const std::string &name, int octaves, float frequency, float persistence,
-                                   int roundFactor)
+                                   int roundFactor, bool drawColor, bool ridgedNoise)
 {
     static const int mapLength = 256;
     std::unique_ptr<unsigned char[]> noiseMap = std::make_unique<unsigned char[]>(mapLength * mapLength * CHANNEL_NUM);
@@ -139,15 +139,36 @@ void ChunkGenerator::generateImage(const std::string &name, int octaves, float f
     {
         for (int z = 0; z < mapLength; z++)
         {
-            float value = (getFractalNoise((float)(x) / mapLength + modifierX, (float)(z) / mapLength + modifierZ,
-                                           octaves, frequency, persistence) +
-                           1) /
-                          2;
+            float value = getFractalNoise((float)(x) / mapLength + modifierX, (float)(z) / mapLength + modifierZ,
+                                          octaves, frequency, persistence);
+            if (ridgedNoise)
+                value = abs(value);
             int roundedValue = value * roundFactor;
             value = (float)roundedValue / roundFactor;
-            value = value * 256;
-            for (int c = 0; c < CHANNEL_NUM; c++)
-                noiseMap[(x * mapLength + z) * CHANNEL_NUM + c] = value;
+            value = 128 + value * 128;
+
+            if (drawColor)
+            {
+                if (value <= 128)
+                {
+                    // blue == ocean
+                    noiseMap[(x * mapLength + z) * CHANNEL_NUM + 0] = 0;
+                    noiseMap[(x * mapLength + z) * CHANNEL_NUM + 1] = 0;
+                    noiseMap[(x * mapLength + z) * CHANNEL_NUM + 2] = 255;
+                }
+                else
+                {
+                    // green == land
+                    noiseMap[(x * mapLength + z) * CHANNEL_NUM + 0] = 0;
+                    noiseMap[(x * mapLength + z) * CHANNEL_NUM + 1] = 255;
+                    noiseMap[(x * mapLength + z) * CHANNEL_NUM + 2] = 0;
+                }
+            }
+            else
+            {
+                for (int c = 0; c < CHANNEL_NUM; c++)
+                    noiseMap[(x * mapLength + z) * CHANNEL_NUM + c] = value;
+            }
         }
     }
     std::ostringstream filename;
@@ -163,8 +184,12 @@ void ChunkGenerator::GenerateNoiseMap()
         std::filesystem::create_directory("imagesGenerated/" + std::to_string(seed));
 
     generateImage("continentalness", CONTINENTALNESS_OCTAVES, CONTINENTALNESS_FREQUENCY, CONTINENTALNESS_PERSISTENCE,
-                  CONTINENTALNESS_ROUND_FACTOR);
-    generateImage("erosion", EROSION_OCTAVES, EROSION_FREQUENCY, EROSION_PERSISTENCE, EROSION_ROUND_FACTOR);
-    generateImage("peakAndValleys", PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE, PV_ROUND_FACTOR);
+                  CONTINENTALNESS_ROUND_FACTOR, false, false);
+    generateImage("continentalness_color", CONTINENTALNESS_OCTAVES, CONTINENTALNESS_FREQUENCY,
+                  CONTINENTALNESS_PERSISTENCE, CONTINENTALNESS_ROUND_FACTOR, true, false);
+    generateImage("erosion", EROSION_OCTAVES, EROSION_FREQUENCY, EROSION_PERSISTENCE, EROSION_ROUND_FACTOR, false,
+                  false);
+    generateImage("peakAndValleys", PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE, PV_ROUND_FACTOR, false, true);
+    generateImage("peakAndValleys_color", PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE, PV_ROUND_FACTOR, true, true);
 }
 #endif
