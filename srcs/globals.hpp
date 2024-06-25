@@ -19,8 +19,9 @@ constexpr int CHUNK_LENGTH = 16;
 constexpr int CHUNK_LENGTH_PLUS_2 = CHUNK_LENGTH + 2;
 constexpr int CHUNK_HEIGHT = 256;
 constexpr int CHUNK_ARRAY_SIZE = CHUNK_LENGTH_PLUS_2 * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT;
-constexpr int NOISE_SIZE = 128;
-constexpr int WATER_LEVEL = 80;
+constexpr int WORLD_LENGTH = 16384;
+constexpr int NOISE_SIZE = 1024;
+constexpr int WATER_LEVEL = 62;
 
 // textures
 constexpr int TILESET_WIDTH = 2;

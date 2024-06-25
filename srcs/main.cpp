@@ -24,7 +24,6 @@ int main(int argc, char **argv)
 
 #ifdef GENERATE_MAP
         ChunkGenerator::GenerateNoiseMap();
-        return (EXIT_SUCCESS);
 #endif
         WindowManager windowManager;
         return (EXIT_SUCCESS);

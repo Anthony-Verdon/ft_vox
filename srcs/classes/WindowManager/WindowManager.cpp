@@ -95,7 +95,7 @@ void WindowManager::updateLoop()
         glm::mat4 view = glm::lookAt(camera.getPosition(), camera.getPosition() + camera.getFrontDirection(),
                                      camera.getUpDirection());
 
-        float viewDistance = (RENDER_DISTANCE + 1) * CHUNK_LENGTH;
+        float viewDistance = RENDER_DISTANCE_2X * CHUNK_LENGTH;
         if (viewDistance < CHUNK_HEIGHT)
             viewDistance = CHUNK_HEIGHT;
         glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()),
@@ -282,12 +282,12 @@ void WindowManager::renderInformations()
                              0.0f, WINDOW_HEIGHT - 5 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                              glm::vec4(1, 1, 1, 1));
 
-    /*
     TextRenderer::renderText(
-        "continentalness value : " +
-            std::to_string(ChunkGenerator::convertRange(ChunkGenerator::getFractalNoise(
-                cameraNewPosition.x, cameraNewPosition.z, PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE))),
+        "continentalness value : " + std::to_string((ChunkGenerator::getFractalNoise(
+                                         cameraNewPosition.x, cameraNewPosition.z, CONTINENTALNESS_OCTAVES,
+                                         CONTINENTALNESS_FREQUENCY, CONTINENTALNESS_PERSISTENCE))),
         0.0f, WINDOW_HEIGHT - 6 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
+    /*
     TextRenderer::renderText(
         "erosion value : " +
             std::to_string(ChunkGenerator::convertRange(ChunkGenerator::getFractalNoise(
