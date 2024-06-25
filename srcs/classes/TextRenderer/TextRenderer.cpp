@@ -72,6 +72,8 @@ void TextRenderer::destructTextRenderer()
 
 void TextRenderer::renderText(const std::string &text, float x, float y, float scale, const glm::vec4 &color)
 {
+    glDepthFunc(GL_ALWAYS);
+
     static Shader textShader("srcs/shaders/TextShader/TextShader.vs", "srcs/shaders/TextShader/TextShader.fs");
 
     textShader.use();
@@ -109,4 +111,6 @@ void TextRenderer::renderText(const std::string &text, float x, float y, float s
     }
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    glDepthFunc(GL_LESS);
 }
