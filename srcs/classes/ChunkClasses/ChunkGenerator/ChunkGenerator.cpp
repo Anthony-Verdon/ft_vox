@@ -5,11 +5,11 @@
 #include <random>
 #include <sstream>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "../../Utils/Utils.hpp"
 #include <filesystem>
 #include <glm/gtc/noise.hpp>
 #include <map>
 #include <stb/stb_image_write.h>
-
 unsigned long ChunkGenerator::seed = 0;
 float ChunkGenerator::modifierX = 0;
 float ChunkGenerator::modifierY = 0;
@@ -51,38 +51,33 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
         for (int posZ = -1; posZ < CHUNK_LENGTH_PLUS_2 - 1; posZ++)
         {
             float z = (float)(chunkZ + posZ) / NOISE_SIZE + modifierZ;
-            for (int posY = 0; posY < CHUNK_HEIGHT; posY++)
+            float noiseValue =
+                getFractalNoise(x, z, CONTINENTALNESS_OCTAVES, CONTINENTALNESS_FREQUENCY, CONTINENTALNESS_PERSISTENCE);
+            int terrainHeight = 128;
+            // { value range, height}
+            std::map<float, int> continentalnessGraph = {{-1, 20}, {0, WATER_LEVEL}, {0.5, 80}, {1, 100}};
+            auto previousIt = continentalnessGraph.begin();
+            for (auto it = continentalnessGraph.begin(); it != continentalnessGraph.end(); it++)
             {
-                float baseTerrainEvelation = 128, squashingFactor = 5;
-                float continentalnessValue = getFractalNoise(x, z, CONTINENTALNESS_OCTAVES, CONTINENTALNESS_FREQUENCY,
-                                                             CONTINENTALNESS_PERSISTENCE);
-
-                // { value range, height}
-                std::map<float, int> continentalnessGraph = {{-0.9, 10}, {-0.2, WATER_LEVEL}, {0.2, 80}, {1, 80}};
-                auto previousIt = continentalnessGraph.begin();
-                for (auto it = continentalnessGraph.begin(); it != continentalnessGraph.end(); it++)
+                if (noiseValue < it->first)
                 {
-                    if (continentalnessValue < it->first)
-                    {
-                        baseTerrainEvelation = previousIt->second;
-                        if (it != continentalnessGraph.begin())
-                            baseTerrainEvelation += (continentalnessValue - previousIt->first) /
-                                                    (it->first - previousIt->first) * (it->second - previousIt->second);
-                        break;
-                    }
-                    previousIt = it;
+                    terrainHeight = previousIt->second;
+                    if (it != continentalnessGraph.begin())
+                        terrainHeight += (noiseValue - previousIt->first) / (it->first - previousIt->first) *
+                                         (it->second - previousIt->second);
+                    break;
                 }
-
-                float y = (float)(posY + CHUNK_HEIGHT / 2 - baseTerrainEvelation) / CHUNK_HEIGHT + modifierY;
-                float bias = cos((float)(posY + CHUNK_HEIGHT / 2 - baseTerrainEvelation) / CHUNK_HEIGHT * M_PI) *
-                             squashingFactor;
-                float density = glm::simplex(glm::vec3(x, y, z)) + bias;
-                if (density >= 0)
+                previousIt = it;
+            }
+            int height = MAX(terrainHeight, WATER_LEVEL);
+            for (int posY = 0; posY < height; posY++)
+            {
+                if (posY <= terrainHeight)
                 {
                     BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePatternBlock);
                     chunkData.addBlock(block);
                 }
-                else if (density < 0 && posY <= WATER_LEVEL)
+                else if (posY <= WATER_LEVEL)
                 {
                     BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePatternWater);
                     chunkData.addBlock(block);

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 class Utils
 {
   public:
