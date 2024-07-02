@@ -24,8 +24,8 @@ constexpr int NOISE_SIZE = 1024;
 constexpr int WATER_LEVEL = 62;
 
 // textures
-constexpr int TILESET_WIDTH = 2;
-constexpr int TILESET_HEIGHT = 2;
+constexpr int TILESET_WIDTH = 3;
+constexpr int TILESET_HEIGHT = 3;
 
 // gameplay
 constexpr int DAY_DURATION_IN_MIN = 20;
