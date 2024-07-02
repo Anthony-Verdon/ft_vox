@@ -69,6 +69,17 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
                 }
                 previousIt = it;
             }
+            if (terrainHeight > WATER_LEVEL)
+            {
+                float erosionNoiseValue =
+                    getFractalNoise(x, z, EROSION_OCTAVES, EROSION_FREQUENCY, EROSION_PERSISTENCE);
+                terrainHeight = (WATER_LEVEL - 2) + erosionNoiseValue * 80;
+            }
+            if (terrainHeight > WATER_LEVEL)
+            {
+                float pvNoiseValue = abs(getFractalNoise(x, z, PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE));
+                terrainHeight = (WATER_LEVEL - 2) + pvNoiseValue * (terrainHeight - (WATER_LEVEL - 2));
+            }
             int height = MAX(terrainHeight, WATER_LEVEL);
             for (int posY = 0; posY < height; posY++)
             {
@@ -145,6 +156,7 @@ float ChunkGenerator::getValueFromGraph(float value, eGraphType graphType)
 void ChunkGenerator::generateImage(const std::string &name, int octaves, float frequency, float persistence,
                                    int roundFactor, bool drawColor, bool ridgedNoise)
 {
+    (void)roundFactor;
     static const int mapLength = 256;
     std::unique_ptr<unsigned char[]> noiseMap = std::make_unique<unsigned char[]>(mapLength * mapLength * CHANNEL_NUM);
     for (int x = 0; x < mapLength; x++)
@@ -155,8 +167,6 @@ void ChunkGenerator::generateImage(const std::string &name, int octaves, float f
                                           octaves, frequency, persistence);
             if (ridgedNoise)
                 value = abs(value);
-            int roundedValue = value * roundFactor;
-            value = (float)roundedValue / roundFactor;
             value = 128 + value * 128;
 
             if (drawColor)
