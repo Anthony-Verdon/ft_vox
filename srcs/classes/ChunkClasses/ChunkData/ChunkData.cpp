@@ -13,7 +13,9 @@ ChunkData::ChunkData(int chunkCoordX, int chunkCoordZ)
 ChunkData::ChunkData(const glm::vec2 &chunkCoord)
 {
     this->chunkCoord = chunkCoord;
-    blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_ARRAY_SIZE);
+    blocks = std::make_unique<BlockType[]>(CHUNK_ARRAY_SIZE);
+    for (unsigned int i = 0; i < CHUNK_ARRAY_SIZE; i++)
+        blocks[i] = BlockType::AIR;
 }
 
 ChunkData::ChunkData(const ChunkData &instance)
@@ -26,7 +28,7 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
     if (this != &instance)
     {
         chunkCoord = instance.getChunkCoord();
-        blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_ARRAY_SIZE);
+        blocks = std::make_unique<BlockType[]>(CHUNK_ARRAY_SIZE);
         for (unsigned int i = 0; i < CHUNK_ARRAY_SIZE; i++)
             this->blocks[i] = instance.getBlock(i);
     }
@@ -36,7 +38,7 @@ ChunkData &ChunkData::operator=(const ChunkData &instance)
 ChunkData &ChunkData::operator=(const ChunkMesh &instance)
 {
     chunkCoord = instance.getChunkCoord();
-    blocks = std::make_unique<std::optional<BlockData>[]>(CHUNK_ARRAY_SIZE);
+    blocks = std::make_unique<BlockType[]>(CHUNK_ARRAY_SIZE);
     for (unsigned int i = 0; i < CHUNK_ARRAY_SIZE; i++)
         this->blocks[i] = instance.getBlock(i);
     return (*this);
@@ -46,40 +48,42 @@ ChunkData::~ChunkData()
 {
 }
 
-std::optional<BlockData> ChunkData::getBlock(int x, int y, int z) const
+BlockType ChunkData::getBlock(int x, int y, int z) const
 {
     return (getBlock(convert3DcoordsInto1Dcoords(x, y, z)));
 }
 
-std::optional<BlockData> ChunkData::getBlock(const glm::vec3 &coords) const
+BlockType ChunkData::getBlock(const glm::vec3 &coords) const
 {
     return (getBlock(convert3DcoordsInto1Dcoords(coords)));
 }
 
-//@todo check if the return assert return a optional not set
-std::optional<BlockData> ChunkData::getBlock(unsigned int arrayCoord) const
+BlockType ChunkData::getBlock(unsigned int arrayCoord) const
 {
-    std::optional<BlockData> notSet;
-    ASSERT_RETURN_VALUE(arrayCoord >= CHUNK_ARRAY_SIZE, "ChunkData::getBlock : coords given are out of bound", notSet);
+    ASSERT_RETURN_VALUE(arrayCoord >= CHUNK_ARRAY_SIZE, "ChunkData::getBlock : coords given are out of bound",
+                        BlockType::AIR);
     return (blocks[arrayCoord]);
 }
 
-void ChunkData::addBlock(const BlockData &block)
+void ChunkData::addBlock(int x, int y, int z, BlockType type)
 {
-    const glm::vec3 blockCoordsInChunk =
-        glm::vec3(convertWorldCoordIntoChunkCoords(block.getX(), chunkCoord.x), block.getY(),
-                  convertWorldCoordIntoChunkCoords(block.getZ(), chunkCoord.y));
+    addBlock(glm::vec3(x, y, z), type);
+}
+void ChunkData::addBlock(const glm::vec3 &coords, BlockType type)
+{
+    const glm::vec3 blockCoordsInChunk = glm::vec3(convertWorldCoordIntoChunkCoords(coords.x, chunkCoord.x), coords.y,
+                                                   convertWorldCoordIntoChunkCoords(coords.z, chunkCoord.y));
     const unsigned int arrayCoord = convert3DcoordsInto1Dcoords(blockCoordsInChunk);
 
     ASSERT_RETURN_VOID(arrayCoord >= CHUNK_ARRAY_SIZE, "ChunkData::addBlock : coords given are out of bound");
-    ASSERT_RETURN_VOID(blocks[arrayCoord].has_value(), "ChunkData::addBlock : Block already define at this position"
-                                                           << std::endl
-                                                           << "Block coords: " << block.getX() << " " << block.getY()
-                                                           << " " << block.getZ() << std::endl
-                                                           << "Chunk coords: " << blockCoordsInChunk.x << " "
-                                                           << block.getY() << " " << blockCoordsInChunk.z)
+    ASSERT_RETURN_VOID(blocks[arrayCoord] != BlockType::AIR,
+                       "ChunkData::addBlock : Block already define at this position"
+                           << std::endl
+                           << "Block coords: " << coords.x << " " << coords.y << " " << coords.z << std::endl
+                           << "Chunk coords: " << blockCoordsInChunk.x << " " << coords.y << " "
+                           << blockCoordsInChunk.z)
 
-    blocks[arrayCoord] = block;
+    blocks[arrayCoord] = type;
 }
 
 unsigned int ChunkData::convertWorldCoordIntoChunkCoords(int coord, int chunkCoord)

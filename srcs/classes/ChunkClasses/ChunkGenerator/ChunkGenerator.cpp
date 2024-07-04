@@ -1,6 +1,7 @@
 #include "ChunkGenerator.hpp"
 #include "../../../assert.hpp"
 #include "../../../globals.hpp"
+#include "../../BlockClasses/BlockDico/BlockDico.hpp"
 #include <iostream>
 #include <random>
 #include <sstream>
@@ -32,28 +33,6 @@ unsigned long ChunkGenerator::GetSeed()
 
 ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
 {
-    // grass
-    std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternGrass;
-    for (int i = 0; i < 6; i++)
-        texturePatternGrass[i] = {0, 2};  // side
-    texturePatternGrass[BOTTOM] = {1, 2}; // bottom
-    texturePatternGrass[TOP] = {0, 1};    // top
-
-    // dirt
-    std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternDirt;
-    for (int i = 0; i < 6; i++)
-        texturePatternDirt[i] = {1, 2};
-
-    // stone
-    std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternStone;
-    for (int i = 0; i < 6; i++)
-        texturePatternStone[i] = {2, 2};
-
-    // water
-    std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternWater;
-    for (int i = 0; i < 6; i++)
-        texturePatternWater[i] = {1, 1};
-
     ChunkData chunkData(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH);
     for (int posX = -1; posX < CHUNK_LENGTH_PLUS_2 - 1; posX++)
     {
@@ -96,26 +75,15 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
             {
 
                 if (posY == terrainHeight && terrainHeight >= WATER_LEVEL)
-                {
-                    BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePatternGrass);
-                    chunkData.addBlock(block);
-                }
+                    chunkData.addBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::GRASS);
+
                 else if (posY >= terrainHeight - 3)
-                {
-                    BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePatternDirt);
-                    chunkData.addBlock(block);
-                }
+                    chunkData.addBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::DIRT);
                 else
-                {
-                    BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePatternStone);
-                    chunkData.addBlock(block);
-                }
+                    chunkData.addBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::STONE);
             }
             for (; posY <= WATER_LEVEL; posY++)
-            {
-                BlockData block(chunkX + posX, posY, chunkZ + posZ, texturePatternWater);
-                chunkData.addBlock(block);
-            }
+                chunkData.addBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::WATER);
         }
     }
     return (chunkData);

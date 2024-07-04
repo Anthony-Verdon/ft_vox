@@ -27,6 +27,9 @@ class BlockData
     BlockData &operator=(const BlockData &instance);
     ~BlockData();
 
+    void setCoords(int x, int y, int z);
+    void setCoords(const glm::vec3 &coord);
+
     glm::vec3 getCoords() const;
     int getX() const;
     int getY() const;

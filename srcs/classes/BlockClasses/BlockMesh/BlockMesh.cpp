@@ -47,6 +47,21 @@ constexpr unsigned int initFaces[12 * 6] = {
     7, 6, 3, /**/ 3, 2, 1, //
 };
 
+BlockMesh::BlockMesh(int x, int y, int z, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
+                     const std::array<bool, 6> neighborsExist)
+    : BlockData(x, y, z, textureCoords)
+{
+    initMesh(neighborsExist);
+}
+
+BlockMesh::BlockMesh(const glm::vec3 &blockCoords,
+                     const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
+                     const std::array<bool, 6> neighborsExist)
+    : BlockData(blockCoords, textureCoords)
+{
+    initMesh(neighborsExist);
+}
+
 BlockMesh::BlockMesh(const BlockData &data, const std::array<bool, 6> neighborsExist) : BlockData(data)
 {
     initMesh(neighborsExist);

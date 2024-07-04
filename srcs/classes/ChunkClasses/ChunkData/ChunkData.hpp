@@ -3,6 +3,7 @@
 class ChunkMesh;
 
 #include "../../BlockClasses/BlockData/BlockData.hpp"
+#include "../../BlockClasses/BlockDico/BlockDico.hpp"
 #include <glm/glm.hpp>
 #include <memory>
 #include <optional>
@@ -12,7 +13,7 @@ class ChunkData
     glm::vec2 chunkCoord;
 
   public:
-    std::unique_ptr<std::optional<BlockData>[]> blocks;
+    std::unique_ptr<BlockType[]> blocks;
     ChunkData(int chunkCoordX, int chunkCoordZ);
     ChunkData(const glm::vec2 &chunkCoord);
     ChunkData(const ChunkData &instance);
@@ -20,10 +21,11 @@ class ChunkData
     ChunkData &operator=(const ChunkMesh &instance);
     ~ChunkData();
 
-    void addBlock(const BlockData &block);
-    std::optional<BlockData> getBlock(int x, int y, int z) const;
-    std::optional<BlockData> getBlock(const glm::vec3 &blockCoord) const;
-    std::optional<BlockData> getBlock(unsigned int arrayCoord) const;
+    void addBlock(int x, int y, int z, BlockType type);
+    void addBlock(const glm::vec3 &blockCoord, BlockType type);
+    BlockType getBlock(int x, int y, int z) const;
+    BlockType getBlock(const glm::vec3 &blockCoord) const;
+    BlockType getBlock(unsigned int arrayCoord) const;
     glm::vec2 getChunkCoord() const;
     int getChunkCoordX() const;
     int getChunkCoordZ() const;

@@ -379,7 +379,7 @@ void WindowManager::getBlockCommand(const std::vector<std::string> &commandSplit
         std::cout << "block at " << x << " " << y << " " << z;
         std::cout << " [chunk " << chunkX << " " << chunkZ << "]";
         std::cout << " [coord in chunk " << convertedX << " " << y << " " << convertedZ << "]";
-        if (chunk->getBlock(glm::vec3(convertedX, y, convertedZ)).has_value())
+        if (chunk->getBlock(glm::vec3(convertedX, y, convertedZ)) != BlockType::AIR)
             std::cout << " is set";
         else
             std::cout << " isn't set";

@@ -37,28 +37,34 @@ void ChunkMesh::initMesh()
     faces.clear();
     vertices.clear();
 
-    for (int i = 0; i < CHUNK_ARRAY_SIZE; i++)
+    for (int x = 0; x < CHUNK_LENGTH_PLUS_2; x++)
     {
-        std::optional<BlockData> blockData = blocks[i];
-        if (!blockData.has_value())
-            continue;
-
-        const int x = convertWorldCoordIntoChunkCoords(blockData->getX(), chunkCoord.x);
-        const int y = blockData->getY();
-        const int z = convertWorldCoordIntoChunkCoords(blockData->getZ(), chunkCoord.y);
-        if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
-            continue;
-
-        std::array<bool, 6> neighborsExist = {false}; // left, right, bottom, top, back, front
-        for (int j = 0; j < 2; j++)
+        for (int y = 0; y < CHUNK_HEIGHT; y++)
         {
-            neighborsExist[j + 0] = getBlock(glm::vec3(x + modifiers[j], y, z)).has_value();
-            if (y + modifiers[j] >= 0 && y + modifiers[j] < CHUNK_HEIGHT)
-                neighborsExist[j + 2] = getBlock(glm::vec3(x, y + modifiers[j], z)).has_value();
-            neighborsExist[j + 4] = getBlock(glm::vec3(x, y, z + modifiers[j])).has_value();
+            for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
+            {
+                BlockType type = blocks[convert3DcoordsInto1Dcoords(x, y, z)];
+                if (type == BlockType::AIR)
+                    continue;
+
+                int worldPosX = x + chunkCoord.x * CHUNK_LENGTH;
+                int worldPosZ = z + chunkCoord.y * CHUNK_LENGTH;
+                if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
+                    continue;
+
+                std::array<bool, 6> neighborsExist = {false}; // left, right, bottom, top, back, front
+                for (int j = 0; j < 2; j++)
+                {
+                    neighborsExist[j + 0] = getBlock(glm::vec3(x + modifiers[j], y, z)) != BlockType::AIR;
+                    if (y + modifiers[j] >= 0 && y + modifiers[j] < CHUNK_HEIGHT)
+                        neighborsExist[j + 2] = getBlock(glm::vec3(x, y + modifiers[j], z)) != BlockType::AIR;
+                    neighborsExist[j + 4] = getBlock(glm::vec3(x, y, z + modifiers[j])) != BlockType::AIR;
+                }
+                BlockMesh blockMesh(worldPosX, y, worldPosZ, BlockDico::getBlockData(type).getTextureCoords(),
+                                    neighborsExist);
+                addBlockMesh(blockMesh);
+            }
         }
-        BlockMesh blockMesh(blockData.value(), neighborsExist);
-        addBlockMesh(blockMesh);
     }
 }
 

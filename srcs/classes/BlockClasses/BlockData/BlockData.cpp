@@ -30,6 +30,16 @@ BlockData::~BlockData()
 {
 }
 
+void BlockData::setCoords(int x, int y, int z)
+{
+    setCoords(glm::vec3(x, y, z));
+}
+
+void BlockData::setCoords(const glm::vec3 &coords)
+{
+    this->coords = coords;
+}
+
 glm::vec3 BlockData::getCoords() const
 {
     return (coords);
