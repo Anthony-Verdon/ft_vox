@@ -32,23 +32,25 @@ unsigned long ChunkGenerator::GetSeed()
 
 ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
 {
-    // @todo: create a better way to store that
+    // grass
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternGrass;
     for (int i = 0; i < 6; i++)
-        texturePatternGrass[i] = {0, 2}; // side
-    texturePatternGrass[2] = {1, 2};     // bottom
-    texturePatternGrass[3] = {0, 1};     // top
+        texturePatternGrass[i] = {0, 2};  // side
+    texturePatternGrass[BOTTOM] = {1, 2}; // bottom
+    texturePatternGrass[TOP] = {0, 1};    // top
 
+    // dirt
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternDirt;
     for (int i = 0; i < 6; i++)
         texturePatternDirt[i] = {1, 2};
 
+    // stone
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternStone;
     for (int i = 0; i < 6; i++)
         texturePatternStone[i] = {2, 2};
 
+    // water
     std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternWater;
-    // bottom left is 1/1 and top right is 0/0
     for (int i = 0; i < 6; i++)
         texturePatternWater[i] = {1, 1};
 

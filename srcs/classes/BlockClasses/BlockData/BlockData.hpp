@@ -3,14 +3,14 @@
 #include <array>
 #include <glm/glm.hpp>
 
-enum DIRECTIONS
+enum BlockFace
 {
-    TOP,
-    FRONT,
-    RIGHT,
-    BACK,
     LEFT,
-    BOTTOM
+    RIGHT,
+    BOTTOM,
+    TOP,
+    BACK,
+    FRONT
 };
 
 class BlockData

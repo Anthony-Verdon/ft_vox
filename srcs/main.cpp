@@ -1,3 +1,4 @@
+#include "classes/BlockClasses/BlockDico/BlockDico.hpp"
 #include "classes/ChunkClasses/ChunkGenerator/ChunkGenerator.hpp"
 #include "classes/WindowManager/WindowManager.hpp"
 #include "globals.hpp"
@@ -20,6 +21,7 @@ int main(int argc, char **argv)
             ChunkGenerator::SetSeed(time(nullptr));
         else
             ChunkGenerator::SetSeed(std::stoul(argv[1]));
+        BlockDico::initBlockDico();
         std::cout << "seed: " << ChunkGenerator::GetSeed() << std::endl;
 
 #ifdef GENERATE_MAP
