@@ -21,8 +21,8 @@ class ChunkData
     ChunkData &operator=(const ChunkMesh &instance);
     ~ChunkData();
 
-    void addBlock(int x, int y, int z, BlockType type);
-    void addBlock(const glm::vec3 &blockCoord, BlockType type);
+    void setBlock(int x, int y, int z, BlockType type);
+    void setBlock(const glm::vec3 &blockCoord, BlockType type);
     BlockType getBlock(int x, int y, int z) const;
     BlockType getBlock(const glm::vec3 &blockCoord) const;
     BlockType getBlock(unsigned int arrayCoord) const;

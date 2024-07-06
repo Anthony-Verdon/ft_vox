@@ -19,4 +19,5 @@ class ChunkRenderer : public ChunkMesh
     ~ChunkRenderer();
 
     unsigned int getVAO(MeshType type) const;
+    void updateRenderer();
 };

@@ -1,4 +1,5 @@
 #include "ChunkRenderer.hpp"
+#include <cstring>
 #include <glad/glad.h>
 #include <iostream>
 ChunkRenderer::ChunkRenderer(const ChunkMesh &chunkMesh) : ChunkMesh(chunkMesh)
@@ -43,8 +44,8 @@ void ChunkRenderer::initRenderer()
         glBindBuffer(GL_ARRAY_BUFFER, VBO[i]);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[i]);
 
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices[i].size(), vertices[i].data(), GL_STATIC_DRAW);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces[i].size(), faces[i].data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices[i].size(), vertices[i].data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces[i].size(), faces[i].data(), GL_DYNAMIC_DRAW);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void *)0);
         glEnableVertexAttribArray(0);
@@ -56,4 +57,17 @@ void ChunkRenderer::initRenderer()
 unsigned int ChunkRenderer::getVAO(MeshType type) const
 {
     return (VAO[type]);
+}
+
+void ChunkRenderer::updateRenderer()
+{
+    for (int i = 0; i < MeshType::MESH_TYPE_COUNT; i++)
+    {
+        glBindVertexArray(VAO[i]);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[i]);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[i]);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices[i].size(), vertices[i].data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces[i].size(), faces[i].data(), GL_DYNAMIC_DRAW);
+    }
 }

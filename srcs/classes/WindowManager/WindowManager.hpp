@@ -38,10 +38,12 @@ class WindowManager
     /* process input*/
     void processInput();
     bool isKeyPressed(int key);
+    bool isMouseButtonPressed(int mouseButton);
     void updateWireframeMode();
     void updateInfoMode();
     void updateSpeed();
     void updateChat();
+    void updateBlock();
 
     /* text rendering */
     void renderInformations();

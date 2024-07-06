@@ -118,8 +118,6 @@ void WindowManager::updateLoop()
             case MeshType::TRANSLUCENT:
                 WorldShader.setFloat("opacity", 0.5);
                 break;
-            default:
-                break;
             }
             for (size_t x = 0; x < RENDER_DISTANCE_2X; x++)
             {
@@ -194,6 +192,7 @@ void WindowManager::processInput()
         updateWireframeMode();
         updateSpeed();
         updateInfoMode();
+        updateBlock();
         int frontAxis = isKeyPressed(GLFW_KEY_W) - isKeyPressed(GLFW_KEY_S);
         int rightAxis = isKeyPressed(GLFW_KEY_D) - isKeyPressed(GLFW_KEY_A);
         int upAxis = isKeyPressed(GLFW_KEY_SPACE) - isKeyPressed(GLFW_KEY_LEFT_SHIFT);
@@ -211,6 +210,11 @@ void WindowManager::processInput()
 bool WindowManager::isKeyPressed(int key)
 {
     return (glfwGetKey(window, key) == GLFW_PRESS);
+}
+
+bool WindowManager::isMouseButtonPressed(int mouseButton)
+{
+    return (glfwGetMouseButton(window, mouseButton) == GLFW_PRESS);
 }
 
 void WindowManager::updateChat()
@@ -268,6 +272,51 @@ void WindowManager::updateInfoMode()
     }
     else
         keyEnable = true;
+}
+
+void WindowManager::updateBlock()
+{
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) // left click
+    {
+        float cosYaw = cos(Utils::DegToRad(camera.getYaw()));
+        float sinYaw = sin(Utils::DegToRad(camera.getYaw()));
+        float cosPitch = cos(Utils::DegToRad(camera.getPitch()));
+        float sinPitch = sin(Utils::DegToRad(camera.getPitch()));
+        float factor = 3;
+        glm::vec3 vector(cosYaw * cosPitch, sinPitch, sinYaw * cosPitch);
+        vector.x = vector.x / sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z) * factor;
+        vector.y = vector.y / sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z) * factor;
+        vector.z = vector.z / sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z) * factor;
+        glm::vec3 positionGet = camera.getPosition() + vector;
+
+        int x = std::floor(positionGet.x) - 1; // maybe the -1 is anti bug idk :/ + maybe the get block command is bug
+        int y = std::floor(positionGet.y);
+        int z = std::floor(positionGet.z) - 1;
+        int chunkX = x / CHUNK_LENGTH;
+        int chunkZ = z / CHUNK_LENGTH;
+        if (x < 0)
+            chunkX--;
+        if (z < 0)
+            chunkZ--;
+        int playerChunkX = camera.getPosition().x / CHUNK_LENGTH;
+        int playerChunkZ = camera.getPosition().z / CHUNK_LENGTH;
+        if (camera.getPosition().x < 0)
+            playerChunkX--;
+        if (camera.getPosition().z < 0)
+            playerChunkZ--;
+        int arrayX = chunkX - playerChunkX + RENDER_DISTANCE;
+        int arrayZ = chunkZ - playerChunkZ + RENDER_DISTANCE;
+        if (arrayX >= RENDER_DISTANCE_2X || arrayZ >= RENDER_DISTANCE_2X)
+            return;
+        const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(arrayX, arrayZ);
+        if (chunk == NULL)
+            return;
+        chunk->setBlock(x, y, z, BlockType::AIR);
+        chunk->initMesh();
+        chunk->updateRenderer();
+    }
+    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) // right click
+        ;
 }
 
 void WindowManager::renderInformations()

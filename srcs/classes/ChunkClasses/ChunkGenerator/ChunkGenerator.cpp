@@ -75,15 +75,15 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
             {
 
                 if (posY == terrainHeight && terrainHeight >= WATER_LEVEL)
-                    chunkData.addBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::GRASS);
+                    chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::GRASS);
 
                 else if (posY >= terrainHeight - 3)
-                    chunkData.addBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::DIRT);
+                    chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::DIRT);
                 else
-                    chunkData.addBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::STONE);
+                    chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::STONE);
             }
             for (; posY <= WATER_LEVEL; posY++)
-                chunkData.addBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::WATER);
+                chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::WATER);
         }
     }
     return (chunkData);
