@@ -1,14 +1,17 @@
 #include "BlockData.hpp"
 
-BlockData::BlockData(int x, int y, int z, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords)
+BlockData::BlockData(int x, int y, int z, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
+                     bool isTranslucent)
 {
-    *this = BlockData(glm::vec3(x, y, z), textureCoords);
+    *this = BlockData(glm::vec3(x, y, z), textureCoords, isTranslucent);
 }
 
-BlockData::BlockData(const glm::vec3 &coords, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords)
+BlockData::BlockData(const glm::vec3 &coords, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
+                     bool isTranslucent)
 {
     this->coords = coords;
     this->textureCoords = textureCoords;
+    this->isTranslucent = isTranslucent;
 }
 
 BlockData::BlockData(const BlockData &instance)
@@ -22,6 +25,7 @@ BlockData &BlockData::operator=(const BlockData &instance)
     {
         coords = instance.getCoords();
         textureCoords = instance.getTextureCoords();
+        isTranslucent = instance.getIsTranslucent();
     }
     return (*this);
 }
@@ -63,4 +67,9 @@ int BlockData::getZ() const
 std::array<std::pair<unsigned int, unsigned int>, 6> BlockData::getTextureCoords() const
 {
     return (textureCoords);
+}
+
+bool BlockData::getIsTranslucent() const
+{
+    return (isTranslucent);
 }

@@ -5,9 +5,9 @@
 class ChunkRenderer : public ChunkMesh
 {
   private:
-    unsigned int VAO;
-    unsigned int VBO;
-    unsigned int EBO;
+    unsigned int VAO[MeshType::MESH_TYPE_COUNT];
+    unsigned int VBO[MeshType::MESH_TYPE_COUNT];
+    unsigned int EBO[MeshType::MESH_TYPE_COUNT];
 
     void initRenderer();
 
@@ -18,5 +18,5 @@ class ChunkRenderer : public ChunkMesh
     ChunkRenderer &operator=(const ChunkRenderer &instance) = delete;
     ~ChunkRenderer();
 
-    unsigned int getVAO() const;
+    unsigned int getVAO(MeshType type) const;
 };

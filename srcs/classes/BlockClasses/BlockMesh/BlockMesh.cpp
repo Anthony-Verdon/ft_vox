@@ -47,18 +47,17 @@ constexpr unsigned int initFaces[12 * 6] = {
     7, 6, 3, /**/ 3, 2, 1, //
 };
 
-BlockMesh::BlockMesh(int x, int y, int z, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
-                     const std::array<bool, 6> neighborsExist)
-    : BlockData(x, y, z, textureCoords)
+BlockMesh::BlockMesh(int x, int y, int z, const BlockData &data, const std::array<bool, 6> neighborsExist)
+    : BlockData(data)
 {
+    coords = glm::vec3(x, y, z);
     initMesh(neighborsExist);
 }
 
-BlockMesh::BlockMesh(const glm::vec3 &blockCoords,
-                     const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
-                     const std::array<bool, 6> neighborsExist)
-    : BlockData(blockCoords, textureCoords)
+BlockMesh::BlockMesh(const glm::vec3 &blockCoords, const BlockData &data, const std::array<bool, 6> neighborsExist)
+    : BlockData(data)
 {
+    coords = blockCoords;
     initMesh(neighborsExist);
 }
 
@@ -71,7 +70,9 @@ BlockMesh::~BlockMesh()
 {
 }
 
-BlockMesh::BlockMesh(const BlockMesh &instance) : BlockData(instance.getCoords(), instance.getTextureCoords())
+// @todo: create a BlockData constructor that take a BlockMesh instance as parameter
+BlockMesh::BlockMesh(const BlockMesh &instance)
+    : BlockData(instance.getCoords(), instance.getTextureCoords(), instance.getIsTranslucent())
 {
     *this = instance;
 }

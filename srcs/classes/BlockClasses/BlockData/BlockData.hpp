@@ -18,11 +18,14 @@ class BlockData
   protected:
     glm::vec3 coords;
     std::array<std::pair<unsigned int, unsigned int>, 6> textureCoords;
+    bool isTranslucent;
 
   public:
     BlockData() = delete;
-    BlockData(int x, int y, int z, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords);
-    BlockData(const glm::vec3 &coords, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords);
+    BlockData(int x, int y, int z, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
+              bool isTranslucent);
+    BlockData(const glm::vec3 &coords, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
+              bool isTranslucent);
     BlockData(const BlockData &instance);
     BlockData &operator=(const BlockData &instance);
     ~BlockData();
@@ -35,4 +38,5 @@ class BlockData
     int getY() const;
     int getZ() const;
     std::array<std::pair<unsigned int, unsigned int>, 6> getTextureCoords() const;
+    bool getIsTranslucent() const;
 };

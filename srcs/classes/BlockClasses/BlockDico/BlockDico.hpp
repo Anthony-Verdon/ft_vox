@@ -10,7 +10,7 @@ enum BlockType
     DIRT,
     STONE,
     WATER,
-    COUNT
+    BLOCK_TYPE_COUNT
 };
 
 class BlockDico

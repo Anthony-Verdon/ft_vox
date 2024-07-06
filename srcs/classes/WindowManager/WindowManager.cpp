@@ -108,15 +108,29 @@ void WindowManager::updateLoop()
         world.updateWorldData(camera.getPosition().x, camera.getPosition().z);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
-        for (size_t x = 0; x < RENDER_DISTANCE_2X; x++)
+        for (int i = 0; i < MeshType::MESH_TYPE_COUNT; i++)
         {
-            for (size_t y = 0; y < RENDER_DISTANCE_2X; y++)
+            switch (i)
             {
-                const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(x, y);
-                if (!chunk)
-                    continue;
-                glBindVertexArray(chunk->getVAO());
-                glDrawElements(GL_TRIANGLES, chunk->getFaces().size(), GL_UNSIGNED_INT, 0);
+            case MeshType::OPAQUE:
+                WorldShader.setFloat("opacity", 1.0);
+                break;
+            case MeshType::TRANSLUCENT:
+                WorldShader.setFloat("opacity", 0.5);
+                break;
+            default:
+                break;
+            }
+            for (size_t x = 0; x < RENDER_DISTANCE_2X; x++)
+            {
+                for (size_t y = 0; y < RENDER_DISTANCE_2X; y++)
+                {
+                    const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(x, y);
+                    if (!chunk)
+                        continue;
+                    glBindVertexArray(chunk->getVAO(static_cast<MeshType>(i)));
+                    glDrawElements(GL_TRIANGLES, chunk->getFaces(static_cast<MeshType>(i)).size(), GL_UNSIGNED_INT, 0);
+                }
             }
         }
 

@@ -15,10 +15,8 @@ class BlockMesh : public BlockData
 
   public:
     BlockMesh() = delete;
-    BlockMesh(int x, int y, int z, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
-              const std::array<bool, 6> neighborsExist);
-    BlockMesh(const glm::vec3 &blockCoords, const std::array<std::pair<unsigned int, unsigned int>, 6> &textureCoords,
-              const std::array<bool, 6> neighborsExist);
+    BlockMesh(int x, int y, int z, const BlockData &data, const std::array<bool, 6> neighborsExist);
+    BlockMesh(const glm::vec3 &blockCoords, const BlockData &data, const std::array<bool, 6> neighborsExist);
     BlockMesh(const BlockData &data, const std::array<bool, 6> neighborsExist);
     BlockMesh(const BlockMesh &instance);
     BlockMesh &operator=(const BlockMesh &instance);
