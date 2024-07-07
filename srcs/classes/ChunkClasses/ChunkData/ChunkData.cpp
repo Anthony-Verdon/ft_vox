@@ -50,7 +50,7 @@ ChunkData::~ChunkData()
 
 BlockType ChunkData::getBlock(int x, int y, int z) const
 {
-    return (getBlock(convert3DcoordsInto1Dcoords(x, y, z)));
+    return (getBlock(glm::vec3(x, y, z)));
 }
 
 BlockType ChunkData::getBlock(const glm::vec3 &coords) const

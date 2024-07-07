@@ -73,7 +73,6 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
             int posY = 0;
             for (; posY <= terrainHeight; posY++)
             {
-
                 if (posY == terrainHeight && terrainHeight >= WATER_LEVEL)
                     chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::GRASS);
 

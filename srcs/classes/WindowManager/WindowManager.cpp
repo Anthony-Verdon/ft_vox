@@ -1,7 +1,7 @@
 #include "WindowManager.hpp"
 #include "../../globals.hpp"
 #include "../ChunkClasses/ChunkGenerator/ChunkGenerator.hpp"
-#include "../LineRenderer/LineRenderer.hpp"
+#include "../LineClasses/LineRenderer/LineRenderer.hpp"
 #include "../Shader/Shader.hpp"
 #include "../SkyboxRenderer/SkyboxRenderer.hpp"
 #include "../TextRenderer/TextRenderer.hpp"
@@ -19,6 +19,7 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
+
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
 void character_callback(GLFWwindow *window, unsigned int character);
 
@@ -83,7 +84,7 @@ void WindowManager::updateLoop()
     Shader WorldShader("srcs/shaders/WorldShader/WorldShader.vs", "srcs/shaders/WorldShader/WorldShader.fs");
     Shader SkyboxShader("srcs/shaders/SkyboxShader/SkyboxShader.vs", "srcs/shaders/SkyboxShader/SkyboxShader.fs");
     Shader LineShader("srcs/shaders/LineShader/LineShader.vs", "srcs/shaders/LineShader/LineShader.fs");
-    Line line(glm::vec3(0, 0, 0), glm::vec3(0, 256, 0));
+    LineRenderer line(LineData(glm::vec3(0, 0, 0), glm::vec3(0, 256, 0), glm::vec3(255, 0, 0)));
     while (!glfwWindowShouldClose(window))
     {
         Time::updateTime();
@@ -148,10 +149,22 @@ void WindowManager::updateLoop()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
 
+        /*
         LineShader.use();
-        LineShader.setMat4("MVP", projection * view);
-        LineShader.setVec3("color", glm::vec3(255, 0, 0));
-        line.draw();
+        LineShader.setMat4("view", view);
+        LineShader.setMat4("projection", projection);
+        LineShader.setVec3("color", line.getColor());
+        float cosYaw = cos(Utils::DegToRad(camera.getYaw()));
+        float sinYaw = sin(Utils::DegToRad(camera.getYaw()));
+        float cosPitch = cos(Utils::DegToRad(camera.getPitch()));
+        float sinPitch = sin(Utils::DegToRad(camera.getPitch()));
+        glm::vec3 raycast = glm::vec3(cosYaw * cosPitch, sinPitch, sinYaw * cosPitch);
+        raycast = raycast / static_cast<float>(sqrt(pow(raycast.x, 2) + pow(raycast.y, 2) + pow(raycast.z, 2)));
+        glm::vec3 positionGet = camera.getPosition() + glm::vec3(0, 1, 0) + raycast *
+        static_cast<float>(RANGE_ACTION); line.setStartPoint(camera.getPosition() + glm::vec3(0, 1, 0));
+        line.setEndPoint(positionGet);
+        line.draw(); // @todo create draw function on all renderer
+        */
 
         /* text rendering */
         if (data.infoMode)
@@ -293,15 +306,13 @@ void WindowManager::updateBlock()
 
         for (int i = 0; i < RANGE_ACTION; i++)
         {
-            std::cout << "i = " << i << std::endl;
             glm::vec3 positionGet =
                 camera.getPosition() +
                 raycast *
                     static_cast<float>(i); // sometimes it can skip because it's isn't a real raycast, need to fix this
-            // maybe the -1 is anti bug idk :/ + maybe the get block command is bug
-            int x = std::floor(positionGet.x) - 1;
+            int x = std::floor(positionGet.x);
             int y = std::floor(positionGet.y);
-            int z = std::floor(positionGet.z) - 1;
+            int z = std::floor(positionGet.z);
             int chunkX = x / CHUNK_LENGTH;
             int chunkZ = z / CHUNK_LENGTH;
             if (x < 0)
@@ -323,10 +334,9 @@ void WindowManager::updateBlock()
                 continue;
             if (chunk->getBlock(x, y, z) == BlockType::AIR)
                 continue;
-            chunk->setBlock(x, y, z, BlockType::AIR); // doesn't update well
+            chunk->setBlock(x - 1, y, z - 1, BlockType::AIR);
             chunk->initMesh();
             chunk->updateRenderer();
-            std::cout << x << " " << y << " " << z << " = " << (chunk->getBlock(x, y, z)) << std::endl;
             break;
         }
         std::cout << std::endl;
@@ -370,10 +380,9 @@ void WindowManager::renderInformations()
     TextRenderer::renderText(
         "erosion value : " +
             std::to_string(ChunkGenerator::convertRange(ChunkGenerator::getFractalNoise(
-                cameraNewPosition.x, cameraNewPosition.z, EROSION_OCTAVES, EROSION_FREQUENCY, EROSION_PERSISTENCE))),
-        0.0f, WINDOW_HEIGHT - 7 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
-    TextRenderer::renderText(
-        "peak and valleys value : " +
+                cameraNewPosition.x, cameraNewPosition.z, EROSION_OCTAVES, EROSION_FREQUENCY,
+    EROSION_PERSISTENCE))), 0.0f, WINDOW_HEIGHT - 7 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
+    glm::vec4(1, 1, 1, 1)); TextRenderer::renderText( "peak and valleys value : " +
             std::to_string(ChunkGenerator::convertRange(ChunkGenerator::getFractalNoise(
                 cameraNewPosition.x, cameraNewPosition.z, PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE))),
         0.0f, WINDOW_HEIGHT - 8 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
