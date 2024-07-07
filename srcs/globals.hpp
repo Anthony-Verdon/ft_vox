@@ -9,6 +9,8 @@ constexpr int TEXT_PIXEL_SIZE = 48;
 constexpr float CHAT_DISPLAY_TIME = 5;
 constexpr float CHAT_FADE_TIME = 5;
 
+// player
+constexpr float RANGE_ACTION = 5;
 // camera
 constexpr int RENDER_DISTANCE = 0;
 constexpr int RENDER_DISTANCE_2X = 2 * RENDER_DISTANCE + 1;

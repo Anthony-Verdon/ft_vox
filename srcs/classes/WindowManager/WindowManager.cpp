@@ -1,6 +1,7 @@
 #include "WindowManager.hpp"
 #include "../../globals.hpp"
 #include "../ChunkClasses/ChunkGenerator/ChunkGenerator.hpp"
+#include "../LineRenderer/LineRenderer.hpp"
 #include "../Shader/Shader.hpp"
 #include "../SkyboxRenderer/SkyboxRenderer.hpp"
 #include "../TextRenderer/TextRenderer.hpp"
@@ -18,7 +19,6 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
 void character_callback(GLFWwindow *window, unsigned int character);
 
@@ -82,7 +82,8 @@ void WindowManager::updateLoop()
     Texture skyboxTexture("assets/textures/skybox/");
     Shader WorldShader("srcs/shaders/WorldShader/WorldShader.vs", "srcs/shaders/WorldShader/WorldShader.fs");
     Shader SkyboxShader("srcs/shaders/SkyboxShader/SkyboxShader.vs", "srcs/shaders/SkyboxShader/SkyboxShader.fs");
-
+    Shader LineShader("srcs/shaders/LineShader/LineShader.vs", "srcs/shaders/LineShader/LineShader.fs");
+    Line line(glm::vec3(0, 0, 0), glm::vec3(0, 256, 0));
     while (!glfwWindowShouldClose(window))
     {
         Time::updateTime();
@@ -146,6 +147,11 @@ void WindowManager::updateLoop()
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.getID());
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
+
+        LineShader.use();
+        LineShader.setMat4("MVP", projection * view);
+        LineShader.setVec3("color", glm::vec3(255, 0, 0));
+        line.draw();
 
         /* text rendering */
         if (data.infoMode)
@@ -282,38 +288,48 @@ void WindowManager::updateBlock()
         float sinYaw = sin(Utils::DegToRad(camera.getYaw()));
         float cosPitch = cos(Utils::DegToRad(camera.getPitch()));
         float sinPitch = sin(Utils::DegToRad(camera.getPitch()));
-        float factor = 3;
-        glm::vec3 vector(cosYaw * cosPitch, sinPitch, sinYaw * cosPitch);
-        vector.x = vector.x / sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z) * factor;
-        vector.y = vector.y / sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z) * factor;
-        vector.z = vector.z / sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z) * factor;
-        glm::vec3 positionGet = camera.getPosition() + vector;
+        glm::vec3 raycast = glm::vec3(cosYaw * cosPitch, sinPitch, sinYaw * cosPitch);
+        raycast = raycast / static_cast<float>(sqrt(pow(raycast.x, 2) + pow(raycast.y, 2) + pow(raycast.z, 2)));
 
-        int x = std::floor(positionGet.x) - 1; // maybe the -1 is anti bug idk :/ + maybe the get block command is bug
-        int y = std::floor(positionGet.y);
-        int z = std::floor(positionGet.z) - 1;
-        int chunkX = x / CHUNK_LENGTH;
-        int chunkZ = z / CHUNK_LENGTH;
-        if (x < 0)
-            chunkX--;
-        if (z < 0)
-            chunkZ--;
-        int playerChunkX = camera.getPosition().x / CHUNK_LENGTH;
-        int playerChunkZ = camera.getPosition().z / CHUNK_LENGTH;
-        if (camera.getPosition().x < 0)
-            playerChunkX--;
-        if (camera.getPosition().z < 0)
-            playerChunkZ--;
-        int arrayX = chunkX - playerChunkX + RENDER_DISTANCE;
-        int arrayZ = chunkZ - playerChunkZ + RENDER_DISTANCE;
-        if (arrayX >= RENDER_DISTANCE_2X || arrayZ >= RENDER_DISTANCE_2X)
-            return;
-        const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(arrayX, arrayZ);
-        if (chunk == NULL)
-            return;
-        chunk->setBlock(x, y, z, BlockType::AIR);
-        chunk->initMesh();
-        chunk->updateRenderer();
+        for (int i = 0; i < RANGE_ACTION; i++)
+        {
+            std::cout << "i = " << i << std::endl;
+            glm::vec3 positionGet =
+                camera.getPosition() +
+                raycast *
+                    static_cast<float>(i); // sometimes it can skip because it's isn't a real raycast, need to fix this
+            // maybe the -1 is anti bug idk :/ + maybe the get block command is bug
+            int x = std::floor(positionGet.x) - 1;
+            int y = std::floor(positionGet.y);
+            int z = std::floor(positionGet.z) - 1;
+            int chunkX = x / CHUNK_LENGTH;
+            int chunkZ = z / CHUNK_LENGTH;
+            if (x < 0)
+                chunkX--;
+            if (z < 0)
+                chunkZ--;
+            int playerChunkX = camera.getPosition().x / CHUNK_LENGTH;
+            int playerChunkZ = camera.getPosition().z / CHUNK_LENGTH;
+            if (camera.getPosition().x < 0)
+                playerChunkX--;
+            if (camera.getPosition().z < 0)
+                playerChunkZ--;
+            int arrayX = chunkX - playerChunkX + RENDER_DISTANCE;
+            int arrayZ = chunkZ - playerChunkZ + RENDER_DISTANCE;
+            if (arrayX >= RENDER_DISTANCE_2X || arrayZ >= RENDER_DISTANCE_2X)
+                continue;
+            const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(arrayX, arrayZ);
+            if (chunk == NULL)
+                continue;
+            if (chunk->getBlock(x, y, z) == BlockType::AIR)
+                continue;
+            chunk->setBlock(x, y, z, BlockType::AIR); // doesn't update well
+            chunk->initMesh();
+            chunk->updateRenderer();
+            std::cout << x << " " << y << " " << z << " = " << (chunk->getBlock(x, y, z)) << std::endl;
+            break;
+        }
+        std::cout << std::endl;
     }
     else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) // right click
         ;
