@@ -50,7 +50,6 @@ void ChunkMesh::initMesh()
         {
             for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
             {
-                // chunk length because we want chunk length plus 2 - 2
                 if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
                     continue;
 

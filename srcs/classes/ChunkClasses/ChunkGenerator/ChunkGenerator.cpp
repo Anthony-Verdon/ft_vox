@@ -33,7 +33,20 @@ unsigned long ChunkGenerator::GetSeed()
 
 ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
 {
+    unsigned long chunkSeed = seed + chunkX * WORLD_LENGTH / CHUNK_LENGTH + chunkZ;
+    srand(chunkSeed);
+
     ChunkData chunkData(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH);
+    GenerateTerrain(chunkData);
+    GenerateFeatures(chunkData);
+
+    return (chunkData);
+}
+
+void ChunkGenerator::GenerateTerrain(ChunkData &chunkData)
+{
+    int chunkX = chunkData.getChunkCoordX() * CHUNK_LENGTH;
+    int chunkZ = chunkData.getChunkCoordZ() * CHUNK_LENGTH;
     for (int posX = -1; posX < CHUNK_LENGTH_PLUS_2 - 1; posX++)
     {
         float x = (float)(chunkX + posX) / NOISE_SIZE + modifierX;
@@ -85,9 +98,55 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
                 chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::WATER);
         }
     }
-    return (chunkData);
 }
 
+void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
+{
+    int chunkX = chunkData.getChunkCoordX() * CHUNK_LENGTH;
+    int chunkZ = chunkData.getChunkCoordZ() * CHUNK_LENGTH;
+    for (int x = 0; x < CHUNK_LENGTH_PLUS_2; x++)
+    {
+        for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
+        {
+            if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
+                continue;
+
+            int worldPosX = x - 1 + chunkX;
+            int worldPosZ = z - 1 + chunkZ;
+
+            int y;
+            for (y = CHUNK_HEIGHT - 1; y >= 0; y--)
+            {
+                if (chunkData.getBlock(x, y, z) != BlockType::AIR)
+                    break;
+            }
+
+            if (y <= WATER_LEVEL)
+                continue;
+
+            // tree
+            if (x == 8 && z == 8)
+            {
+                int treeHeight = 3 + rand() % 3;
+                for (int t = 0; t < treeHeight; t++)
+                    chunkData.setBlock(worldPosX, y + 1 + t, worldPosZ, BlockType::WOOD);
+                for (int lx = -2; lx < 3; lx++)
+                {
+
+                    for (int ly = 0; ly < treeHeight; ly++)
+                    {
+                        for (int lz = -2; lz < 3; lz++)
+                        {
+                            if (lx == 0 && lz == 0 && ly < treeHeight - 3)
+                                continue;
+                            chunkData.setBlock(worldPosX + lx, y + 3 + ly, worldPosZ + lz, BlockType::LEAVES);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 // octaves = nb of layer
 // frequency = zoom
 // persistence = smooth

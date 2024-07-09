@@ -23,6 +23,8 @@ class ChunkGenerator
     static void SetSeed(unsigned long seed);
     static unsigned long GetSeed();
     static ChunkData GenerateChunkData(int x, int z);
+    static void GenerateTerrain(ChunkData &chunkData);
+    static void GenerateFeatures(ChunkData &chunkData);
 
     static float getFractalNoise(float x, float z, int octaves, float frequency, float persistence);
 #ifdef GENERATE_MAP
