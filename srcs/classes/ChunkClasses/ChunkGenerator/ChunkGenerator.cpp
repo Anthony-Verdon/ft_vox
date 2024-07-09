@@ -125,7 +125,7 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
                 continue;
 
             // tree
-            if (x == 8 && z == 8)
+            if (rand() % 100 < 2)
             {
                 int treeHeight = 3 + rand() % 3;
                 for (int t = 0; t < treeHeight; t++)
