@@ -31,6 +31,20 @@ void BlockDico::initBlockDico()
     for (int i = 0; i < 6; i++)
         texturePatternWater[i] = {1, 1};
     blocks[BlockType::WATER] = BlockData(0, 0, 0, texturePatternWater, true);
+
+    // wood
+    std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternWood;
+    for (int i = 0; i < 6; i++)
+        texturePatternWood[i] = {1, 0};  // side
+    texturePatternWood[BOTTOM] = {0, 0}; // bottom
+    texturePatternWood[TOP] = {0, 0};    // top
+    blocks[BlockType::WOOD] = BlockData(0, 0, 0, texturePatternWood, false);
+
+    // leaves
+    std::array<std::pair<unsigned int, unsigned int>, 6> texturePatternLeaves;
+    for (int i = 0; i < 6; i++)
+        texturePatternLeaves[i] = {2, 1}; // side
+    blocks[BlockType::LEAVES] = BlockData(0, 0, 0, texturePatternLeaves, false);
 }
 
 BlockData BlockDico::getBlockData(BlockType type)

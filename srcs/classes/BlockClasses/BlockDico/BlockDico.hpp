@@ -10,6 +10,8 @@ enum BlockType
     DIRT,
     STONE,
     WATER,
+    WOOD,
+    LEAVES,
     BLOCK_TYPE_COUNT
 };
 

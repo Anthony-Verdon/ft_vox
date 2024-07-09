@@ -79,7 +79,7 @@ void WindowManager::updateLoop()
 {
     camera.setPosition({8, 256, 8});
     SkyboxRenderer skybox;
-    Texture grassTexture("assets/textures/tileset.jpg");
+    Texture tileset("assets/textures/tileset.png");
     Texture skyboxTexture("assets/textures/skybox/");
     Shader WorldShader("srcs/shaders/WorldShader/WorldShader.vs", "srcs/shaders/WorldShader/WorldShader.fs");
     Shader SkyboxShader("srcs/shaders/SkyboxShader/SkyboxShader.vs", "srcs/shaders/SkyboxShader/SkyboxShader.fs");
@@ -109,7 +109,7 @@ void WindowManager::updateLoop()
         WorldShader.setMat4("projection", projection);
         world.updateWorldData(camera.getPosition().x, camera.getPosition().z);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, grassTexture.getID());
+        glBindTexture(GL_TEXTURE_2D, tileset.getID());
         for (int i = 0; i < MeshType::MESH_TYPE_COUNT; i++)
         {
             switch (i)
