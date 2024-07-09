@@ -50,14 +50,16 @@ void ChunkMesh::initMesh()
         {
             for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
             {
-                BlockType type = blocks[convert3DcoordsInto1Dcoords(x, y, z)];
+                // chunk length because we want chunk length plus 2 - 2
+                if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
+                    continue;
+
+                BlockType type = getBlock(x, y, z);
                 if (type == BlockType::AIR)
                     continue;
 
-                int worldPosX = x + chunkCoord.x * CHUNK_LENGTH;
-                int worldPosZ = z + chunkCoord.y * CHUNK_LENGTH;
-                if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
-                    continue;
+                int worldPosX = x - 1 + chunkCoord.x * CHUNK_LENGTH;
+                int worldPosZ = z - 1 + chunkCoord.y * CHUNK_LENGTH;
 
                 std::array<bool, 6> neighborsExist = {false}; // left, right, bottom, top, back, front
                 for (int j = 0; j < 2; j++)

@@ -339,7 +339,6 @@ void WindowManager::updateBlock()
             chunk->updateRenderer();
             break;
         }
-        std::cout << std::endl;
     }
     else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) // right click
         ;
