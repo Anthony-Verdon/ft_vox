@@ -49,35 +49,34 @@ void ChunkGenerator::GenerateTerrain(ChunkData &chunkData)
     int chunkZ = chunkData.getChunkCoordZ() * CHUNK_LENGTH;
     for (int posX = -1; posX < CHUNK_LENGTH_PLUS_2 - 1; posX++)
     {
-        float x = (float)(chunkX + posX) / NOISE_SIZE + modifierX;
+        float x = GetNoisePosition(chunkX + posX, true);
         for (int posZ = -1; posZ < CHUNK_LENGTH_PLUS_2 - 1; posZ++)
         {
-            float z = (float)(chunkZ + posZ) / NOISE_SIZE + modifierZ;
-            float noiseValue =
-                getFractalNoise(x, z, CONTINENTALNESS_OCTAVES, CONTINENTALNESS_FREQUENCY, CONTINENTALNESS_PERSISTENCE);
+            float z = GetNoisePosition(chunkZ + posZ, false);
             int terrainHeight = 128;
-            // { value range, height}
-            std::map<float, int> continentalnessGraph = {{-1, 20}, {0, WATER_LEVEL}, {0.5, 80}, {1, 100}};
-            auto previousIt = continentalnessGraph.begin();
-            for (auto it = continentalnessGraph.begin(); it != continentalnessGraph.end(); it++)
             {
-                if (noiseValue < it->first)
+                float continentalnessNoiseValue = getFractalNoise(
+                    x, z, CONTINENTALNESS_OCTAVES, CONTINENTALNESS_FREQUENCY, CONTINENTALNESS_PERSISTENCE);
+                // { value range, height}
+                std::map<float, int> continentalnessGraph = {{-1, 20}, {-0.33, WATER_LEVEL}, {0.33, 80}, {1, 150}};
+                auto previousIt = continentalnessGraph.begin();
+                for (auto it = continentalnessGraph.begin(); it != continentalnessGraph.end(); it++)
                 {
-                    terrainHeight = previousIt->second;
-                    if (it != continentalnessGraph.begin())
-                        terrainHeight += (noiseValue - previousIt->first) / (it->first - previousIt->first) *
-                                         (it->second - previousIt->second);
-                    break;
+                    if (continentalnessNoiseValue < it->first)
+                    {
+                        if (it != continentalnessGraph.begin())
+                            terrainHeight = previousIt->second + (continentalnessNoiseValue - previousIt->first) /
+                                                                     (it->first - previousIt->first) *
+                                                                     (it->second - previousIt->second);
+                        else
+                            terrainHeight = previousIt->second;
+                        break;
+                    }
+                    previousIt = it;
                 }
-                previousIt = it;
             }
-            if (terrainHeight > WATER_LEVEL)
-            {
-                float erosionNoiseValue =
-                    getFractalNoise(x, z, EROSION_OCTAVES, EROSION_FREQUENCY, EROSION_PERSISTENCE);
-                terrainHeight = (WATER_LEVEL - 2) + erosionNoiseValue * 80;
-            }
-            if (terrainHeight > WATER_LEVEL)
+
+            if (terrainHeight >= WATER_LEVEL)
             {
                 float pvNoiseValue = abs(getFractalNoise(x, z, PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE));
                 terrainHeight = (WATER_LEVEL - 2) + pvNoiseValue * (terrainHeight - (WATER_LEVEL - 2));
@@ -100,28 +99,31 @@ void ChunkGenerator::GenerateTerrain(ChunkData &chunkData)
     }
 }
 
+float ChunkGenerator::GetNoisePosition(int pos, bool xCoord)
+{
+    if (xCoord)
+        return (float)pos / NOISE_SIZE + modifierX;
+    else
+        return (float)pos / NOISE_SIZE + modifierZ;
+}
+
 void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
 {
     int chunkX = chunkData.getChunkCoordX() * CHUNK_LENGTH;
     int chunkZ = chunkData.getChunkCoordZ() * CHUNK_LENGTH;
-    for (int x = 0; x < CHUNK_LENGTH_PLUS_2; x++)
+    for (int x = -1; x < CHUNK_LENGTH_PLUS_2 - 1; x++)
     {
-        for (int z = 0; z < CHUNK_LENGTH_PLUS_2; z++)
+        for (int z = -1; z < CHUNK_LENGTH_PLUS_2 - 1; z++)
         {
-            if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
-                continue;
-
-            int worldPosX = x - 1 + chunkX;
-            int worldPosZ = z - 1 + chunkZ;
-
             int y;
             for (y = CHUNK_HEIGHT - 1; y >= 0; y--)
             {
-                if (chunkData.getBlock(x, y, z) != BlockType::AIR)
+                if (chunkData.getBlock(x + 1, y, z + 1) != BlockType::AIR)
                     break;
             }
 
-            if (y <= WATER_LEVEL)
+            if (chunkData.getBlock(x + 1, y, z + 1) != BlockType::GRASS &&
+                chunkData.getBlock(x + 1, y, z + 1) != BlockType::DIRT)
                 continue;
 
             // tree
@@ -129,20 +131,21 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
             {
                 int treeHeight = 3 + rand() % 3;
                 for (int t = 0; t < treeHeight; t++)
-                    chunkData.setBlock(worldPosX, y + 1 + t, worldPosZ, BlockType::WOOD);
+                    chunkData.setBlock(chunkX + x, y + 1 + t, chunkZ + z, BlockType::WOOD);
+
                 for (int lx = -2; lx < 3; lx++)
                 {
-
                     for (int ly = 0; ly < treeHeight; ly++)
                     {
                         for (int lz = -2; lz < 3; lz++)
                         {
                             if (lx == 0 && lz == 0 && ly < treeHeight - 3)
                                 continue;
-                            chunkData.setBlock(worldPosX + lx, y + 3 + ly, worldPosZ + lz, BlockType::LEAVES);
+                            chunkData.setBlock(chunkX + x + lx, y + 3 + ly, chunkZ + z + lz, BlockType::LEAVES);
                         }
                     }
                 }
+                return;
             }
         }
     }

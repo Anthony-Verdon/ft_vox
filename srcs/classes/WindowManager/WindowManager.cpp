@@ -370,22 +370,19 @@ void WindowManager::renderInformations()
                              0.0f, WINDOW_HEIGHT - 5 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                              glm::vec4(1, 1, 1, 1));
 
+    TextRenderer::renderText("continentalness value : " +
+                                 std::to_string((ChunkGenerator::getFractalNoise(
+                                     ChunkGenerator::GetNoisePosition(cameraNewPosition.x, true),
+                                     ChunkGenerator::GetNoisePosition(cameraNewPosition.z, false),
+                                     CONTINENTALNESS_OCTAVES, CONTINENTALNESS_FREQUENCY, CONTINENTALNESS_PERSISTENCE))),
+                             0.0f, WINDOW_HEIGHT - 6 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
+                             glm::vec4(1, 1, 1, 1));
     TextRenderer::renderText(
-        "continentalness value : " + std::to_string((ChunkGenerator::getFractalNoise(
-                                         cameraNewPosition.x, cameraNewPosition.z, CONTINENTALNESS_OCTAVES,
-                                         CONTINENTALNESS_FREQUENCY, CONTINENTALNESS_PERSISTENCE))),
-        0.0f, WINDOW_HEIGHT - 6 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
-    /*
-    TextRenderer::renderText(
-        "erosion value : " +
-            std::to_string(ChunkGenerator::convertRange(ChunkGenerator::getFractalNoise(
-                cameraNewPosition.x, cameraNewPosition.z, EROSION_OCTAVES, EROSION_FREQUENCY,
-    EROSION_PERSISTENCE))), 0.0f, WINDOW_HEIGHT - 7 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
-    glm::vec4(1, 1, 1, 1)); TextRenderer::renderText( "peak and valleys value : " +
-            std::to_string(ChunkGenerator::convertRange(ChunkGenerator::getFractalNoise(
-                cameraNewPosition.x, cameraNewPosition.z, PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE))),
-        0.0f, WINDOW_HEIGHT - 8 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
-    */
+        "peak and valleys value : " +
+            std::to_string(ChunkGenerator::getFractalNoise(ChunkGenerator::GetNoisePosition(cameraNewPosition.x, true),
+                                                           ChunkGenerator::GetNoisePosition(cameraNewPosition.z, false),
+                                                           PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE)),
+        0.0f, WINDOW_HEIGHT - 7 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
     if (data.wireframeMode)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     cameraOldPosition = cameraNewPosition;
