@@ -48,14 +48,19 @@ ChunkData::~ChunkData()
 {
 }
 
-BlockType ChunkData::getBlock(int x, int y, int z) const
+BlockType ChunkData::getBlock(int x, int y, int z, bool worldCoord) const
 {
-    return (getBlock(glm::vec3(x, y, z)));
+    return (getBlock(glm::vec3(x, y, z), worldCoord));
 }
 
-BlockType ChunkData::getBlock(const glm::vec3 &coords) const
+BlockType ChunkData::getBlock(const glm::vec3 &coords, bool worldCoord) const
 {
-    return (getBlock(convert3DcoordsInto1Dcoords(coords)));
+    if (worldCoord)
+        return (getBlock(
+            convert3DcoordsInto1Dcoords(glm::vec3(convertWorldCoordIntoChunkCoords(coords.x, chunkCoord.x), coords.y,
+                                                  convertWorldCoordIntoChunkCoords(coords.z, chunkCoord.y)))));
+    else
+        return (getBlock(convert3DcoordsInto1Dcoords(coords)));
 }
 
 BlockType ChunkData::getBlock(unsigned int arrayCoord) const
@@ -65,16 +70,25 @@ BlockType ChunkData::getBlock(unsigned int arrayCoord) const
     return (blocks[arrayCoord]);
 }
 
-void ChunkData::setBlock(int x, int y, int z, BlockType type)
+void ChunkData::setBlock(int x, int y, int z, BlockType type, bool worldCoord)
 {
-    setBlock(glm::vec3(x, y, z), type);
+    setBlock(glm::vec3(x, y, z), type, worldCoord);
 }
-void ChunkData::setBlock(const glm::vec3 &coords, BlockType type)
+void ChunkData::setBlock(const glm::vec3 &coords, BlockType type, bool worldCoord)
 {
-    const glm::vec3 blockCoordsInChunk = glm::vec3(convertWorldCoordIntoChunkCoords(coords.x, chunkCoord.x), coords.y,
-                                                   convertWorldCoordIntoChunkCoords(coords.z, chunkCoord.y));
+    glm::vec3 blockCoordsInChunk;
+    if (worldCoord)
+        blockCoordsInChunk = glm::vec3(convertWorldCoordIntoChunkCoords(coords.x, chunkCoord.x), coords.y,
+                                       convertWorldCoordIntoChunkCoords(coords.z, chunkCoord.y));
+    else
+        blockCoordsInChunk = coords;
     const unsigned int arrayCoord = convert3DcoordsInto1Dcoords(blockCoordsInChunk);
-    ASSERT_RETURN_VOID(arrayCoord >= CHUNK_ARRAY_SIZE, "ChunkData::setBlock : coords given are out of bound");
+    ASSERT_RETURN_VOID(arrayCoord >= CHUNK_ARRAY_SIZE, "ChunkData::setBlock : coords given are out of bound"
+                                                           << std::endl
+                                                           << "Block coords: " << coords.x << " " << coords.y << " "
+                                                           << coords.z << std::endl
+                                                           << "Chunk coords: " << blockCoordsInChunk.x << " "
+                                                           << coords.y << " " << blockCoordsInChunk.z);
     ASSERT_RETURN_VOID(type != BlockType::AIR && blocks[arrayCoord] != BlockType::AIR,
                        "ChunkData::setBlock : Block already define at this position"
                            << std::endl

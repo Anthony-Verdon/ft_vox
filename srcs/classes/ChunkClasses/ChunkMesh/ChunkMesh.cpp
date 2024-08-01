@@ -53,7 +53,7 @@ void ChunkMesh::initMesh()
                 if (x == 0 || x == CHUNK_LENGTH_PLUS_2 - 1 || z == 0 || z == CHUNK_LENGTH_PLUS_2 - 1)
                     continue;
 
-                BlockType type = getBlock(x, y, z);
+                BlockType type = getBlock(x, y, z, false);
                 if (type == BlockType::AIR)
                     continue;
 
@@ -65,20 +65,24 @@ void ChunkMesh::initMesh()
                 {
                     if (type == BlockType::WATER)
                     {
-                        neighborsExist[j + 0] = getBlock(glm::vec3(x + modifiers[j], y, z)) == BlockType::WATER;
+                        neighborsExist[j + 0] = getBlock(glm::vec3(x + modifiers[j], y, z), false) == BlockType::WATER;
                         if (y + modifiers[j] >= 0 && y + modifiers[j] < CHUNK_HEIGHT)
-                            neighborsExist[j + 2] = getBlock(glm::vec3(x, y + modifiers[j], z)) == BlockType::WATER;
-                        neighborsExist[j + 4] = getBlock(glm::vec3(x, y, z + modifiers[j])) == BlockType::WATER;
+                            neighborsExist[j + 2] =
+                                getBlock(glm::vec3(x, y + modifiers[j], z), false) == BlockType::WATER;
+                        neighborsExist[j + 4] = getBlock(glm::vec3(x, y, z + modifiers[j]), false) == BlockType::WATER;
                     }
                     else
                     {
-                        neighborsExist[j + 0] = getBlock(glm::vec3(x + modifiers[j], y, z)) != BlockType::WATER &&
-                                                getBlock(glm::vec3(x + modifiers[j], y, z)) != BlockType::AIR;
+                        neighborsExist[j + 0] =
+                            getBlock(glm::vec3(x + modifiers[j], y, z), false) != BlockType::WATER &&
+                            getBlock(glm::vec3(x + modifiers[j], y, z), false) != BlockType::AIR;
                         if (y + modifiers[j] >= 0 && y + modifiers[j] < CHUNK_HEIGHT)
-                            neighborsExist[j + 2] = getBlock(glm::vec3(x, y + modifiers[j], z)) != BlockType::WATER &&
-                                                    getBlock(glm::vec3(x, y + modifiers[j], z)) != BlockType::AIR;
-                        neighborsExist[j + 4] = getBlock(glm::vec3(x, y, z + modifiers[j])) != BlockType::WATER &&
-                                                getBlock(glm::vec3(x, y, z + modifiers[j])) != BlockType::AIR;
+                            neighborsExist[j + 2] =
+                                getBlock(glm::vec3(x, y + modifiers[j], z), false) != BlockType::WATER &&
+                                getBlock(glm::vec3(x, y + modifiers[j], z), false) != BlockType::AIR;
+                        neighborsExist[j + 4] =
+                            getBlock(glm::vec3(x, y, z + modifiers[j]), false) != BlockType::WATER &&
+                            getBlock(glm::vec3(x, y, z + modifiers[j]), false) != BlockType::AIR;
                     }
                 }
                 BlockMesh blockMesh(worldPosX, y, worldPosZ, BlockDico::getBlockData(type), neighborsExist);

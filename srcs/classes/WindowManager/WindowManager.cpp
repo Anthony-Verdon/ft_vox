@@ -332,9 +332,9 @@ void WindowManager::updateBlock()
             const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(arrayX, arrayZ);
             if (chunk == NULL)
                 continue;
-            if (chunk->getBlock(x, y, z) == BlockType::AIR)
+            if (chunk->getBlock(x, y, z, true) == BlockType::AIR)
                 continue;
-            chunk->setBlock(x - 1, y, z - 1, BlockType::AIR);
+            chunk->setBlock(x - 1, y, z - 1, BlockType::AIR, true);
             chunk->initMesh();
             chunk->updateRenderer();
             break;
@@ -463,7 +463,7 @@ void WindowManager::getBlockCommand(const std::vector<std::string> &commandSplit
         std::cout << "block at " << x << " " << y << " " << z;
         std::cout << " [chunk " << chunkX << " " << chunkZ << "]";
         std::cout << " [coord in chunk " << convertedX << " " << y << " " << convertedZ << "]";
-        if (chunk->getBlock(glm::vec3(convertedX, y, convertedZ)) != BlockType::AIR)
+        if (chunk->getBlock(glm::vec3(convertedX, y, convertedZ), false) != BlockType::AIR)
             std::cout << " is set";
         else
             std::cout << " isn't set";

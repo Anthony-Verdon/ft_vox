@@ -86,15 +86,15 @@ void ChunkGenerator::GenerateTerrain(ChunkData &chunkData)
             for (; posY <= terrainHeight; posY++)
             {
                 if (posY == terrainHeight && terrainHeight >= WATER_LEVEL)
-                    chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::GRASS);
+                    chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::GRASS, true);
 
                 else if (posY >= terrainHeight - 3)
-                    chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::DIRT);
+                    chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::DIRT, true);
                 else
-                    chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::STONE);
+                    chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::STONE, true);
             }
             for (; posY <= WATER_LEVEL; posY++)
-                chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::WATER);
+                chunkData.setBlock(chunkX + posX, posY, chunkZ + posZ, BlockType::WATER, true);
         }
     }
 }
@@ -115,15 +115,18 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
     {
         for (int z = -1; z < CHUNK_LENGTH_PLUS_2 - 1; z++)
         {
+            if (x == -1 || z == -1 || x == CHUNK_LENGTH || z == CHUNK_LENGTH)
+                continue;
+
             int y;
             for (y = CHUNK_HEIGHT - 1; y >= 0; y--)
             {
-                if (chunkData.getBlock(x + 1, y, z + 1) != BlockType::AIR)
+                if (chunkData.getBlock(chunkX + x, y, chunkZ + z, true) != BlockType::AIR)
                     break;
             }
 
-            if (chunkData.getBlock(x + 1, y, z + 1) != BlockType::GRASS &&
-                chunkData.getBlock(x + 1, y, z + 1) != BlockType::DIRT)
+            if (chunkData.getBlock(chunkX + x, y, chunkZ + z, true) != BlockType::GRASS &&
+                chunkData.getBlock(chunkX + x, y, chunkZ + z, true) != BlockType::DIRT)
                 continue;
 
             // tree
@@ -131,7 +134,7 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
             {
                 int treeHeight = 3 + rand() % 3;
                 for (int t = 0; t < treeHeight; t++)
-                    chunkData.setBlock(chunkX + x, y + 1 + t, chunkZ + z, BlockType::WOOD);
+                    chunkData.setBlock(chunkX + x, y + 1 + t, chunkZ + z, BlockType::WOOD, true);
 
                 for (int lx = -2; lx < 3; lx++)
                 {
@@ -139,13 +142,14 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
                     {
                         for (int lz = -2; lz < 3; lz++)
                         {
-                            if (lx == 0 && lz == 0 && ly < treeHeight - 3)
+                            if ((lx == 0 && lz == 0 && ly < treeHeight - 3) ||
+                                chunkData.getBlock(x + 1 + lx, y + 3 + ly, z + 1 + lz, false) != BlockType::AIR)
                                 continue;
-                            chunkData.setBlock(chunkX + x + lx, y + 3 + ly, chunkZ + z + lz, BlockType::LEAVES);
+                            std::cout << x + 1 + lx << std::endl;
+                            chunkData.setBlock(x + 1 + lx, y + 3 + ly, z + 1 + lz, BlockType::LEAVES, false);
                         }
                     }
                 }
-                return;
             }
         }
     }
