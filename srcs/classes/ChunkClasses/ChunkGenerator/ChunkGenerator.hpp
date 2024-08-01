@@ -16,6 +16,8 @@ class ChunkGenerator
     static float modifierY;
     static float modifierZ;
 
+    static std::vector<glm::vec3> leavesToPlace;
+
   public:
     ChunkGenerator() = delete;
     ~ChunkGenerator() = delete;

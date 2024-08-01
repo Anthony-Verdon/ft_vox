@@ -15,6 +15,7 @@ unsigned long ChunkGenerator::seed = 0;
 float ChunkGenerator::modifierX = 0;
 float ChunkGenerator::modifierY = 0;
 float ChunkGenerator::modifierZ = 0;
+std::vector<glm::vec3> ChunkGenerator::leavesToPlace;
 int CHANNEL_NUM = 3;
 
 void ChunkGenerator::SetSeed(unsigned long seed)
@@ -142,17 +143,41 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
                     {
                         for (int lz = -2; lz < 3; lz++)
                         {
-                            if ((lx == 0 && lz == 0 && ly < treeHeight - 3) ||
-                                chunkData.getBlock(x + 1 + lx, y + 3 + ly, z + 1 + lz, false) != BlockType::AIR)
+                            if (lx == 0 && lz == 0 && ly < treeHeight - 3)
                                 continue;
-                            std::cout << x << " " << x + 1 + lx << std::endl;
-                            chunkData.setBlock(x + 1 + lx, y + 3 + ly, z + 1 + lz, BlockType::LEAVES, false);
+
+                            glm::vec3 leavesCoord = {x + 1 + lx, y + 3 + ly, z + 1 + lz};
+                            if (leavesCoord.x >= 0 && leavesCoord.x < CHUNK_LENGTH_PLUS_2 && leavesCoord.z >= 0 &&
+                                leavesCoord.z < CHUNK_LENGTH_PLUS_2 &&
+                                chunkData.getBlock(leavesCoord, false) != BlockType::AIR)
+                                continue;
+                            if (leavesCoord.y < 0 || leavesCoord.y >= CHUNK_HEIGHT)
+                                continue;
+
+                            if (leavesCoord.x - 1 < 0 || leavesCoord.x - 1 >= CHUNK_LENGTH || leavesCoord.z - 1 < 0 ||
+                                leavesCoord.z - 1 >= CHUNK_LENGTH)
+                                leavesToPlace.push_back({chunkX + x + lx, y + 3 + ly, chunkZ + z + lz});
+
+                            if (leavesCoord.x >= 0 && leavesCoord.x < CHUNK_LENGTH_PLUS_2 && leavesCoord.z >= 0 &&
+                                leavesCoord.z < CHUNK_LENGTH_PLUS_2)
+                                chunkData.setBlock(leavesCoord, BlockType::LEAVES, false);
                         }
                     }
                 }
-                return;
             }
         }
+    }
+    // place leaves from tree outside the chunk
+    for (auto it = leavesToPlace.begin(); it != leavesToPlace.end();)
+    {
+        if (it->x < chunkX || it->x >= chunkX + CHUNK_LENGTH || it->z < chunkZ || it->z >= chunkZ + CHUNK_LENGTH)
+        {
+            it++;
+            continue;
+        }
+
+        chunkData.setBlock(*it, BlockType::LEAVES, true);
+        leavesToPlace.erase(it);
     }
 }
 // octaves = nb of layer
