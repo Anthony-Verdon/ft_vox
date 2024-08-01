@@ -55,12 +55,23 @@ BlockType ChunkData::getBlock(int x, int y, int z, bool worldCoord) const
 
 BlockType ChunkData::getBlock(const glm::vec3 &coords, bool worldCoord) const
 {
+    glm::vec3 blockCoordsInChunk;
     if (worldCoord)
-        return (getBlock(
-            convert3DcoordsInto1Dcoords(glm::vec3(convertWorldCoordIntoChunkCoords(coords.x, chunkCoord.x), coords.y,
-                                                  convertWorldCoordIntoChunkCoords(coords.z, chunkCoord.y)))));
+        blockCoordsInChunk = glm::vec3(convertWorldCoordIntoChunkCoords(coords.x, chunkCoord.x), coords.y,
+                                       convertWorldCoordIntoChunkCoords(coords.z, chunkCoord.y));
     else
-        return (getBlock(convert3DcoordsInto1Dcoords(coords)));
+        blockCoordsInChunk = coords;
+    ASSERT_RETURN_VALUE(blockCoordsInChunk.x < 0 || blockCoordsInChunk.x >= CHUNK_LENGTH_PLUS_2 ||
+                            blockCoordsInChunk.y < 0 || blockCoordsInChunk.y >= CHUNK_HEIGHT ||
+                            blockCoordsInChunk.z < 0 || blockCoordsInChunk.z >= CHUNK_LENGTH_PLUS_2,
+                        "ChunkData::getBlock : coords given are out of bound"
+                            << std::endl
+                            << "isWorldCoord: " << worldCoord << std::endl
+                            << "Block coords: " << coords.x << " " << coords.y << " " << coords.z << std::endl
+                            << "Chunk coords: " << blockCoordsInChunk.x << " " << coords.y << " "
+                            << blockCoordsInChunk.z,
+                        BlockType::AIR);
+    return (getBlock(convert3DcoordsInto1Dcoords(blockCoordsInChunk)));
 }
 
 BlockType ChunkData::getBlock(unsigned int arrayCoord) const
@@ -83,15 +94,19 @@ void ChunkData::setBlock(const glm::vec3 &coords, BlockType type, bool worldCoor
     else
         blockCoordsInChunk = coords;
     const unsigned int arrayCoord = convert3DcoordsInto1Dcoords(blockCoordsInChunk);
-    ASSERT_RETURN_VOID(arrayCoord >= CHUNK_ARRAY_SIZE, "ChunkData::setBlock : coords given are out of bound"
-                                                           << std::endl
-                                                           << "Block coords: " << coords.x << " " << coords.y << " "
-                                                           << coords.z << std::endl
-                                                           << "Chunk coords: " << blockCoordsInChunk.x << " "
-                                                           << coords.y << " " << blockCoordsInChunk.z);
+    ASSERT_RETURN_VOID(blockCoordsInChunk.x < 0 || blockCoordsInChunk.x >= CHUNK_LENGTH_PLUS_2 ||
+                           blockCoordsInChunk.y < 0 || blockCoordsInChunk.y >= CHUNK_HEIGHT ||
+                           blockCoordsInChunk.z < 0 || blockCoordsInChunk.z >= CHUNK_LENGTH_PLUS_2,
+                       "ChunkData::setBlock : coords given are out of bound"
+                           << std::endl
+                           << "isWorldCoord: " << worldCoord << std::endl
+                           << "Block coords: " << coords.x << " " << coords.y << " " << coords.z << std::endl
+                           << "Chunk coords: " << blockCoordsInChunk.x << " " << coords.y << " "
+                           << blockCoordsInChunk.z);
     ASSERT_RETURN_VOID(type != BlockType::AIR && blocks[arrayCoord] != BlockType::AIR,
                        "ChunkData::setBlock : Block already define at this position"
                            << std::endl
+                           << "isWorldCoord: " << worldCoord << std::endl
                            << "Block coords: " << coords.x << " " << coords.y << " " << coords.z << std::endl
                            << "Chunk coords: " << blockCoordsInChunk.x << " " << coords.y << " "
                            << blockCoordsInChunk.z)

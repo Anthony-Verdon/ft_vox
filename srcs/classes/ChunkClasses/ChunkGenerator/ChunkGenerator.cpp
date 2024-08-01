@@ -145,11 +145,12 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
                             if ((lx == 0 && lz == 0 && ly < treeHeight - 3) ||
                                 chunkData.getBlock(x + 1 + lx, y + 3 + ly, z + 1 + lz, false) != BlockType::AIR)
                                 continue;
-                            std::cout << x + 1 + lx << std::endl;
+                            std::cout << x << " " << x + 1 + lx << std::endl;
                             chunkData.setBlock(x + 1 + lx, y + 3 + ly, z + 1 + lz, BlockType::LEAVES, false);
                         }
                     }
                 }
+                return;
             }
         }
     }
