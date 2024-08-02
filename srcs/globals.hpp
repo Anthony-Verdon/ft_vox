@@ -14,8 +14,9 @@ constexpr float CHAT_FADE_TIME = 5;
 
 // player
 constexpr float RANGE_ACTION = 5;
+
 // camera
-constexpr int RENDER_DISTANCE = 0;
+constexpr int RENDER_DISTANCE = 3;
 constexpr int RENDER_DISTANCE_2X = 2 * RENDER_DISTANCE + 1;
 constexpr int FOV = 80;
 
@@ -26,6 +27,7 @@ constexpr int CHUNK_HEIGHT = 256;
 constexpr int CHUNK_ARRAY_SIZE = CHUNK_LENGTH_PLUS_2 * CHUNK_LENGTH_PLUS_2 * CHUNK_HEIGHT;
 constexpr int WORLD_LENGTH = 16384;
 constexpr int WATER_LEVEL = 62;
+constexpr int MINICHUNK_HEIGHT = 16; // for info mode
 
 // world generation
 constexpr int NOISE_SIZE = 1024;

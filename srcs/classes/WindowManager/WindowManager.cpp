@@ -77,7 +77,7 @@ void WindowManager::start()
 
 void WindowManager::updateLoop()
 {
-    camera.setPosition({58, 70, 18});
+    camera.setPosition({8, 70, 8});
     SkyboxRenderer skybox;
     Texture tileset("assets/textures/tileset.png");
     Texture skyboxTexture("assets/textures/skybox/");
@@ -149,23 +149,42 @@ void WindowManager::updateLoop()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
 
-        /*
-        LineShader.use();
-        LineShader.setMat4("view", view);
-        LineShader.setMat4("projection", projection);
-        LineShader.setVec3("color", line.getColor());
-        float cosYaw = cos(Utils::DegToRad(camera.getYaw()));
-        float sinYaw = sin(Utils::DegToRad(camera.getYaw()));
-        float cosPitch = cos(Utils::DegToRad(camera.getPitch()));
-        float sinPitch = sin(Utils::DegToRad(camera.getPitch()));
-        glm::vec3 raycast = glm::vec3(cosYaw * cosPitch, sinPitch, sinYaw * cosPitch);
-        raycast = raycast / static_cast<float>(sqrt(pow(raycast.x, 2) + pow(raycast.y, 2) + pow(raycast.z, 2)));
-        glm::vec3 positionGet = camera.getPosition() + glm::vec3(0, 1, 0) + raycast *
-        static_cast<float>(RANGE_ACTION); line.setStartPoint(camera.getPosition() + glm::vec3(0, 1, 0));
-        line.setEndPoint(positionGet);
-        line.draw(); // @todo create draw function on all renderer
-        */
+        // line rendering
+        if (data.infoMode)
+        {
+            LineShader.use();
+            LineShader.setMat4("view", view);
+            LineShader.setMat4("projection", projection);
+            LineShader.setVec3("color", glm::vec3(255, 255, 0));
+            for (int x = -RENDER_DISTANCE; x <= RENDER_DISTANCE + 1; x++)
+            {
+                for (int z = -RENDER_DISTANCE; z <= RENDER_DISTANCE + 1; z++)
+                {
+                    glm::vec3 camPosition = camera.getPosition();
+                    glm::vec2 linePosition = {camPosition.x - (int)camPosition.x % CHUNK_LENGTH + x * CHUNK_LENGTH,
+                                              camPosition.z - (int)camPosition.z % CHUNK_LENGTH + z * CHUNK_LENGTH};
+                    line.setStartPoint({linePosition.x, 0, linePosition.y});
+                    line.setEndPoint({linePosition.x, CHUNK_HEIGHT, linePosition.y});
+                    line.draw(); // @todo create draw function on all renderer
 
+                    for (int y = 0; y < CHUNK_HEIGHT; y += MINICHUNK_HEIGHT)
+                    {
+                        if (x != RENDER_DISTANCE + 1)
+                        {
+                            line.setStartPoint({linePosition.x, y, linePosition.y});
+                            line.setEndPoint({linePosition.x + CHUNK_LENGTH, y, linePosition.y});
+                            line.draw();
+                        }
+                        if (z != RENDER_DISTANCE + 1)
+                        {
+                            line.setStartPoint({linePosition.x, y, linePosition.y});
+                            line.setEndPoint({linePosition.x, y, linePosition.y + CHUNK_LENGTH});
+                            line.draw();
+                        }
+                    }
+                }
+            }
+        }
         /* text rendering */
         if (data.infoMode)
             renderInformations();
