@@ -161,8 +161,9 @@ void WindowManager::updateLoop()
                 for (int z = -RENDER_DISTANCE; z <= RENDER_DISTANCE + 1; z++)
                 {
                     glm::vec3 camPosition = camera.getPosition();
-                    glm::vec2 linePosition = {camPosition.x - (int)camPosition.x % CHUNK_LENGTH + x * CHUNK_LENGTH,
-                                              camPosition.z - (int)camPosition.z % CHUNK_LENGTH + z * CHUNK_LENGTH};
+                    glm::vec2 linePosition = {(int)camPosition.x - (int)camPosition.x % CHUNK_LENGTH + x * CHUNK_LENGTH,
+                                              (int)camPosition.z - (int)camPosition.z % CHUNK_LENGTH +
+                                                  z * CHUNK_LENGTH};
                     line.setStartPoint({linePosition.x, 0, linePosition.y});
                     line.setEndPoint({linePosition.x, CHUNK_HEIGHT, linePosition.y});
                     line.draw(); // @todo create draw function on all renderer
