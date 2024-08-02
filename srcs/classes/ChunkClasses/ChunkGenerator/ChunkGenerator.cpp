@@ -164,20 +164,11 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
 
                                 glm::vec3 leavesWorldCoord = {chunkCoord.x + x + lx, y + 3 + ly, chunkCoord.y + z + lz};
                                 if (leavesToPlace.find(chunkCoordPair) == leavesToPlace.end())
-                                {
-                                    std::cout << "create vector for chunk " << chunkCoordPair.first << " "
-                                              << chunkCoordPair.second << std::endl;
                                     leavesToPlace[chunkCoordPair] = {};
-                                }
                                 std::vector<glm::vec3> leavesVector = leavesToPlace[chunkCoordPair];
                                 if (std::find(leavesVector.begin(), leavesVector.end(), leavesWorldCoord) ==
                                     leavesVector.end())
-                                {
-                                    std::cout << "add leaves at " << leavesWorldCoord.x << " " << leavesWorldCoord.y
-                                              << " " << leavesWorldCoord.z << " create vector for chunk "
-                                              << chunkCoordPair.first << " " << chunkCoordPair.second << std::endl;
                                     leavesToPlace[chunkCoordPair].push_back(leavesWorldCoord);
-                                }
                             }
 
                             if (leavesCoord.z - 1 < 0 || leavesCoord.z - 1 >= CHUNK_LENGTH)
@@ -190,20 +181,11 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
 
                                 glm::vec3 leavesWorldCoord = {chunkCoord.x + x + lx, y + 3 + ly, chunkCoord.y + z + lz};
                                 if (leavesToPlace.find(chunkCoordPair) == leavesToPlace.end())
-                                {
-                                    std::cout << "create vector for chunk " << chunkCoordPair.first << " "
-                                              << chunkCoordPair.second << std::endl;
                                     leavesToPlace[chunkCoordPair] = {};
-                                }
                                 std::vector<glm::vec3> leavesVector = leavesToPlace[chunkCoordPair];
                                 if (std::find(leavesVector.begin(), leavesVector.end(), leavesWorldCoord) ==
                                     leavesVector.end())
-                                {
-                                    std::cout << "add leaves at " << leavesWorldCoord.x << " " << leavesWorldCoord.y
-                                              << " " << leavesWorldCoord.z << " create vector for chunk "
-                                              << chunkCoordPair.first << " " << chunkCoordPair.second << std::endl;
                                     leavesToPlace[chunkCoordPair].push_back(leavesWorldCoord);
-                                }
                             }
 
                             if (leavesCoord.x >= 0 && leavesCoord.x < CHUNK_LENGTH_PLUS_2 && leavesCoord.z >= 0 &&

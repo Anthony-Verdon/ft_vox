@@ -164,6 +164,10 @@ void WindowManager::updateLoop()
                     glm::vec2 linePosition = {(int)camPosition.x - (int)camPosition.x % CHUNK_LENGTH + x * CHUNK_LENGTH,
                                               (int)camPosition.z - (int)camPosition.z % CHUNK_LENGTH +
                                                   z * CHUNK_LENGTH};
+                    if (camPosition.x < 0)
+                        linePosition.x -= CHUNK_LENGTH;
+                    if (camPosition.z < 0)
+                        linePosition.y -= CHUNK_LENGTH;
                     line.setStartPoint({linePosition.x, 0, linePosition.y});
                     line.setEndPoint({linePosition.x, CHUNK_HEIGHT, linePosition.y});
                     line.draw(); // @todo create draw function on all renderer
