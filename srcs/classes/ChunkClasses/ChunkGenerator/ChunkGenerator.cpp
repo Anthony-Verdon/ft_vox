@@ -7,6 +7,7 @@
 #include <sstream>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../../Utils/Utils.hpp"
+#include <algorithm>
 #include <filesystem>
 #include <glm/gtc/noise.hpp>
 #include <map>
@@ -15,7 +16,7 @@ unsigned long ChunkGenerator::seed = 0;
 float ChunkGenerator::modifierX = 0;
 float ChunkGenerator::modifierY = 0;
 float ChunkGenerator::modifierZ = 0;
-std::vector<glm::vec3> ChunkGenerator::leavesToPlace;
+std::map<std::pair<int, int>, std::vector<glm::vec3>> ChunkGenerator::leavesToPlace;
 int CHANNEL_NUM = 3;
 
 void ChunkGenerator::SetSeed(unsigned long seed)
@@ -110,8 +111,7 @@ float ChunkGenerator::GetNoisePosition(int pos, bool xCoord)
 
 void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
 {
-    int chunkX = chunkData.getChunkCoordX() * CHUNK_LENGTH;
-    int chunkZ = chunkData.getChunkCoordZ() * CHUNK_LENGTH;
+    glm::vec2 chunkCoord = {chunkData.getChunkCoordX() * CHUNK_LENGTH, chunkData.getChunkCoordZ() * CHUNK_LENGTH};
     for (int x = -1; x < CHUNK_LENGTH_PLUS_2 - 1; x++)
     {
         for (int z = -1; z < CHUNK_LENGTH_PLUS_2 - 1; z++)
@@ -122,12 +122,12 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
             int y;
             for (y = CHUNK_HEIGHT - 1; y >= 0; y--)
             {
-                if (chunkData.getBlock(chunkX + x, y, chunkZ + z, true) != BlockType::AIR)
+                if (chunkData.getBlock(chunkCoord.x + x, y, chunkCoord.y + z, true) != BlockType::AIR)
                     break;
             }
 
-            if (chunkData.getBlock(chunkX + x, y, chunkZ + z, true) != BlockType::GRASS &&
-                chunkData.getBlock(chunkX + x, y, chunkZ + z, true) != BlockType::DIRT)
+            if (chunkData.getBlock(chunkCoord.x + x, y, chunkCoord.y + z, true) != BlockType::GRASS &&
+                chunkData.getBlock(chunkCoord.x + x, y, chunkCoord.y + z, true) != BlockType::DIRT)
                 continue;
 
             // tree
@@ -135,7 +135,7 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
             {
                 int treeHeight = 3 + rand() % 3;
                 for (int t = 0; t < treeHeight; t++)
-                    chunkData.setBlock(chunkX + x, y + 1 + t, chunkZ + z, BlockType::WOOD, true);
+                    chunkData.setBlock(chunkCoord.x + x, y + 1 + t, chunkCoord.y + z, BlockType::WOOD, true);
 
                 for (int lx = -2; lx < 3; lx++)
                 {
@@ -154,9 +154,57 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
                             if (leavesCoord.y < 0 || leavesCoord.y >= CHUNK_HEIGHT)
                                 continue;
 
-                            if (leavesCoord.x - 1 < 0 || leavesCoord.x - 1 >= CHUNK_LENGTH || leavesCoord.z - 1 < 0 ||
-                                leavesCoord.z - 1 >= CHUNK_LENGTH)
-                                leavesToPlace.push_back({chunkX + x + lx, y + 3 + ly, chunkZ + z + lz});
+                            if (leavesCoord.x - 1 < 0 || leavesCoord.x - 1 >= CHUNK_LENGTH)
+                            {
+                                std::pair<int, int> chunkCoordPair;
+                                if (leavesCoord.x - 1 < 0)
+                                    chunkCoordPair = {chunkCoord.x - CHUNK_LENGTH, chunkCoord.y};
+                                else
+                                    chunkCoordPair = {chunkCoord.x + CHUNK_LENGTH, chunkCoord.y};
+
+                                glm::vec3 leavesWorldCoord = {chunkCoord.x + x + lx, y + 3 + ly, chunkCoord.y + z + lz};
+                                if (leavesToPlace.find(chunkCoordPair) == leavesToPlace.end())
+                                {
+                                    std::cout << "create vector for chunk " << chunkCoordPair.first << " "
+                                              << chunkCoordPair.second << std::endl;
+                                    leavesToPlace[chunkCoordPair] = {};
+                                }
+                                std::vector<glm::vec3> leavesVector = leavesToPlace[chunkCoordPair];
+                                if (std::find(leavesVector.begin(), leavesVector.end(), leavesWorldCoord) ==
+                                    leavesVector.end())
+                                {
+                                    std::cout << "add leaves at " << leavesWorldCoord.x << " " << leavesWorldCoord.y
+                                              << " " << leavesWorldCoord.z << " create vector for chunk "
+                                              << chunkCoordPair.first << " " << chunkCoordPair.second << std::endl;
+                                    leavesToPlace[chunkCoordPair].push_back(leavesWorldCoord);
+                                }
+                            }
+
+                            if (leavesCoord.z - 1 < 0 || leavesCoord.z - 1 >= CHUNK_LENGTH)
+                            {
+                                std::pair<int, int> chunkCoordPair;
+                                if (leavesCoord.z - 1 < 0)
+                                    chunkCoordPair = {chunkCoord.x, chunkCoord.y - CHUNK_LENGTH};
+                                else
+                                    chunkCoordPair = {chunkCoord.x, chunkCoord.y + CHUNK_LENGTH};
+
+                                glm::vec3 leavesWorldCoord = {chunkCoord.x + x + lx, y + 3 + ly, chunkCoord.y + z + lz};
+                                if (leavesToPlace.find(chunkCoordPair) == leavesToPlace.end())
+                                {
+                                    std::cout << "create vector for chunk " << chunkCoordPair.first << " "
+                                              << chunkCoordPair.second << std::endl;
+                                    leavesToPlace[chunkCoordPair] = {};
+                                }
+                                std::vector<glm::vec3> leavesVector = leavesToPlace[chunkCoordPair];
+                                if (std::find(leavesVector.begin(), leavesVector.end(), leavesWorldCoord) ==
+                                    leavesVector.end())
+                                {
+                                    std::cout << "add leaves at " << leavesWorldCoord.x << " " << leavesWorldCoord.y
+                                              << " " << leavesWorldCoord.z << " create vector for chunk "
+                                              << chunkCoordPair.first << " " << chunkCoordPair.second << std::endl;
+                                    leavesToPlace[chunkCoordPair].push_back(leavesWorldCoord);
+                                }
+                            }
 
                             if (leavesCoord.x >= 0 && leavesCoord.x < CHUNK_LENGTH_PLUS_2 && leavesCoord.z >= 0 &&
                                 leavesCoord.z < CHUNK_LENGTH_PLUS_2)
@@ -168,16 +216,12 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
         }
     }
     // place leaves from tree outside the chunk
-    for (auto it = leavesToPlace.begin(); it != leavesToPlace.end();)
+    auto itMap = leavesToPlace.find({chunkCoord.x, chunkCoord.y});
+    if (itMap == leavesToPlace.end())
+        return;
+    for (auto itVector = itMap->second.begin(); itVector != itMap->second.end(); itVector++)
     {
-        if (it->x < chunkX || it->x >= chunkX + CHUNK_LENGTH || it->z < chunkZ || it->z >= chunkZ + CHUNK_LENGTH)
-        {
-            it++;
-            continue;
-        }
-
-        chunkData.setBlock(*it, BlockType::LEAVES, true);
-        leavesToPlace.erase(it);
+        chunkData.setBlock(*itVector, BlockType::LEAVES, true);
     }
 }
 // octaves = nb of layer

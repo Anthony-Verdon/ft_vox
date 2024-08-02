@@ -1,6 +1,6 @@
 #pragma once
 #include "../ChunkData/ChunkData.hpp"
-
+#include <map>
 enum eGraphType
 {
     CONTINENTALNESS_GRAPH,
@@ -16,7 +16,7 @@ class ChunkGenerator
     static float modifierY;
     static float modifierZ;
 
-    static std::vector<glm::vec3> leavesToPlace;
+    static std::map<std::pair<int, int>, std::vector<glm::vec3>> leavesToPlace;
 
   public:
     ChunkGenerator() = delete;
