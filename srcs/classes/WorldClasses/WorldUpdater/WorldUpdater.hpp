@@ -11,9 +11,6 @@ class WorldUpdater
   private:
     std::thread updaterThread;
 
-    std::mutex chunksLoadedDataMutex;
-    std::unique_ptr<std::unique_ptr<ChunkData>[]> chunkLoadedData;
-
     std::mutex playerChunkCoordMutex;
     glm::vec2 oldPlayerChunkCoord;
     glm::vec2 playerChunkCoord;
@@ -28,9 +25,6 @@ class WorldUpdater
     bool stopThread;
 
     void loadNewChunks();
-    void moveChunkLoaded(const glm::vec2 &playerChunkCoordCopy);
-    void moveChunkAxisX(const glm::vec2 &playerChunkCoordCopy);
-    void moveChunkAxisZ(const glm::vec2 &playerChunkCoordCopy);
 
   public:
     WorldUpdater();
