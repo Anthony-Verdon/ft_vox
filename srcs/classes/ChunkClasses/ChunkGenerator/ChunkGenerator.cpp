@@ -101,14 +101,6 @@ void ChunkGenerator::GenerateTerrain(ChunkData &chunkData)
     }
 }
 
-float ChunkGenerator::GetNoisePosition(int pos, bool xCoord)
-{
-    if (xCoord)
-        return (float)pos / NOISE_SIZE + modifierX;
-    else
-        return (float)pos / NOISE_SIZE + modifierZ;
-}
-
 void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
 {
     glm::vec2 chunkCoord = {chunkData.getChunkCoordX() * CHUNK_LENGTH, chunkData.getChunkCoordZ() * CHUNK_LENGTH};
@@ -154,42 +146,27 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
                             if (leavesCoord.y < 0 || leavesCoord.y >= CHUNK_HEIGHT)
                                 continue;
 
-                            if (leavesCoord.x - 1 < 0 || leavesCoord.x - 1 >= CHUNK_LENGTH)
-                            {
-                                std::pair<int, int> chunkCoordPair;
-                                if (leavesCoord.x - 1 < 0)
-                                    chunkCoordPair = {chunkCoord.x - CHUNK_LENGTH, chunkCoord.y};
-                                else
-                                    chunkCoordPair = {chunkCoord.x + CHUNK_LENGTH, chunkCoord.y};
+                            std::pair<int, int> chunkCoordPair = {chunkCoord.x, chunkCoord.y};
+                            if (leavesCoord.x - 1 < 0)
+                                chunkCoordPair.first -= CHUNK_LENGTH;
+                            else if (leavesCoord.x - 1 >= CHUNK_LENGTH)
+                                chunkCoordPair.first += CHUNK_LENGTH;
+                            if (leavesCoord.z - 1 < 0)
+                                chunkCoordPair.second -= CHUNK_LENGTH;
+                            else if (leavesCoord.z - 1 >= CHUNK_LENGTH)
+                                chunkCoordPair.second += CHUNK_LENGTH;
 
-                                glm::vec3 leavesWorldCoord = {chunkCoord.x + x + lx, y + 3 + ly, chunkCoord.y + z + lz};
-                                if (leavesToPlace.find(chunkCoordPair) == leavesToPlace.end())
-                                    leavesToPlace[chunkCoordPair] = {};
-                                std::vector<glm::vec3> leavesVector = leavesToPlace[chunkCoordPair];
-                                if (std::find(leavesVector.begin(), leavesVector.end(), leavesWorldCoord) ==
-                                    leavesVector.end())
-                                    leavesToPlace[chunkCoordPair].push_back(leavesWorldCoord);
-                            }
-
-                            if (leavesCoord.z - 1 < 0 || leavesCoord.z - 1 >= CHUNK_LENGTH)
-                            {
-                                std::pair<int, int> chunkCoordPair;
-                                if (leavesCoord.z - 1 < 0)
-                                    chunkCoordPair = {chunkCoord.x, chunkCoord.y - CHUNK_LENGTH};
-                                else
-                                    chunkCoordPair = {chunkCoord.x, chunkCoord.y + CHUNK_LENGTH};
-
-                                glm::vec3 leavesWorldCoord = {chunkCoord.x + x + lx, y + 3 + ly, chunkCoord.y + z + lz};
-                                if (leavesToPlace.find(chunkCoordPair) == leavesToPlace.end())
-                                    leavesToPlace[chunkCoordPair] = {};
-                                std::vector<glm::vec3> leavesVector = leavesToPlace[chunkCoordPair];
-                                if (std::find(leavesVector.begin(), leavesVector.end(), leavesWorldCoord) ==
-                                    leavesVector.end())
-                                    leavesToPlace[chunkCoordPair].push_back(leavesWorldCoord);
-                            }
+                            glm::vec3 leavesWorldCoord = {chunkCoord.x + x + lx, y + 3 + ly, chunkCoord.y + z + lz};
+                            if (leavesToPlace.find(chunkCoordPair) == leavesToPlace.end())
+                                leavesToPlace[chunkCoordPair] = {};
+                            std::vector<glm::vec3> leavesVector = leavesToPlace[chunkCoordPair];
+                            if (std::find(leavesVector.begin(), leavesVector.end(), leavesWorldCoord) ==
+                                leavesVector.end())
+                                leavesToPlace[chunkCoordPair].push_back(leavesWorldCoord);
 
                             if (leavesCoord.x >= 0 && leavesCoord.x < CHUNK_LENGTH_PLUS_2 && leavesCoord.z >= 0 &&
-                                leavesCoord.z < CHUNK_LENGTH_PLUS_2)
+                                leavesCoord.z < CHUNK_LENGTH_PLUS_2 &&
+                                chunkData.getBlock(leavesCoord, false) == BlockType::AIR)
                                 chunkData.setBlock(leavesCoord, BlockType::LEAVES, false);
                         }
                     }
@@ -203,9 +180,19 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
         return;
     for (auto itVector = itMap->second.begin(); itVector != itMap->second.end(); itVector++)
     {
-        chunkData.setBlock(*itVector, BlockType::LEAVES, true);
+        if (chunkData.getBlock(*itVector, true) == BlockType::AIR)
+            chunkData.setBlock(*itVector, BlockType::LEAVES, true);
     }
 }
+
+float ChunkGenerator::GetNoisePosition(int pos, bool xCoord)
+{
+    if (xCoord)
+        return (float)pos / NOISE_SIZE + modifierX;
+    else
+        return (float)pos / NOISE_SIZE + modifierZ;
+}
+
 // octaves = nb of layer
 // frequency = zoom
 // persistence = smooth

@@ -18,17 +18,19 @@ class ChunkGenerator
 
     static std::map<std::pair<int, int>, std::vector<glm::vec3>> leavesToPlace;
 
+    static void GenerateTerrain(ChunkData &chunkData);
+    static void GenerateFeatures(ChunkData &chunkData);
+
   public:
     ChunkGenerator() = delete;
     ~ChunkGenerator() = delete;
 
     static void SetSeed(unsigned long seed);
+
     static unsigned long GetSeed();
     static ChunkData GenerateChunkData(int x, int z);
-    static void GenerateTerrain(ChunkData &chunkData);
-    static float GetNoisePosition(int pos, bool xCoord);
-    static void GenerateFeatures(ChunkData &chunkData);
 
+    static float GetNoisePosition(int pos, bool xCoord);
     static float getFractalNoise(float x, float z, int octaves, float frequency, float persistence);
 #ifdef GENERATE_MAP
     static float getValueFromGraph(float value, eGraphType graph);
