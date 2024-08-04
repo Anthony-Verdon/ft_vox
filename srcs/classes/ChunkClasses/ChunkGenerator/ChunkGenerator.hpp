@@ -17,6 +17,7 @@ class ChunkGenerator
     static float modifierZ;
 
     static std::map<std::pair<int, int>, std::vector<glm::vec3>> leavesToPlace;
+    static std::vector<glm::vec2> chunkGeneratedOnce;
 
     static void GenerateTerrain(ChunkData &chunkData);
     static void GenerateFeatures(ChunkData &chunkData);
@@ -28,7 +29,7 @@ class ChunkGenerator
     static void SetSeed(unsigned long seed);
 
     static unsigned long GetSeed();
-    static ChunkData GenerateChunkData(int x, int z);
+    static ChunkData GenerateChunkData(int x, int z, bool firstIteration = true);
 
     static float GetNoisePosition(int pos, bool xCoord);
     static float getFractalNoise(float x, float z, int octaves, float frequency, float persistence);

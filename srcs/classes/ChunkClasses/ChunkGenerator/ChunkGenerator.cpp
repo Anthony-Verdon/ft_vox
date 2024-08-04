@@ -17,6 +17,8 @@ float ChunkGenerator::modifierX = 0;
 float ChunkGenerator::modifierY = 0;
 float ChunkGenerator::modifierZ = 0;
 std::map<std::pair<int, int>, std::vector<glm::vec3>> ChunkGenerator::leavesToPlace;
+std::vector<glm::vec2> ChunkGenerator::chunkGeneratedOnce;
+
 int CHANNEL_NUM = 3;
 
 void ChunkGenerator::SetSeed(unsigned long seed)
@@ -33,14 +35,32 @@ unsigned long ChunkGenerator::GetSeed()
     return seed;
 }
 
-ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ)
+ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ, bool firstIteration)
 {
+    if (firstIteration)
+    {
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int z = -1; z <= 1; z++)
+            {
+                glm::vec2 newChunkCoord = glm::vec2(chunkX + x * CHUNK_LENGTH, chunkZ + z * CHUNK_LENGTH);
+                if (std::find(chunkGeneratedOnce.begin(), chunkGeneratedOnce.end(), newChunkCoord) ==
+                    chunkGeneratedOnce.end())
+                    GenerateChunkData(newChunkCoord.x, newChunkCoord.y, false);
+            }
+        }
+    }
+
     unsigned long chunkSeed = seed + chunkX * WORLD_LENGTH / CHUNK_LENGTH + chunkZ;
     srand(chunkSeed);
 
-    ChunkData chunkData(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH);
+    glm::vec2 chunkCoords = {chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH};
+    ChunkData chunkData(chunkCoords);
     GenerateTerrain(chunkData);
     GenerateFeatures(chunkData);
+
+    if (std::find(chunkGeneratedOnce.begin(), chunkGeneratedOnce.end(), chunkCoords) == chunkGeneratedOnce.end())
+        chunkGeneratedOnce.push_back(chunkCoords);
 
     return (chunkData);
 }
