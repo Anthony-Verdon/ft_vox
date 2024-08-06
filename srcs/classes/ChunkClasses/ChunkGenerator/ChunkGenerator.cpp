@@ -43,6 +43,8 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ, bool firstIt
         {
             for (int z = -1; z <= 1; z++)
             {
+                if (x == 0 && z == 0)
+                    continue;
                 glm::vec2 newChunkCoord = glm::vec2(chunkX + x * CHUNK_LENGTH, chunkZ + z * CHUNK_LENGTH);
                 if (std::find(chunkGeneratedOnce.begin(), chunkGeneratedOnce.end(), newChunkCoord) ==
                     chunkGeneratedOnce.end())
@@ -59,8 +61,9 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ, bool firstIt
     GenerateTerrain(chunkData);
     GenerateFeatures(chunkData);
 
-    if (std::find(chunkGeneratedOnce.begin(), chunkGeneratedOnce.end(), chunkCoords) == chunkGeneratedOnce.end())
-        chunkGeneratedOnce.push_back(chunkCoords);
+    if (std::find(chunkGeneratedOnce.begin(), chunkGeneratedOnce.end(), glm::vec2(chunkX, chunkZ)) ==
+        chunkGeneratedOnce.end())
+        chunkGeneratedOnce.push_back(glm::vec2(chunkX, chunkZ));
 
     return (chunkData);
 }
