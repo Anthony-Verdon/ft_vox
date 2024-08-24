@@ -16,7 +16,7 @@ class ChunkGenerator
     static float modifierY;
     static float modifierZ;
 
-    static std::map<std::pair<int, int>, std::vector<glm::vec3>> leavesToPlace;
+    static std::map<std::pair<int, int>, std::vector<std::pair<glm::vec3, BlockType>>> featuresToPlace;
     static std::vector<glm::vec2> chunkGeneratedOnce;
 
     static void GenerateTerrain(ChunkData &chunkData);

@@ -16,7 +16,7 @@ unsigned long ChunkGenerator::seed = 0;
 float ChunkGenerator::modifierX = 0;
 float ChunkGenerator::modifierY = 0;
 float ChunkGenerator::modifierZ = 0;
-std::map<std::pair<int, int>, std::vector<glm::vec3>> ChunkGenerator::leavesToPlace;
+std::map<std::pair<int, int>, std::vector<std::pair<glm::vec3, BlockType>>> ChunkGenerator::featuresToPlace;
 std::vector<glm::vec2> ChunkGenerator::chunkGeneratedOnce;
 
 int CHANNEL_NUM = 3;
@@ -150,7 +150,9 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
             {
                 int treeHeight = 3 + rand() % 3;
                 for (int t = 0; t < treeHeight; t++)
-                    chunkData.setBlock(chunkCoord.x + x, y + 1 + t, chunkCoord.y + z, BlockType::WOOD, true);
+                    featuresToPlace[std::pair<int, int>{chunkCoord.x, chunkCoord.y}].push_back(
+                        std::pair<glm::vec3, BlockType>{glm::vec3(chunkCoord.x + x, y + 1 + t, chunkCoord.y + z),
+                                                        BlockType::WOOD});
 
                 for (int lx = -2; lx < 3; lx++)
                 {
@@ -170,6 +172,7 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
                                 continue;
 
                             std::pair<int, int> chunkCoordPair = {chunkCoord.x, chunkCoord.y};
+
                             if (leavesCoord.x - 1 < 0)
                                 chunkCoordPair.first -= CHUNK_LENGTH;
                             else if (leavesCoord.x - 1 >= CHUNK_LENGTH)
@@ -180,31 +183,58 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
                                 chunkCoordPair.second += CHUNK_LENGTH;
 
                             glm::vec3 leavesWorldCoord = {chunkCoord.x + x + lx, y + 3 + ly, chunkCoord.y + z + lz};
-                            if (leavesToPlace.find(chunkCoordPair) == leavesToPlace.end())
-                                leavesToPlace[chunkCoordPair] = {};
-                            std::vector<glm::vec3> leavesVector = leavesToPlace[chunkCoordPair];
-                            if (std::find(leavesVector.begin(), leavesVector.end(), leavesWorldCoord) ==
-                                leavesVector.end())
-                                leavesToPlace[chunkCoordPair].push_back(leavesWorldCoord);
+                            if (featuresToPlace.find(chunkCoordPair) == featuresToPlace.end())
+                                featuresToPlace[chunkCoordPair] = {};
 
-                            if (leavesCoord.x >= 0 && leavesCoord.x < CHUNK_LENGTH_PLUS_2 && leavesCoord.z >= 0 &&
-                                leavesCoord.z < CHUNK_LENGTH_PLUS_2 &&
-                                chunkData.getBlock(leavesCoord, false) == BlockType::AIR)
-                                chunkData.setBlock(leavesCoord, BlockType::LEAVES, false);
+                            std::vector<std::pair<glm::vec3, BlockType>> featuresVector =
+                                featuresToPlace[chunkCoordPair];
+                            if (std::find(featuresVector.begin(), featuresVector.end(),
+                                          std::pair<glm::vec3, BlockType>{leavesWorldCoord, BlockType::LEAVES}) ==
+                                featuresVector.end())
+                                featuresToPlace[chunkCoordPair].push_back({leavesWorldCoord, BlockType::LEAVES});
+
+                            int value = (int)leavesWorldCoord.x % CHUNK_LENGTH;
+                            if (value < 0)
+                                value += CHUNK_LENGTH;
+                            if (value == 0)
+                            {
+                                featuresToPlace[{chunkCoordPair.first - CHUNK_LENGTH, chunkCoordPair.second}].push_back(
+                                    {leavesWorldCoord, BlockType::LEAVES});
+                            }
+                            else if (value == CHUNK_LENGTH - 1)
+                            {
+                                featuresToPlace[{chunkCoordPair.first + CHUNK_LENGTH, chunkCoordPair.second}].push_back(
+                                    {leavesWorldCoord, BlockType::LEAVES});
+                            }
+                            value = (int)leavesWorldCoord.z % CHUNK_LENGTH;
+                            if (value < 0)
+                                value += CHUNK_LENGTH;
+                            if (value == 0)
+                            {
+                                featuresToPlace[{
+                                                    chunkCoordPair.first,
+                                                    chunkCoordPair.second - CHUNK_LENGTH,
+                                                }]
+                                    .push_back({leavesWorldCoord, BlockType::LEAVES});
+                            }
+                            else if (value == CHUNK_LENGTH - 1)
+                            {
+                                featuresToPlace[{chunkCoordPair.first, chunkCoordPair.second + CHUNK_LENGTH}].push_back(
+                                    {leavesWorldCoord, BlockType::LEAVES});
+                            }
                         }
                     }
                 }
             }
         }
     }
-    // place leaves from tree outside the chunk
-    auto itMap = leavesToPlace.find({chunkCoord.x, chunkCoord.y});
-    if (itMap == leavesToPlace.end())
+    auto itMap = featuresToPlace.find({chunkCoord.x, chunkCoord.y});
+    if (itMap == featuresToPlace.end())
         return;
     for (auto itVector = itMap->second.begin(); itVector != itMap->second.end(); itVector++)
     {
-        if (chunkData.getBlock(*itVector, true) == BlockType::AIR)
-            chunkData.setBlock(*itVector, BlockType::LEAVES, true);
+        if (chunkData.getBlock(itVector->first, true) == BlockType::AIR)
+            chunkData.setBlock(itVector->first, itVector->second, true);
     }
 }
 
