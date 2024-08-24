@@ -1,3 +1,4 @@
+
 #include "ChunkGenerator.hpp"
 #include "../../../assert.hpp"
 #include "../../../globals.hpp"
@@ -10,13 +11,13 @@
 #include <algorithm>
 #include <filesystem>
 #include <glm/gtc/noise.hpp>
-#include <map>
 #include <stb/stb_image_write.h>
+
 unsigned long ChunkGenerator::seed = 0;
 float ChunkGenerator::modifierX = 0;
 float ChunkGenerator::modifierY = 0;
 float ChunkGenerator::modifierZ = 0;
-std::map<std::pair<int, int>, std::vector<std::pair<glm::vec3, BlockType>>> ChunkGenerator::featuresToPlace;
+std::map<glm::vec2, std::vector<std::pair<glm::vec3, BlockType>>, Vec2Compare> ChunkGenerator::featuresToPlace;
 std::vector<glm::vec2> ChunkGenerator::chunkGeneratedOnce;
 
 int CHANNEL_NUM = 3;
@@ -56,14 +57,16 @@ ChunkData ChunkGenerator::GenerateChunkData(int chunkX, int chunkZ, bool firstIt
     unsigned long chunkSeed = seed + chunkX * WORLD_LENGTH / CHUNK_LENGTH + chunkZ;
     srand(chunkSeed);
 
-    glm::vec2 chunkCoords = {chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH};
-    ChunkData chunkData(chunkCoords);
+    ChunkData chunkData(chunkX / CHUNK_LENGTH, chunkZ / CHUNK_LENGTH);
     GenerateTerrain(chunkData);
-    GenerateFeatures(chunkData);
-
-    if (std::find(chunkGeneratedOnce.begin(), chunkGeneratedOnce.end(), glm::vec2(chunkX, chunkZ)) ==
+    if (std::find(chunkGeneratedOnce.begin(), chunkGeneratedOnce.end(), chunkData.getChunkCoord()) ==
         chunkGeneratedOnce.end())
-        chunkGeneratedOnce.push_back(glm::vec2(chunkX, chunkZ));
+        GenerateFeatures(chunkData);
+    AddFeatures(chunkData);
+
+    if (std::find(chunkGeneratedOnce.begin(), chunkGeneratedOnce.end(), chunkData.getChunkCoord()) ==
+        chunkGeneratedOnce.end())
+        chunkGeneratedOnce.push_back(chunkData.getChunkCoord());
 
     return (chunkData);
 }
@@ -145,89 +148,79 @@ void ChunkGenerator::GenerateFeatures(ChunkData &chunkData)
                 chunkData.getBlock(chunkCoord.x + x, y, chunkCoord.y + z, true) != BlockType::DIRT)
                 continue;
 
-            // tree
             if (rand() % 100 < 2)
+                GenerateTree(chunkCoord, glm::vec3(x, y, z));
+        }
+    }
+}
+
+void ChunkGenerator::GenerateTree(const glm::vec2 &chunkCoord, const glm::vec3 &treeCoord)
+{
+    int treeHeight = 3 + rand() % 3;
+    for (int i = 0; i < treeHeight; i++)
+        featuresToPlace[chunkCoord].push_back(std::pair<glm::vec3, BlockType>{
+            glm::vec3(chunkCoord.x + treeCoord.x, treeCoord.y + 1 + i, chunkCoord.y + treeCoord.z), BlockType::WOOD});
+
+    for (int x = -2; x < 3; x++)
+    {
+        for (int y = 0; y < treeHeight; y++)
+        {
+            for (int z = -2; z < 3; z++)
             {
-                int treeHeight = 3 + rand() % 3;
-                for (int t = 0; t < treeHeight; t++)
-                    featuresToPlace[std::pair<int, int>{chunkCoord.x, chunkCoord.y}].push_back(
-                        std::pair<glm::vec3, BlockType>{glm::vec3(chunkCoord.x + x, y + 1 + t, chunkCoord.y + z),
-                                                        BlockType::WOOD});
+                if (x == 0 && y < treeHeight - 3 && z == 0)
+                    continue;
 
-                for (int lx = -2; lx < 3; lx++)
+                glm::vec3 leavesCoord = {treeCoord.x + x, treeCoord.y + 3 + y, treeCoord.z + z};
+                glm::vec3 leavesWorldCoord = {chunkCoord.x + leavesCoord.x, leavesCoord.y,
+                                              chunkCoord.y + leavesCoord.z};
+
+                glm::vec2 chunkCoordKey = chunkCoord;
+                if (leavesCoord.x < 0)
+                    chunkCoordKey.x -= CHUNK_LENGTH;
+                else if (leavesCoord.x >= CHUNK_LENGTH)
+                    chunkCoordKey.x += CHUNK_LENGTH;
+                if (leavesCoord.z < 0)
+                    chunkCoordKey.y -= CHUNK_LENGTH;
+                else if (leavesCoord.z >= CHUNK_LENGTH)
+                    chunkCoordKey.y += CHUNK_LENGTH;
+
+                featuresToPlace[chunkCoordKey].push_back({leavesWorldCoord, BlockType::LEAVES});
+
+                int value = (int)leavesWorldCoord.x % CHUNK_LENGTH;
+                if (value < 0)
+                    value += CHUNK_LENGTH;
+                if (value == 0)
                 {
-                    for (int ly = 0; ly < treeHeight; ly++)
-                    {
-                        for (int lz = -2; lz < 3; lz++)
-                        {
-                            if (lx == 0 && lz == 0 && ly < treeHeight - 3)
-                                continue;
+                    featuresToPlace[{chunkCoordKey.x - CHUNK_LENGTH, chunkCoordKey.y}].push_back(
+                        {leavesWorldCoord, BlockType::LEAVES});
+                }
+                else if (value == CHUNK_LENGTH - 1)
+                {
+                    featuresToPlace[{chunkCoordKey.x + CHUNK_LENGTH, chunkCoordKey.y}].push_back(
+                        {leavesWorldCoord, BlockType::LEAVES});
+                }
 
-                            glm::vec3 leavesCoord = {x + 1 + lx, y + 3 + ly, z + 1 + lz};
-                            if (leavesCoord.x >= 0 && leavesCoord.x < CHUNK_LENGTH_PLUS_2 && leavesCoord.z >= 0 &&
-                                leavesCoord.z < CHUNK_LENGTH_PLUS_2 &&
-                                chunkData.getBlock(leavesCoord, false) != BlockType::AIR)
-                                continue;
-                            if (leavesCoord.y < 0 || leavesCoord.y >= CHUNK_HEIGHT)
-                                continue;
-
-                            std::pair<int, int> chunkCoordPair = {chunkCoord.x, chunkCoord.y};
-
-                            if (leavesCoord.x - 1 < 0)
-                                chunkCoordPair.first -= CHUNK_LENGTH;
-                            else if (leavesCoord.x - 1 >= CHUNK_LENGTH)
-                                chunkCoordPair.first += CHUNK_LENGTH;
-                            if (leavesCoord.z - 1 < 0)
-                                chunkCoordPair.second -= CHUNK_LENGTH;
-                            else if (leavesCoord.z - 1 >= CHUNK_LENGTH)
-                                chunkCoordPair.second += CHUNK_LENGTH;
-
-                            glm::vec3 leavesWorldCoord = {chunkCoord.x + x + lx, y + 3 + ly, chunkCoord.y + z + lz};
-                            if (featuresToPlace.find(chunkCoordPair) == featuresToPlace.end())
-                                featuresToPlace[chunkCoordPair] = {};
-
-                            std::vector<std::pair<glm::vec3, BlockType>> featuresVector =
-                                featuresToPlace[chunkCoordPair];
-                            if (std::find(featuresVector.begin(), featuresVector.end(),
-                                          std::pair<glm::vec3, BlockType>{leavesWorldCoord, BlockType::LEAVES}) ==
-                                featuresVector.end())
-                                featuresToPlace[chunkCoordPair].push_back({leavesWorldCoord, BlockType::LEAVES});
-
-                            int value = (int)leavesWorldCoord.x % CHUNK_LENGTH;
-                            if (value < 0)
-                                value += CHUNK_LENGTH;
-                            if (value == 0)
-                            {
-                                featuresToPlace[{chunkCoordPair.first - CHUNK_LENGTH, chunkCoordPair.second}].push_back(
-                                    {leavesWorldCoord, BlockType::LEAVES});
-                            }
-                            else if (value == CHUNK_LENGTH - 1)
-                            {
-                                featuresToPlace[{chunkCoordPair.first + CHUNK_LENGTH, chunkCoordPair.second}].push_back(
-                                    {leavesWorldCoord, BlockType::LEAVES});
-                            }
-                            value = (int)leavesWorldCoord.z % CHUNK_LENGTH;
-                            if (value < 0)
-                                value += CHUNK_LENGTH;
-                            if (value == 0)
-                            {
-                                featuresToPlace[{
-                                                    chunkCoordPair.first,
-                                                    chunkCoordPair.second - CHUNK_LENGTH,
-                                                }]
-                                    .push_back({leavesWorldCoord, BlockType::LEAVES});
-                            }
-                            else if (value == CHUNK_LENGTH - 1)
-                            {
-                                featuresToPlace[{chunkCoordPair.first, chunkCoordPair.second + CHUNK_LENGTH}].push_back(
-                                    {leavesWorldCoord, BlockType::LEAVES});
-                            }
-                        }
-                    }
+                value = (int)leavesWorldCoord.z % CHUNK_LENGTH;
+                if (value < 0)
+                    value += CHUNK_LENGTH;
+                if (value == 0)
+                {
+                    featuresToPlace[{chunkCoordKey.x, chunkCoordKey.y - CHUNK_LENGTH}].push_back(
+                        {leavesWorldCoord, BlockType::LEAVES});
+                }
+                else if (value == CHUNK_LENGTH - 1)
+                {
+                    featuresToPlace[{chunkCoordKey.x, chunkCoordKey.y + CHUNK_LENGTH}].push_back(
+                        {leavesWorldCoord, BlockType::LEAVES});
                 }
             }
         }
     }
+}
+
+void ChunkGenerator::AddFeatures(ChunkData &chunkData)
+{
+    glm::vec2 chunkCoord = {chunkData.getChunkCoordX() * CHUNK_LENGTH, chunkData.getChunkCoordZ() * CHUNK_LENGTH};
     auto itMap = featuresToPlace.find({chunkCoord.x, chunkCoord.y});
     if (itMap == featuresToPlace.end())
         return;

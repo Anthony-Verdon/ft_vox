@@ -8,6 +8,20 @@ enum eGraphType
     PV_GRAPH
 };
 
+// Custom comparator for glm::vec2 to use it as a key in a map
+struct Vec2Compare
+{
+    bool operator()(const glm::vec<2, float, glm::packed_highp> &lhs,
+                    const glm::vec<2, float, glm::packed_highp> &rhs) const
+    {
+        if (lhs.x < rhs.x)
+            return true;
+        if (lhs.x > rhs.x)
+            return false;
+        return lhs.y < rhs.y;
+    }
+};
+
 class ChunkGenerator
 {
   private:
@@ -16,11 +30,13 @@ class ChunkGenerator
     static float modifierY;
     static float modifierZ;
 
-    static std::map<std::pair<int, int>, std::vector<std::pair<glm::vec3, BlockType>>> featuresToPlace;
+    static std::map<glm::vec2, std::vector<std::pair<glm::vec3, BlockType>>, Vec2Compare> featuresToPlace;
     static std::vector<glm::vec2> chunkGeneratedOnce;
 
     static void GenerateTerrain(ChunkData &chunkData);
     static void GenerateFeatures(ChunkData &chunkData);
+    static void GenerateTree(const glm::vec2 &chunkCoord, const glm::vec3 &treeCoord);
+    static void AddFeatures(ChunkData &chunkData);
 
   public:
     ChunkGenerator() = delete;
