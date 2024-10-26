@@ -1,15 +1,12 @@
 set_targetdir("./")
 set_languages("cxx17")
 
-set_toolchains("clang")
-
-add_ldflags("clang::-stdlib=libc++")
-add_cxxflags("clang::-std=c++17")
-add_cxxflags("clang::-Wall")
-add_cxxflags("clang::-Werror")
-add_cxxflags("clang::-Wextra")
-add_cxxflags("clang::-gdwarf-4")
-add_cxxflags("clang::-O3")
+add_ldflags("-stdlib=libc++")
+add_cxxflags("-std=c++17")
+add_cxxflags("-Wall")
+add_cxxflags("-Werror")
+add_cxxflags("-Wextra")
+add_cxxflags("-O3")
 
 add_requires("freetype")
 add_requires("glfw")
