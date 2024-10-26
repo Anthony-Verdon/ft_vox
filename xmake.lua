@@ -38,6 +38,7 @@ target("ft_vox")
     end
         
     add_files("srcs/**.cpp")
+    add_headerfiles("srcs/**.hpp")
     add_packages("freetype")
     add_packages("glfw")
     add_packages("glm")
