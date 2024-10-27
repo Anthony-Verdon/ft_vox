@@ -1,6 +1,7 @@
 set_targetdir("./")
 set_languages("cxx17")
 
+set_toolchains("clang") 
 add_ldflags("-stdlib=libc++")
 add_cxxflags("-std=c++17")
 add_cxxflags("-Wall")
