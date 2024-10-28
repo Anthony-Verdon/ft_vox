@@ -2,63 +2,28 @@
 
 #include "../../globals.hpp"
 #include "../Camera/Camera.hpp"
+#include "../GameLogic/GameLogic.hpp"
 #include "../Shader/Shader.hpp"
 #include "../WorldClasses/WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
 #include <map>
 
-enum InputMode
-{
-    GAME,
-    CHAT
-};
-
-typedef struct s_data
-{
-    InputMode inputMode;
-    bool infoMode;
-    bool wireframeMode;
-    std::string message;
-    float lastMessageTimeStamp;
-    std::string lastMessage;
-} t_data;
-
 class WindowManager
 {
   private:
-    GLFWwindow *window;
-    Camera camera;
+    static GLFWwindow *window;
 
-    WorldData world;
-    t_data data;
-
-    void start();
-    void updateLoop();
-
-    /* process input*/
-    void processInput();
-    bool isKeyPressed(int key);
-    bool isMouseButtonPressed(int mouseButton);
-    void updateWireframeMode();
-    void updateInfoMode();
-    void updateSpeed();
-    void updateChat();
-    void updateBlock();
-
-    /* text rendering */
-    void renderInformations();
-    void renderChat();
-
-    /* commands */
-    void parseCommand();
-    void getBlockCommand(const std::vector<std::string> &commandSplit);
-    void teleportCommand(const std::vector<std::string> &commandSplit);
-
+    WindowManager() = delete;
+    ~WindowManager() = delete;
   public:
-    WindowManager();
-    ~WindowManager();
+    static void InitWindow(const std::string &name, unsigned int width, unsigned int height);
+    static void StartUpdateLoop();
+    static void StopUpdateLoop();
+    static void DestructWindowManager();
 
-    /* callback functions */
-    void updateCameraAngle(double xPos, double yPos);
-    void updateMessage(unsigned int c);
+    static bool IsKeyPressed(int key);
+    static bool IsMouseButtonPressed(int mouseButton);
+
+    static void SetCursorPosCallback(void (*func)(GLFWwindow *window, double xPos, double yPos));
+    static void SetCharCallback(void (*func)(GLFWwindow *window, unsigned int character));
 };

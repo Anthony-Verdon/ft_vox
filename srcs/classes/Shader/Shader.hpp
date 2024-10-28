@@ -10,7 +10,7 @@ class Shader
   private:
     unsigned int ID;
 
-    Shader();
+    Shader(); // @todo
 
     const std::string readShaderFile(const std::string &shaderPath);
     unsigned int compileShader(const char *shaderCode, const GLenum &shaderType);

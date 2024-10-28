@@ -1,6 +1,8 @@
 #include "classes/BlockClasses/BlockDico/BlockDico.hpp"
 #include "classes/ChunkClasses/ChunkGenerator/ChunkGenerator.hpp"
 #include "classes/WindowManager/WindowManager.hpp"
+#include "classes/GameRenderer/GameRenderer.hpp"
+#include "classes/TextRenderer/TextRenderer.hpp"
 #include "globals.hpp"
 #include <GLFW/glfw3.h>
 #include <cstdlib>
@@ -27,8 +29,14 @@ int main(int argc, char **argv)
 #ifdef GENERATE_MAP
         ChunkGenerator::GenerateNoiseMap();
 #endif
-        WindowManager windowManager;
-        return (EXIT_SUCCESS);
+        WindowManager::InitWindow("ft_vox", WINDOW_WIDTH, WINDOW_HEIGHT);
+        GameLogic::Init();
+        TextRenderer::initTextRenderer();
+        GameRenderer::Init();
+        WindowManager::StartUpdateLoop();
+        WindowManager::DestructWindowManager();
+        TextRenderer::destructTextRenderer();
+
     }
     catch (const std::exception &exception)
     {
