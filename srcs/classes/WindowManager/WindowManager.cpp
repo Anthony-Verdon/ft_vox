@@ -330,10 +330,7 @@ void WindowManager::updateBlock()
 
         for (int i = 0; i < RANGE_ACTION; i++)
         {
-            glm::vec3 positionGet =
-                camera.getPosition() +
-                raycast *
-                    static_cast<float>(i); // sometimes it can skip because it's isn't a real raycast, need to fix this
+            glm::vec3 positionGet = camera.getPosition() + raycast * static_cast<float>(i); 
             int x = std::floor(positionGet.x);
             int y = std::floor(positionGet.y);
             int z = std::floor(positionGet.z);
@@ -358,7 +355,7 @@ void WindowManager::updateBlock()
                 continue;
             if (chunk->getBlock(x, y, z, true) == BlockType::AIR)
                 continue;
-            chunk->setBlock(x - 1, y, z - 1, BlockType::AIR, true);
+            chunk->setBlock(x, y, z, BlockType::AIR, true);
             chunk->initMesh();
             chunk->updateRenderer();
             break;
