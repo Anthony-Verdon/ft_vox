@@ -10,19 +10,20 @@ enum InputMode
     CHAT
 };
 
-typedef struct s_data
+typedef struct s_ChatData
 {
-    InputMode inputMode;
-    bool infoMode;
-    bool wireframeMode;
     std::string message;
     float lastMessageTimeStamp;
     std::string lastMessage;
-} t_data;
+} t_ChatData;
 
 class GameLogic
 {
     private:
+        static Camera camera;
+        static InputMode inputMode;
+        static WorldData world;
+        static t_ChatData chat;
         
 
         static void updateChat();
@@ -35,15 +36,16 @@ class GameLogic
         static void teleportCommand(const std::vector<std::string> &commandSplit);
 
     public:
-        static Camera camera;
-        static t_data data;
-        static WorldData world;
 
         static void Init();
         static void ProcessInput();
-        static void UpdateCameraAngle();
-    
+        static void UpdateWorldData();
+
         static void updateCameraAngle(double xPos, double yPos);
         static void updateMessage(unsigned int key);
+        static const Camera &GetCamera();
+        static const WorldData &GetWorldData();
+        static const InputMode &GetInputMode();
+        static const t_ChatData &GetChatData();
 
 };

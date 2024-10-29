@@ -9,6 +9,9 @@
 std::map<std::string, std::unique_ptr<Texture>> GameRenderer::textures;
 std::map<std::string, std::unique_ptr<Shader>> GameRenderer::shaders;
 
+bool GameRenderer::infoMode = false;
+bool GameRenderer::wireframeMode = false;
+
 void GameRenderer::Init()
 {
     textures["tileset"] = std::make_unique<Texture>("assets/textures/tileset.png");
@@ -20,22 +23,22 @@ void GameRenderer::Init()
 
 void GameRenderer::Render()
 {
-    glm::mat4 view = glm::lookAt(GameLogic::camera.getPosition(), GameLogic::camera.getPosition() + GameLogic::camera.getFrontDirection(), GameLogic::camera.getUpDirection());
+    const Camera &camera = GameLogic::GetCamera();
+    glm::mat4 view = glm::lookAt(camera.getPosition(), camera.getPosition() + camera.getFrontDirection(), camera.getUpDirection());
 
     float viewDistance = RENDER_DISTANCE_2X * CHUNK_LENGTH;
     if (viewDistance < CHUNK_HEIGHT)
         viewDistance = CHUNK_HEIGHT;
-    glm::mat4 projection = glm::perspective(glm::radians(GameLogic::camera.getFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, viewDistance);
+    glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, viewDistance);
 
     WorldRendering(view, projection);
     SkyboxRendering(view, projection);
-    if (GameLogic::data.infoMode)
+    if (infoMode)
     {
         ChunkBorderRendering(view, projection);
         DebugInfoRendering();
     }
     ChatRendering();
-
 }
 
 void GameRenderer::WorldRendering(const glm::mat4 &view, const glm::mat4 &projection)
@@ -43,7 +46,6 @@ void GameRenderer::WorldRendering(const glm::mat4 &view, const glm::mat4 &projec
     shaders["world"]->use();
     shaders["world"]->setMat4("view", view);
     shaders["world"]->setMat4("projection", projection);
-    GameLogic::world.updateWorldData(GameLogic::camera.getPosition().x, GameLogic::camera.getPosition().z);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textures["tileset"]->getID());
     for (int i = 0; i < MeshType::MESH_TYPE_COUNT; i++)
@@ -61,7 +63,7 @@ void GameRenderer::WorldRendering(const glm::mat4 &view, const glm::mat4 &projec
         {
             for (size_t y = 0; y < RENDER_DISTANCE_2X; y++)
             {
-                const std::unique_ptr<ChunkRenderer> &chunk = GameLogic::world.getChunk(x, y);
+                const std::unique_ptr<ChunkRenderer> &chunk = GameLogic::GetWorldData().getChunk(x, y);
                 if (!chunk)
                     continue;
                 glBindVertexArray(chunk->getVAO(static_cast<MeshType>(i)));
@@ -101,7 +103,7 @@ void GameRenderer::ChunkBorderRendering(const glm::mat4 &view, const glm::mat4 &
     {
         for (int z = -RENDER_DISTANCE; z <= RENDER_DISTANCE + 1; z++)
         {
-            glm::vec3 camPosition = GameLogic::camera.getPosition();
+            glm::vec3 camPosition = GameLogic::GetCamera().getPosition();
             glm::vec2 linePosition = {(int)camPosition.x - (int)camPosition.x % CHUNK_LENGTH + x * CHUNK_LENGTH,
                                         (int)camPosition.z - (int)camPosition.z % CHUNK_LENGTH +
                                             z * CHUNK_LENGTH};
@@ -133,18 +135,18 @@ void GameRenderer::ChunkBorderRendering(const glm::mat4 &view, const glm::mat4 &
 }
 void GameRenderer::DebugInfoRendering()
 {
-    static glm::vec3 cameraOldPosition = GameLogic::camera.getPosition();
-    glm::vec3 cameraNewPosition = GameLogic::camera.getPosition();
+    static glm::vec3 cameraOldPosition = GameLogic::GetCamera().getPosition();
+    glm::vec3 cameraNewPosition = GameLogic::GetCamera().getPosition();
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     const float scaling = 0.5f;
-    TextRenderer::renderText("X: " + std::to_string(GameLogic::camera.getPosition().x), 0.0f,
+    TextRenderer::renderText("X: " + std::to_string(cameraNewPosition.x), 0.0f,
                              WINDOW_HEIGHT - 1 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                              glm::vec4(1, 1, 1, 1));
-    TextRenderer::renderText("Y: " + std::to_string(GameLogic::camera.getPosition().y), 0.0f,
+    TextRenderer::renderText("Y: " + std::to_string(cameraNewPosition.y), 0.0f,
                              WINDOW_HEIGHT - 2 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                              glm::vec4(1, 1, 1, 1));
-    TextRenderer::renderText("Z: " + std::to_string(GameLogic::camera.getPosition().z), 0.0f,
+    TextRenderer::renderText("Z: " + std::to_string(cameraNewPosition.z), 0.0f,
                              WINDOW_HEIGHT - 3 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                              glm::vec4(1, 1, 1, 1));
     TextRenderer::renderText("FPS: " + std::to_string(static_cast<int>(std::round(1.0f / Time::getDeltaTime()))), 0.0f,
@@ -170,7 +172,7 @@ void GameRenderer::DebugInfoRendering()
                                                            ChunkGenerator::GetNoisePosition(cameraNewPosition.z, false),
                                                            PV_OCTAVES, PV_FREQUENCY, PV_PERSISTENCE)),
         0.0f, WINDOW_HEIGHT - 7 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling, glm::vec4(1, 1, 1, 1));
-    if (GameLogic::data.wireframeMode)
+    if (wireframeMode)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     cameraOldPosition = cameraNewPosition;
 }
@@ -178,24 +180,38 @@ void GameRenderer::DebugInfoRendering()
 void GameRenderer::ChatRendering()
 {
     const float scaling = 0.5f;
-    if (GameLogic::data.inputMode == CHAT)
+    if (GameLogic::GetInputMode() == CHAT)
     {
-        TextRenderer::renderText("message : " + GameLogic::data.message, 0.0f,
+        TextRenderer::renderText("message : " + GameLogic::GetChatData().message, 0.0f,
                                  WINDOW_HEIGHT - 10 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                                  glm::vec4(1, 1, 1, 1));
     }
-    else if (GameLogic::data.inputMode == GAME)
+    else if (GameLogic::GetInputMode() == GAME)
     {
-        if (Time::getTime() - GameLogic::data.lastMessageTimeStamp < CHAT_DISPLAY_TIME + CHAT_FADE_TIME)
+        if (Time::getTime() - GameLogic::GetChatData().lastMessageTimeStamp < CHAT_DISPLAY_TIME + CHAT_FADE_TIME)
         {
             float fading;
-            if (Time::getTime() - GameLogic::data.lastMessageTimeStamp < CHAT_DISPLAY_TIME)
+            if (Time::getTime() - GameLogic::GetChatData().lastMessageTimeStamp < CHAT_DISPLAY_TIME)
                 fading = 1;
             else
-                fading = 1 - (((Time::getTime() - GameLogic::data.lastMessageTimeStamp) - CHAT_DISPLAY_TIME) / CHAT_FADE_TIME);
-            TextRenderer::renderText("last message : " + GameLogic::data.lastMessage, 0.0f,
+                fading = 1 - (((Time::getTime() - GameLogic::GetChatData().lastMessageTimeStamp) - CHAT_DISPLAY_TIME) / CHAT_FADE_TIME);
+            TextRenderer::renderText("last message : " + GameLogic::GetChatData().lastMessage, 0.0f,
                                      WINDOW_HEIGHT - 10 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                                      glm::vec4(1, 1, 1, fading));
         }
     }
+}
+
+void GameRenderer::UpdateInfoMode()
+{
+    infoMode = !infoMode;
+}
+
+void GameRenderer::UpdateWireframeMode()
+{
+    wireframeMode = !wireframeMode;
+    if (wireframeMode)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

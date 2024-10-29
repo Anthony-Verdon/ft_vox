@@ -14,6 +14,9 @@ class GameRenderer
         static std::map<std::string, std::unique_ptr<Texture>> textures;
         static std::map<std::string, std::unique_ptr<Shader>> shaders;
 
+        static bool infoMode;
+        static bool wireframeMode;
+
         static void WorldRendering(const glm::mat4 &view, const glm::mat4 &projection);
         static void SkyboxRendering(const glm::mat4 &view, const glm::mat4 &projection);
         static void ChunkBorderRendering(const glm::mat4 &view, const glm::mat4 &projection);
@@ -23,4 +26,7 @@ class GameRenderer
     public:
         static void Init();
         static void Render();
+
+        static void UpdateInfoMode();
+        static void UpdateWireframeMode();
 };

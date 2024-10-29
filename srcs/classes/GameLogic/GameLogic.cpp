@@ -1,5 +1,6 @@
 #include "GameLogic.hpp"
 #include "../WindowManager/WindowManager.hpp"
+#include "../GameRenderer/GameRenderer.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Time/Time.hpp"
 #include "../LineClasses/LineRenderer/LineRenderer.hpp"
@@ -12,7 +13,8 @@
 #include <iostream>
 
 Camera GameLogic::camera;
-t_data GameLogic::data;
+t_ChatData GameLogic::chat;
+InputMode GameLogic::inputMode = GAME;
 WorldData GameLogic::world;
 
 void mouse_callback(GLFWwindow *window, double xPos, double yPos);
@@ -23,15 +25,14 @@ void character_callback(GLFWwindow *window, unsigned int character);
 void GameLogic::Init()
 {
     camera.setPosition({8, 70, 8});
-    data.message = "";
-    data.lastMessageTimeStamp = -(CHAT_DISPLAY_TIME + CHAT_FADE_TIME + 1);
-    data.infoMode = false;
-    data.wireframeMode = false;
-    data.inputMode = GAME;
+
+    chat.message = "";
+    chat.lastMessageTimeStamp = -(CHAT_DISPLAY_TIME + CHAT_FADE_TIME + 1);
 
     WindowManager::SetCursorPosCallback(mouse_callback);
     WindowManager::SetCharCallback(character_callback);
 }
+
 void GameLogic::ProcessInput()
 {
     if (WindowManager::IsKeyPressed(GLFW_KEY_ESCAPE))
@@ -42,27 +43,27 @@ void GameLogic::ProcessInput()
     {
         if (keyEnable == true)
         {
-            if (data.inputMode == CHAT)
+            if (inputMode == CHAT)
             {
-                data.lastMessage = data.message;
-                data.message = "";
-                data.lastMessageTimeStamp = Time::getTime();
+                chat.lastMessage = chat.message;
+                chat.message = "";
+                chat.lastMessageTimeStamp = Time::getTime();
 
-                if (data.lastMessage.size() > 0 && data.lastMessage[0] == '/')
+                if (chat.lastMessage.size() > 0 && chat.lastMessage[0] == '/')
                     parseCommand();
             }
 
-            if (data.inputMode == CHAT)
-                data.inputMode = GAME;
-            else if (data.inputMode == GAME)
-                data.inputMode = CHAT;
+            if (inputMode == CHAT)
+                inputMode = GAME;
+            else if (inputMode == GAME)
+                inputMode = CHAT;
         }
         keyEnable = false;
     }
     else
         keyEnable = true;
 
-    switch (data.inputMode)
+    switch (inputMode)
     {
     case GAME: {
         updateWireframeMode();
@@ -81,11 +82,7 @@ void GameLogic::ProcessInput()
     default:
         break;
     }
-
-    // -----------------------------------------------
-
 }
-
 
 void GameLogic::updateChat()
 {
@@ -93,9 +90,9 @@ void GameLogic::updateChat()
 
     if (WindowManager::IsKeyPressed(GLFW_KEY_BACKSPACE))
     {
-        if (keyEnable == true && data.message != "")
+        if (keyEnable == true && chat.message != "")
         {
-            data.message.erase(data.message.length() - 1, 1);
+            chat.message.erase(chat.message.length() - 1, 1);
         }
         keyEnable = false;
     }
@@ -109,13 +106,7 @@ void GameLogic::updateWireframeMode()
     if (WindowManager::IsKeyPressed(GLFW_KEY_F1))
     {
         if (keyEnable == true)
-        {
-            data.wireframeMode = !data.wireframeMode;
-            if (data.wireframeMode)
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            else
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
+            GameRenderer::UpdateWireframeMode();  
         keyEnable = false;
     }
     else
@@ -137,7 +128,7 @@ void GameLogic::updateInfoMode()
     if (WindowManager::IsKeyPressed(GLFW_KEY_F3))
     {
         if (keyEnable == true)
-            data.infoMode = !data.infoMode;
+            GameRenderer::UpdateInfoMode();
         keyEnable = false;
     }
     else
@@ -192,12 +183,10 @@ void GameLogic::updateBlock()
         ;
 }
 
-
-
 void GameLogic::parseCommand()
 {
     static const std::map<std::string, void (*)(const std::vector<std::string> &)> commands = {{"/getBlock", &GameLogic::getBlockCommand}, {"/tp", &GameLogic::teleportCommand}};
-    std::vector<std::string> commandSplit = Utils::splitLine(data.lastMessage);
+    std::vector<std::string> commandSplit = Utils::splitLine(chat.lastMessage);
     for (auto it = commands.begin(); it != commands.end(); it++)
     {
         if (it->first == commandSplit[0])
@@ -271,7 +260,6 @@ void GameLogic::teleportCommand(const std::vector<std::string> &commandSplit)
     }
 }
 
-
 void mouse_callback(GLFWwindow *window, double xPos, double yPos)
 {
     (void)window;
@@ -280,7 +268,7 @@ void mouse_callback(GLFWwindow *window, double xPos, double yPos)
 
 void GameLogic::updateCameraAngle(double xPos, double yPos)
 {
-    if (data.inputMode == GAME)
+    if (inputMode == GAME)
     {
         const float sensitivity = 0.1f;
 
@@ -311,8 +299,32 @@ void character_callback(GLFWwindow *window, unsigned int character)
 
 void GameLogic::updateMessage(unsigned int key)
 {
-    if (key < 256 && data.inputMode == CHAT)
+    if (key < 256 && inputMode == CHAT)
     {
-        data.message += key;
+        chat.message += key;
     }
+}
+
+const Camera &GameLogic::GetCamera()
+{
+    return (camera);
+}
+
+void GameLogic::UpdateWorldData()
+{
+    world.updateWorldData(camera.getPosition().x, camera.getPosition().z);
+}
+
+const InputMode &GameLogic::GetInputMode()
+{
+    return (inputMode);
+}
+const WorldData &GameLogic::GetWorldData()
+{
+    return (world);
+}
+
+const t_ChatData &GameLogic::GetChatData()
+{
+    return (chat);
 }
