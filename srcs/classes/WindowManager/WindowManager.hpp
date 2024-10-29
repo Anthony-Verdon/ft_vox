@@ -1,12 +1,7 @@
 #pragma once
 
-#include "../../globals.hpp"
-#include "../Camera/Camera.hpp"
-#include "../GameLogic/GameLogic.hpp"
-#include "../Shader/Shader.hpp"
-#include "../WorldClasses/WorldData/WorldData.hpp"
 #include <GLFW/glfw3.h>
-#include <map>
+#include <string>
 
 class WindowManager
 {

@@ -10,7 +10,6 @@ class LineRenderer : public LineData
   private:
     unsigned int VAO;
     unsigned int VBO;
-    std::vector<float> vertices;
 
   public:
     LineRenderer() = delete;

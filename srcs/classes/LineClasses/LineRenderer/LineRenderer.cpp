@@ -2,7 +2,7 @@
 
 LineRenderer::LineRenderer(const LineData &instance) : LineData(instance)
 {
-    vertices = {
+    std::vector<float> vertices = {
         start.x, start.y, start.z, end.x, end.y, end.z, // create a LineMesh just for this ?
     };
 

@@ -1,13 +1,7 @@
 #include "GameLogic.hpp"
 #include "../WindowManager/WindowManager.hpp"
 #include "../GameRenderer/GameRenderer.hpp"
-#include "../Texture/Texture.hpp"
-#include "../Time/Time.hpp"
-#include "../LineClasses/LineRenderer/LineRenderer.hpp"
 #include "../Utils/Utils.hpp"
-#include "../SkyboxRenderer/SkyboxRenderer.hpp"
-#include "../TextRenderer/TextRenderer.hpp"
-#include "../ChunkClasses/ChunkGenerator/ChunkGenerator.hpp"
 #include "../ChatLogic/ChatLogic.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>

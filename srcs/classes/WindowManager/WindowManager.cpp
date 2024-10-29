@@ -1,27 +1,7 @@
 #include "WindowManager.hpp"
-#include "../../globals.hpp"
-#include "../Shader/Shader.hpp"
-#include "../GameLogic/GameLogic.hpp"
-#include "../Time/Time.hpp"
-#include "../WorldClasses/WorldData/WorldData.hpp"
-#include <GLFW/glfw3.h>
-#include <cctype>
-#include <ctime>
-#include "../Texture/Texture.hpp"
 #include "../GameLogic/GameLogic.hpp"
 #include "../GameRenderer/GameRenderer.hpp"
 #include "../Time/Time.hpp"
-#include "../LineClasses/LineRenderer/LineRenderer.hpp"
-#include "../Utils/Utils.hpp"
-#include "../SkyboxRenderer/SkyboxRenderer.hpp"
-#include "../TextRenderer/TextRenderer.hpp"
-#include "../ChunkClasses/ChunkGenerator/ChunkGenerator.hpp"
-#include <iostream>
-#include <iomanip>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <stdexcept>
 
 GLFWwindow *WindowManager::window = NULL;
 

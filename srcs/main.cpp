@@ -2,10 +2,9 @@
 #include "classes/ChunkClasses/ChunkGenerator/ChunkGenerator.hpp"
 #include "classes/WindowManager/WindowManager.hpp"
 #include "classes/GameRenderer/GameRenderer.hpp"
+#include "classes/GameLogic/GameLogic.hpp"
 #include "classes/TextRenderer/TextRenderer.hpp"
-#include "globals.hpp"
 #include <GLFW/glfw3.h>
-#include <cstdlib>
 #include <exception>
 #include <iostream>
 
