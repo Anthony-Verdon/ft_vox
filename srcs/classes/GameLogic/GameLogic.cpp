@@ -8,12 +8,12 @@
 #include "../SkyboxRenderer/SkyboxRenderer.hpp"
 #include "../TextRenderer/TextRenderer.hpp"
 #include "../ChunkClasses/ChunkGenerator/ChunkGenerator.hpp"
+#include "../ChatLogic/ChatLogic.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
 Camera GameLogic::camera;
-t_ChatData GameLogic::chat;
 InputMode GameLogic::inputMode = GAME;
 WorldData GameLogic::world;
 
@@ -25,9 +25,6 @@ void character_callback(GLFWwindow *window, unsigned int character);
 void GameLogic::Init()
 {
     camera.setPosition({8, 70, 8});
-
-    chat.message = "";
-    chat.lastMessageTimeStamp = -(CHAT_DISPLAY_TIME + CHAT_FADE_TIME + 1);
 
     WindowManager::SetCursorPosCallback(mouse_callback);
     WindowManager::SetCharCallback(character_callback);
@@ -44,14 +41,7 @@ void GameLogic::ProcessInput()
         if (keyEnable == true)
         {
             if (inputMode == CHAT)
-            {
-                chat.lastMessage = chat.message;
-                chat.message = "";
-                chat.lastMessageTimeStamp = Time::getTime();
-
-                if (chat.lastMessage.size() > 0 && chat.lastMessage[0] == '/')
-                    parseCommand();
-            }
+                ChatLogic::SendMessage();
 
             if (inputMode == CHAT)
                 inputMode = GAME;
@@ -90,10 +80,8 @@ void GameLogic::updateChat()
 
     if (WindowManager::IsKeyPressed(GLFW_KEY_BACKSPACE))
     {
-        if (keyEnable == true && chat.message != "")
-        {
-            chat.message.erase(chat.message.length() - 1, 1);
-        }
+        if (keyEnable == true)
+            ChatLogic::EraseLastCharacter();
         keyEnable = false;
     }
     else
@@ -183,83 +171,6 @@ void GameLogic::updateBlock()
         ;
 }
 
-void GameLogic::parseCommand()
-{
-    static const std::map<std::string, void (*)(const std::vector<std::string> &)> commands = {{"/getBlock", &GameLogic::getBlockCommand}, {"/tp", &GameLogic::teleportCommand}};
-    std::vector<std::string> commandSplit = Utils::splitLine(chat.lastMessage);
-    for (auto it = commands.begin(); it != commands.end(); it++)
-    {
-        if (it->first == commandSplit[0])
-        {
-            it->second(commandSplit);
-            return;
-        }
-    }
-    std::cout << "command unknown" << std::endl;
-}
-
-void GameLogic::getBlockCommand(const std::vector<std::string> &commandSplit)
-{
-    try
-    {
-        if (commandSplit.size() != 4)
-            throw(std::runtime_error("invalid number of arguments"));
-        int x = std::stoi(commandSplit[1]);
-        int y = std::stoi(commandSplit[2]);
-        int z = std::stoi(commandSplit[3]);
-        int chunkX = x / CHUNK_LENGTH;
-        int chunkZ = z / CHUNK_LENGTH;
-        if (x < 0)
-            chunkX--;
-        if (z < 0)
-            chunkZ--;
-        int playerChunkX = camera.getPosition().x / CHUNK_LENGTH;
-        int playerChunkZ = camera.getPosition().z / CHUNK_LENGTH;
-        if (camera.getPosition().x < 0)
-            playerChunkX--;
-        if (camera.getPosition().z < 0)
-            playerChunkZ--;
-        int arrayX = chunkX - playerChunkX + RENDER_DISTANCE;
-        int arrayZ = chunkZ - playerChunkZ + RENDER_DISTANCE;
-        int convertedX = ChunkData::convertWorldCoordIntoChunkCoords(x, chunkX);
-        int convertedZ = ChunkData::convertWorldCoordIntoChunkCoords(z, chunkZ);
-        if (arrayX >= RENDER_DISTANCE_2X || arrayZ >= RENDER_DISTANCE_2X)
-            throw(std::runtime_error("chunk not loaded, be closer to it"));
-        const std::unique_ptr<ChunkRenderer> &chunk = world.getChunk(arrayX, arrayZ);
-        if (chunk == NULL)
-            throw(std::runtime_error("chunk not loaded, wait a bit"));
-        std::cout << "block at " << x << " " << y << " " << z;
-        std::cout << " [chunk " << chunkX << " " << chunkZ << "]";
-        std::cout << " [coord in chunk " << convertedX << " " << y << " " << convertedZ << "]";
-        if (chunk->getBlock(glm::vec3(convertedX, y, convertedZ), false) != BlockType::AIR)
-            std::cout << " is set";
-        else
-            std::cout << " isn't set";
-        std::cout << std::endl;
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-}
-
-void GameLogic::teleportCommand(const std::vector<std::string> &commandSplit)
-{
-    try
-    {
-        if (commandSplit.size() != 4)
-            throw(std::runtime_error("invalid number of arguments"));
-        int x = std::stoi(commandSplit[1]);
-        int y = std::stoi(commandSplit[2]);
-        int z = std::stoi(commandSplit[3]);
-        camera.setPosition(glm::vec3(x, y, z));
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-}
-
 void mouse_callback(GLFWwindow *window, double xPos, double yPos)
 {
     (void)window;
@@ -294,15 +205,7 @@ void GameLogic::updateCameraAngle(double xPos, double yPos)
 void character_callback(GLFWwindow *window, unsigned int character)
 {
     (void)window;
-    GameLogic::updateMessage(character);
-}
-
-void GameLogic::updateMessage(unsigned int key)
-{
-    if (key < 256 && inputMode == CHAT)
-    {
-        chat.message += key;
-    }
+    ChatLogic::UpdateMessage(character);
 }
 
 const Camera &GameLogic::GetCamera()
@@ -324,7 +227,7 @@ const WorldData &GameLogic::GetWorldData()
     return (world);
 }
 
-const t_ChatData &GameLogic::GetChatData()
+void GameLogic::SetCameraPosition(const glm::vec3 &pos)
 {
-    return (chat);
+    camera.setPosition(pos);
 }

@@ -1,5 +1,6 @@
 #include "GameRenderer.hpp"
 #include "../GameLogic/GameLogic.hpp"
+#include "../ChatLogic/ChatLogic.hpp"
 #include "../Time/Time.hpp"
 #include "../TextRenderer/TextRenderer.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -182,20 +183,20 @@ void GameRenderer::ChatRendering()
     const float scaling = 0.5f;
     if (GameLogic::GetInputMode() == CHAT)
     {
-        TextRenderer::renderText("message : " + GameLogic::GetChatData().message, 0.0f,
+        TextRenderer::renderText("message : " + ChatLogic::GetMessage(), 0.0f,
                                  WINDOW_HEIGHT - 10 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                                  glm::vec4(1, 1, 1, 1));
     }
     else if (GameLogic::GetInputMode() == GAME)
     {
-        if (Time::getTime() - GameLogic::GetChatData().lastMessageTimeStamp < CHAT_DISPLAY_TIME + CHAT_FADE_TIME)
+        if (Time::getTime() - ChatLogic::GetLastMessageTimeStamp() < CHAT_DISPLAY_TIME + CHAT_FADE_TIME)
         {
             float fading;
-            if (Time::getTime() - GameLogic::GetChatData().lastMessageTimeStamp < CHAT_DISPLAY_TIME)
+            if (Time::getTime() - ChatLogic::GetLastMessageTimeStamp() < CHAT_DISPLAY_TIME)
                 fading = 1;
             else
-                fading = 1 - (((Time::getTime() - GameLogic::GetChatData().lastMessageTimeStamp) - CHAT_DISPLAY_TIME) / CHAT_FADE_TIME);
-            TextRenderer::renderText("last message : " + GameLogic::GetChatData().lastMessage, 0.0f,
+                fading = 1 - (((Time::getTime() - ChatLogic::GetLastMessageTimeStamp()) - CHAT_DISPLAY_TIME) / CHAT_FADE_TIME);
+            TextRenderer::renderText("last message : " + ChatLogic::GetLastMessage(), 0.0f,
                                      WINDOW_HEIGHT - 10 * static_cast<float>(TEXT_PIXEL_SIZE) * scaling, scaling,
                                      glm::vec4(1, 1, 1, fading));
         }
